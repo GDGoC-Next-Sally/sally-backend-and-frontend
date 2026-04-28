@@ -1,0 +1,11 @@
+name: sally-ai-coach
+
+services:
+  redis:
+    image: redis:latest
+    container_name: sally-redis
+    ports:
+      - "6379:6379"
+    # 데이터 보존을 원하면 아래 주석 해제
+    # volumes:
+    #   - ./redis-data:/data
