@@ -1,0 +1,35 @@
+# --- [ Dependency & Build ] ---
+node_modules/
+dist/
+.next/
+out/
+build/
+*.tsbuildinfo
+
+# --- [ Environment Variables (CRITICAL!) ] ---
+# 비밀번호, API 키 등이 들어있는 파일은 절대 올라가면 안 됩니다.
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- [ pnpm ] ---
+.pnpm-debug.log*
+pnpm-lock.yaml  # (선택) 팀 협업 시에는 올리는 것이 권장되지만, 
+                # 혼자 빠르게 개발한다면 상관없습니다. 보통은 포함합니다.
+
+# --- [ Prisma ] ---
+# 프리즈마가 생성하는 파일 중 제외할 것들
+/prisma/migrations-lock.toml
+
+# --- [ OS & IDE ] ---
+.DS_Store
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

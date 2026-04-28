@@ -1,0 +1,196 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: #ffffff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 440px;
+  padding: 32px;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.closeBtn {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: none;
+  border: none;
+  color: #adb5bd;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.closeBtn:hover {
+  color: #495057;
+}
+
+.title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 16px;
+}
+
+.stepper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 32px;
+  gap: 8px;
+}
+
+.stepNode {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #adb5bd;
+  border: 1px solid #dee2e6;
+}
+
+.stepNodeActive {
+  background-color: #20c997;
+  color: white;
+  border-color: #20c997;
+}
+
+.stepLine {
+  width: 20px;
+  height: 1px;
+  background-color: #dee2e6;
+}
+
+.formGroup {
+  margin-bottom: 24px;
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #343a40;
+  margin-bottom: 8px;
+}
+
+.input, .select, .textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #f1f3f5;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #212529;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input:focus, .select:focus, .textarea:focus {
+  border-color: #20c997;
+  background-color: #ffffff;
+}
+
+.textarea {
+  resize: none;
+  height: 120px;
+}
+
+.charCount {
+  text-align: right;
+  font-size: 12px;
+  color: #adb5bd;
+  margin-top: 4px;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.typeBtn {
+  flex: 1;
+  padding: 10px;
+  background-color: white;
+  border: 1px solid #f1f3f5;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.typeBtnActive {
+  border-color: #20c997;
+  color: #20c997;
+  background-color: #e6fcf5;
+  font-weight: 600;
+}
+
+.colorGroup {
+  display: flex;
+  gap: 12px;
+}
+
+.colorCircle {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.1s;
+}
+
+.colorCircle:hover {
+  transform: scale(1.05);
+}
+
+.colorCircleActive {
+  border-color: #343a40;
+}
+
+.footer {
+  display: flex;
+  gap: 12px;
+  margin-top: 40px;
+}
+
+.cancelBtn, .nextBtn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancelBtn {
+  background-color: white;
+  border: 1px solid #dee2e6;
+  color: #495057;
+}
+
+.nextBtn {
+  background-color: #20c997;
+  border: none;
+  color: white;
+}
+
+.nextBtn:hover {
+  background-color: #1aab82;
+}

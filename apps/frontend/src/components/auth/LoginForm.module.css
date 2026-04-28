@@ -1,0 +1,165 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 60px); /* Adjust for topnav */
+  background-color: #f8f9fa;
+  padding: 20px;
+}
+
+.loginCard {
+  width: 100%;
+  max-width: 440px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tabs {
+  display: flex;
+  width: 100%;
+}
+
+.tab {
+  flex: 1;
+  padding: 16px 0;
+  text-align: center;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  outline: none;
+}
+
+.activeTab {
+  background-color: #ffffff;
+  color: #333333;
+}
+
+.inactiveTab {
+  background-color: #e6f7ef;
+  color: #555555;
+}
+
+.inactiveTab:hover {
+  background-color: #d1f0e1;
+}
+
+/* Specific border radiuses for the tabs based on position */
+.studentInactive {
+  border-bottom-right-radius: 12px;
+}
+.teacherInactive {
+  border-bottom-left-radius: 12px;
+}
+
+.formContainer {
+  padding: 40px 32px 48px;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #333333;
+  margin-bottom: 32px;
+}
+
+.inputGroup {
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 8px;
+}
+
+.input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #333333;
+  transition: border-color 0.2s;
+}
+
+.input::placeholder {
+  color: #adb5bd;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #20c997;
+}
+
+.optionsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  font-size: 12px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #868e96;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  accent-color: #20c997;
+  cursor: pointer;
+}
+
+.links {
+  display: flex;
+  gap: 12px;
+}
+
+.link {
+  color: #868e96;
+  text-decoration: none;
+}
+
+.link:hover {
+  color: #495057;
+  text-decoration: underline;
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 16px;
+  background-color: #20c997;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submitBtn:hover {
+  background-color: #1aab82;
+}
+
+.submitBtn:disabled {
+  background-color: #8ce2c8;
+  cursor: not-allowed;
+}

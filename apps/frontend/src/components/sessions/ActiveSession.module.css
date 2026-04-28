@@ -1,0 +1,244 @@
+.container {
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 60px);
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.leftSidebar {
+  width: 280px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.sectionTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #868e96;
+  margin-bottom: 16px;
+}
+
+.studentList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.studentItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.studentItemActive {
+  background-color: #e6fcf5;
+}
+
+.studentInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #ced4da;
+}
+
+.nameBlock {
+  display: flex;
+  flex-direction: column;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #212529;
+}
+
+.subName {
+  font-size: 11px;
+  color: #868e96;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #20c997;
+}
+
+.unitList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.unitItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.unitItemActive {
+  background-color: #e6fcf5;
+  color: #20c997;
+}
+
+.unitDot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #ced4da;
+}
+
+.unitDotActive {
+  background-color: #20c997;
+}
+
+.chatArea {
+  flex: 1;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  display: flex;
+  flex-direction: column;
+}
+
+.chatHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #f1f3f5;
+}
+
+.chatTitleBlock {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.chatAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #ced4da;
+}
+
+.chatTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 4px;
+}
+
+.chatSub {
+  font-size: 14px;
+  color: #868e96;
+}
+
+.statusBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #f1f3f5;
+  padding: 8px 16px;
+  border-radius: 8px;
+  width: 400px;
+}
+
+.statusLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #868e96;
+  white-space: nowrap;
+}
+
+.progressTrack {
+  flex: 1;
+  height: 6px;
+  background-color: #dee2e6;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  width: 72%;
+  height: 100%;
+  background-color: #20c997;
+}
+
+.statusValue {
+  font-size: 13px;
+  font-weight: 700;
+  color: #20c997;
+  white-space: nowrap;
+}
+
+.chatContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 24px;
+}
+
+.messageRow {
+  display: flex;
+  gap: 16px;
+}
+
+.messageRowRight {
+  flex-direction: row-reverse;
+}
+
+.messageAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ced4da;
+  flex-shrink: 0;
+}
+
+.messageBubble {
+  max-width: 60%;
+  padding: 24px;
+  border-radius: 12px;
+  min-height: 100px;
+}
+
+.bubbleLeft {
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-top-left-radius: 0;
+}
+
+.bubbleRight {
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-top-right-radius: 0;
+}
