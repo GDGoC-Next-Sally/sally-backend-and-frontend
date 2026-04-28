@@ -31,4 +31,4 @@ Sally AI Coach의 사용자 인터페이스를 담당하는 Next.js 애플리케
   - **UI 컴포넌트(`src/components/`)**: `TopNav`, `LoginForm`, `Dashboard`, `ClassList`, `CreateClassModal`, `StudentSidebar`, `SessionGrid`, `SessionPrep`, `SessionCodeModal`, `SessionEndModal`, `ActiveSession`
 - **특이사항 및 협업 가이드**:
   - CSS Module(`.module.css`)을 활용하여 기존 글로벌 스타일과 충돌을 완벽히 차단함.
-  - **프로토타입 단계 (UI-Driven)**: 현재 화면들은 가짜 데이터(Mock Data)로 구성된 정적 UI 껍데기 상태임. 백엔드 개발자는 이 화면들을 보며 어떤 API 데이터 구조가 필요한지 쉽게 파악하고 로직을 연동(상태 관리)할 수 있음.
+  - **프로토타입 단계 (UI-Driven)**: 현재 화면들은 가짜 데이터(Mock Data)로 구성된 정적 UI 껍데기 상태임. 백엔드 개발자는 이 화면들을 보며 어떤 API 데이터 구조가 필요한지 쉽게 파악하고 로직을 연동(상태 관리)할 수 있음
