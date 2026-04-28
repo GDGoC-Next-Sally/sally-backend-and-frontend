@@ -33,6 +33,3 @@ pnpm-lock.yaml  # (선택) 팀 협업 시에는 올리는 것이 권장되지만
 *.njsproj
 *.sln
 *.sw?
-
-# --- [ Docker ] ---
-.dockerignore
