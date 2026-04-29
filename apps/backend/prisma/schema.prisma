@@ -1,13 +1,146 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model attends {
+  student_id String   @db.Uuid
+  session_id Int
+  sessions   sessions @relation(fields: [session_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users    @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([student_id, session_id])
+}
+
+model chat_messages {
+  id          Int         @id @default(autoincrement())
+  dialog_id   Int
+  sender_type sender_type
+  content     String
+  is_global   Boolean     @default(false)
+  created_at  DateTime    @default(now()) @db.Timestamptz(6)
+  dialogs     dialogs     @relation(fields: [dialog_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model classes {
+  id           Int          @id @default(autoincrement())
+  teacher_id   String       @db.Uuid
+  status       class_status @default(PLANNING)
+  grade        Int
+  homeroom     String?      @db.VarChar(50)
+  subject      String       @db.VarChar(100)
+  explanation  String?
+  theme        String?      @db.VarChar(50)
+  created_at   DateTime     @default(now()) @db.Timestamptz(6)
+  completed_at DateTime?    @db.Timestamptz(6)
+  users        users        @relation(fields: [teacher_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  sessions     sessions[]
+  takes        takes[]
+}
+
+model dialogs {
+  id            Int             @id @default(autoincrement())
+  session_id    Int
+  student_id    String          @db.Uuid
+  is_analyzed   Boolean         @default(false)
+  status        Boolean         @default(true)
+  chat_messages chat_messages[]
+  sessions      sessions        @relation(fields: [session_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users         users           @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([session_id, student_id])
+}
+
+model sessions {
+  id                 Int                  @id @default(autoincrement())
+  class_id           Int
+  teacher_id         String               @db.Uuid
+  unit_prompt_id     Int?
+  session_name       String               @db.VarChar(255)
+  status             session_status       @default(PLANNING)
+  explanation        String?
+  started_at         DateTime?            @db.Timestamptz(6)
+  finished_at        DateTime?            @db.Timestamptz(6)
+  attends            attends[]
+  dialogs            dialogs[]
+  classes            classes              @relation(fields: [class_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users              users                @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  unit_prompts       unit_prompts?        @relation(fields: [unit_prompt_id], references: [id], onUpdate: NoAction)
+  supplementary_data supplementary_data[]
+}
+
+model supplementary_data {
+  id         Int      @id @default(autoincrement())
+  session_id Int
+  file_name  String   @db.VarChar(255)
+  file_url   String
+  file_type  String?  @db.VarChar(50)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  sessions   sessions @relation(fields: [session_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model takes {
+  student_id String  @db.Uuid
+  class_id   Int
+  classes    classes @relation(fields: [class_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users   @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([student_id, class_id])
+}
+
+model textbooks {
+  id             Int            @id @default(autoincrement())
+  subject        String         @db.VarChar(100)
+  publisher      String?        @db.VarChar(100)
+  year_published Int?
+  unit_prompts   unit_prompts[]
+}
+
+model unit_prompts {
+  id          Int        @id @default(autoincrement())
+  textbook_id Int?
+  objective   String
+  prompt      String
+  sessions    sessions[]
+  textbooks   textbooks? @relation(fields: [textbook_id], references: [id], onUpdate: NoAction)
+}
+
+model users {
+  id       String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name     String     @db.VarChar(100)
+  email    String     @unique @db.VarChar(255)
+  role     user_role  @default(STUDENT)
+  attends  attends[]
+  classes  classes[]
+  dialogs  dialogs[]
+  sessions sessions[]
+  takes    takes[]
+}
+
+enum class_status {
+  PLANNING
+  ACTIVE
+  COMPLETED
+}
+
+enum sender_type {
+  STUDENT
+  AI
+  TEACHER
+}
+
+enum session_status {
+  PLANNING
+  ACTIVE
+  FINISHED
+}
+
+enum user_role {
+  STUDENT
+  TEACHER
+  ADMIN
 }
