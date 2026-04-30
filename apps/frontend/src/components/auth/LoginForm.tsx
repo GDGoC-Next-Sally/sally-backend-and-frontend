@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './LoginForm.module.css';
 import { signinWithEmail } from '@/lib/supabase';
+import { useAuthStore } from '@/store/authStore';
+import { fetchWithAuth } from '@/lib/api';
 
 type Tab = 'student' | 'teacher';
 
@@ -13,6 +15,7 @@ export const LoginForm = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,17 +23,37 @@ export const LoginForm = () => {
 
     try {
       const { data, error } = await signinWithEmail(email, password);
-      if (error) {
-        console.warn('Supabase login failed, proceeding to dashboard for UI demonstration.');
+      if (error || !data.session) {
+        console.warn('Supabase login failed:', error);
+        alert('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
       } else {
-        console.log('로그인 성공! JWT 토큰: ', data.session?.access_token);
+        const token = data.session.access_token;
+        console.log('로그인 성공! JWT 토큰 획득:', token);
+        
+        // 전역 상태에 유저 및 토큰 저장
+        setAuth({
+          id: data.session.user.id,
+          email: data.session.user.email,
+          role: activeTab, // 현재 선택된 탭을 역할로 저장
+        }, token);
+
+        // 백엔드 연동 테스트 (선택 사항)
+        try {
+          const profile = await fetchWithAuth('/profile');
+          console.log('백엔드 연동 테스트 성공 (프로필 정보):', profile);
+        } catch (apiErr) {
+          console.error('백엔드 연동 테스트 실패:', apiErr);
+        }
+
+        // 로그인 성공 시 역할에 맞는 홈으로 리다이렉트
+        router.push(activeTab === 'teacher' ? '/t/home' : '/s/home');
       }
     } catch (err) {
-      console.warn('Supabase login error, proceeding to dashboard for UI demonstration.');
+      console.error('Supabase login error:', err);
+      alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     }
 
     setLoading(false);
-    router.push('/');
   };
 
   return (
