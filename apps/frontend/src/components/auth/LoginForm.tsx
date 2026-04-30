@@ -24,8 +24,8 @@ export const LoginForm = () => {
     try {
       const { data, error } = await signinWithEmail(email, password);
       if (error || !data.session) {
-        console.warn('Supabase login failed or no session, proceeding to dashboard for UI demonstration.');
-        router.push(activeTab === 'teacher' ? '/t/home' : '/s/home');
+        console.warn('Supabase login failed:', error);
+        alert('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
       } else {
         const token = data.session.access_token;
         console.log('로그인 성공! JWT 토큰 획득:', token);
@@ -49,8 +49,8 @@ export const LoginForm = () => {
         router.push(activeTab === 'teacher' ? '/t/home' : '/s/home');
       }
     } catch (err) {
-      console.warn('Supabase login error, proceeding to dashboard for UI demonstration.');
-      router.push(activeTab === 'teacher' ? '/t/home' : '/s/home');
+      console.error('Supabase login error:', err);
+      alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     }
 
     setLoading(false);

@@ -1,6 +1,6 @@
 import { useAuthStore } from '@/store/authStore';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
 
 /**
  * 백엔드 서버에 토큰을 포함하여 요청을 보내는 공통 함수
