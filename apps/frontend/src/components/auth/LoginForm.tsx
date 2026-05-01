@@ -32,7 +32,7 @@ export const LoginForm = () => {
           setLoading(false);
           return;
         }
-        const { data, error } = await signupWithEmail(email, password, nickname, signupRole);
+        const { data, error } = await signupWithEmail(email, password, nickname, signupRole.toUpperCase());
         if (error) {
           console.error('Supabase signup error:', error);
           alert(`회원가입 실패: ${error.message}`);
@@ -51,23 +51,35 @@ export const LoginForm = () => {
           const token = data.session.access_token;
           console.log('로그인 성공! JWT 토큰 획득:', token);
           
-          // 전역 상태에 유저 및 토큰 저장
+          // 먼저 토큰을 스토어에 저장해야 fetchWithAuth가 토큰을 사용할 수 있습니다.
           setAuth({
             id: data.session.user.id,
             email: data.session.user.email,
-            role: activeTab, // 현재 선택된 탭을 역할로 저장
+            role: 'student', // 임시 저장
           }, token);
 
-          // 백엔드 연동 테스트 (선택 사항)
+          // 백엔드 연동: /profile 호출하여 실제 권한 받아오기
           try {
             const profile = await fetchWithAuth('/profile');
-            console.log('백엔드 연동 테스트 성공 (프로필 정보):', profile);
+            console.log('백엔드 프로필 정보 획득:', profile);
+            
+            // 서버에서 넘어온 role 값 (예: "TEACHER", "STUDENT")
+            const serverRole = profile.user?.role;
+            const finalRole = serverRole === 'TEACHER' ? 'teacher' : 'student';
+
+            // 정확한 권한으로 전역 상태 다시 업데이트
+            setAuth({
+              id: data.session.user.id,
+              email: data.session.user.email,
+              role: finalRole,
+            }, token);
+
+            // 로그인 성공 시 역할에 맞는 홈으로 리다이렉트
+            router.push(finalRole === 'teacher' ? '/t/home' : '/s/home');
           } catch (apiErr) {
             console.error('백엔드 연동 테스트 실패:', apiErr);
+            alert('사용자 정보를 불러오는데 실패했습니다.');
           }
-
-          // 로그인 성공 시 역할에 맞는 홈으로 리다이렉트
-          router.push(activeTab === 'teacher' ? '/t/home' : '/s/home');
         }
       }
     } catch (err) {

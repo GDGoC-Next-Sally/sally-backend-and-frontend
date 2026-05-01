@@ -6,7 +6,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
-import { user_role as UserRole } from '@prisma/client';
+import { user_role as UserRole } from '.prisma/client';
 
 @ApiTags('classes')
 @ApiBearerAuth()
