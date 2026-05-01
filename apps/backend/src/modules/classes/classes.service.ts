@@ -50,7 +50,8 @@ export class ClassesService {
 
     return this.prisma.classes.update({
       where: { id: classId },
-      data: { invite_code: newInviteCode }
+      data: { invite_code: newInviteCode },
+      select: { id: true, invite_code: true }
     });
   }
 
