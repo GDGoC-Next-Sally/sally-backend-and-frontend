@@ -63,19 +63,24 @@ export const LoginForm = () => {
             const profile = await fetchWithAuth('/auth/profile');
             console.log('백엔드 프로필 정보 획득:', profile);
             
-            // 서버에서 넘어온 role 값 (예: "TEACHER", "STUDENT")
-            const serverRole = profile?.role;
-            const finalRole = serverRole === 'TEACHER' ? 'teacher' : 'student';
-
-            // 정확한 권한으로 전역 상태 다시 업데이트
+            // 서버에서 넘어온 실제 역할 (예: "ADMIN", "TEACHER", "STUDENT")
+            const serverRole = profile?.role; 
+            
+            // 1. 전역 상태(Store)에는 서버에서 준 "진짜 권한"을 저장합니다.
             setAuth({
               id: data.session.user.id,
               email: data.session.user.email,
-              role: finalRole,
+              role: serverRole?.toLowerCase() || 'student',
             }, token);
 
-            // 로그인 성공 시 역할에 맞는 홈으로 리다이렉트
-            router.push(finalRole === 'teacher' ? '/t/home' : '/s/home');
+            // 2. 역할에 맞는 홈으로 리다이렉트 (관리자는 선택한 탭에 따라 이동)
+            if (serverRole === 'ADMIN') {
+              router.push(activeTab === 'teacher' ? '/t/home' : '/s/home');
+            } else if (serverRole === 'TEACHER') {
+              router.push('/t/home');
+            } else {
+              router.push('/s/home');
+            }
           } catch (apiErr) {
             console.error('백엔드 연동 테스트 실패:', apiErr);
             alert('사용자 정보를 불러오는데 실패했습니다.');
