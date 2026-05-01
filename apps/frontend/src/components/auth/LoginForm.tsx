@@ -58,13 +58,13 @@ export const LoginForm = () => {
             role: 'student', // 임시 저장
           }, token);
 
-          // 백엔드 연동: /profile 호출하여 실제 권한 받아오기
+          // 백엔드 연동: /auth/profile 호출하여 실제 권한 받아오기
           try {
-            const profile = await fetchWithAuth('/profile');
+            const profile = await fetchWithAuth('/auth/profile');
             console.log('백엔드 프로필 정보 획득:', profile);
             
             // 서버에서 넘어온 role 값 (예: "TEACHER", "STUDENT")
-            const serverRole = profile.user?.role;
+            const serverRole = profile?.role;
             const finalRole = serverRole === 'TEACHER' ? 'teacher' : 'student';
 
             // 정확한 권한으로 전역 상태 다시 업데이트
