@@ -63,40 +63,17 @@ export const LoginForm = () => {
             const profile = await fetchWithAuth('/auth/profile');
             console.log('백엔드 프로필 정보 획득:', profile);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-            // 서버에서 넘어온 실제 역할 (예: "ADMIN", "TEACHER", "STUDENT")
-            const serverRole = profile?.role;
-
-            // 1. 전역 상태(Store)에는 서버에서 준 "진짜 권한"을 저장합니다.
-            setAuth({
-              id: data.session.user.id,
-              email: data.session.user.email,
-              role: serverRole?.toLowerCase() || 'student',
-=======
             // 서버에서 넘어온 정보 (예: { userId, email, name, role })
-            const serverRole = profile.role;
-            const serverName = profile.name;
-            const finalRole = serverRole === 'TEACHER' ? 'teacher' : 'student';
-
-            // 정확한 권한과 닉네임으로 전역 상태 다시 업데이트
+            const serverRole = profile?.role;
+            const serverName = profile?.name;
+            const finalRole = serverRole === 'TEACHER' ? 'teacher' : (serverRole === 'ADMIN' ? activeTab : 'student');
+            
+            // 전역 상태 업데이트 (이름과 서버 권한 반영)
             setAuth({
               id: data.session.user.id,
               email: data.session.user.email,
               name: serverName,
               role: finalRole,
->>>>>>> ba21c68 (상단 네비게이션 바 사용자 로그인 정보 연동)
-=======
-            // 서버에서 넘어온 role 값 (예: "TEACHER", "STUDENT")
-            const serverRole = profile?.role;
-            const finalRole = serverRole === 'TEACHER' ? 'teacher' : 'student';
-
-            // 정확한 권한으로 전역 상태 다시 업데이트
-            setAuth({
-              id: data.session.user.id,
-              email: data.session.user.email,
-              role: finalRole,
->>>>>>> be97c4b95dff94733c89fb4b1c56017f56442fd8
             }, token);
 
             // 2. 역할에 맞는 홈으로 리다이렉트 (관리자는 선택한 탭에 따라 이동)
