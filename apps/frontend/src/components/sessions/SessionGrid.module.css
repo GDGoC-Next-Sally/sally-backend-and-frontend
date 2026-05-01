@@ -1,56 +1,87 @@
-.container {
-  display: flex;
-  padding: 24px;
-  background-color: #f8f9fa;
-  min-height: calc(100vh - 60px);
-  gap: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-}
-
 .mainContent {
   flex: 1;
   background-color: #ffffff;
-  border-radius: 12px;
-  padding: 32px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  border-radius: 14px;
+  padding: 32px 36px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #212529;
-}
-
-.btnPrimary {
-  background-color: #20c997;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
+/* Back link */
+.backLink {
+  background: none;
   border: none;
+  color: #868e96;
+  font-size: 13px;
   cursor: pointer;
+  padding: 0;
+  margin-bottom: 14px;
+  text-align: left;
 }
 
-.btnPrimary:hover {
-  background-color: #1aab82;
+.backLink:hover {
+  color: #495057;
 }
 
+/* Class header */
+.classHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.classTitle {
+  font-size: 24px;
+  font-weight: 800;
+  color: #212529;
+  margin: 0;
+}
+
+.tag {
+  background-color: #f1f3f5;
+  color: #495057;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #f1f3f5;
+  margin-bottom: 20px;
+}
+
+.tab {
+  background: none;
+  border: none;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #868e96;
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  margin-bottom: -2px;
+}
+
+.tabActive {
+  color: #20c997;
+  font-weight: 700;
+  border-bottom-color: #20c997;
+}
+
+/* Filter bar */
 .filterBar {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 24px;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 12px;
 }
 
 .searchBox {
@@ -58,13 +89,14 @@
   align-items: center;
   border: 1px solid #dee2e6;
   border-radius: 8px;
-  padding: 8px 16px;
-  width: 300px;
+  padding: 8px 14px;
+  width: 260px;
 }
 
 .searchIcon {
   color: #adb5bd;
   margin-right: 8px;
+  flex-shrink: 0;
 }
 
 .searchInput {
@@ -72,6 +104,7 @@
   outline: none;
   width: 100%;
   font-size: 14px;
+  color: #343a40;
 }
 
 .searchInput::placeholder {
@@ -79,7 +112,7 @@
 }
 
 .sortSelect {
-  padding: 8px 16px;
+  padding: 8px 14px;
   border: 1px solid #dee2e6;
   border-radius: 8px;
   font-size: 14px;
@@ -89,124 +122,197 @@
   outline: none;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 20px;
-}
-
-/* Card Styles */
-.card {
-  border: 1px solid #f1f3f5;
-  border-radius: 12px;
-  padding: 20px;
+/* Session list */
+.sessionList {
   display: flex;
   flex-direction: column;
-  position: relative;
-  transition: transform 0.2s, box-shadow 0.2s;
-  cursor: pointer;
+  flex: 1;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-}
-
-.cardActive {
-  background-color: #20c997;
-  color: white;
-  border-color: #20c997;
-}
-
-.cardActive .timeText, .cardActive .weekText, .cardActive .cardTitle {
-  color: white;
-}
-
-.cardActive .bottomBtnActive {
-  background-color: white;
-  color: #20c997;
-}
-
-.starIcon {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  color: white;
-}
-
-.cardTop {
+.sessionRow {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 24px;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #f1f3f5;
+  cursor: pointer;
+  transition: background-color 0.1s;
+  border-radius: 6px;
+  padding-left: 8px;
 }
 
-.badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 11px;
+.sessionRow:hover {
+  background-color: #f8f9fa;
+}
+
+/* Session icon */
+.sessionIcon {
+  width: 40px;
+  height: 40px;
+  background-color: #e6fcf5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Session title + subject */
+.sessionInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.sessionTitle {
+  font-size: 14px;
   font-weight: 700;
+  color: #212529;
+  margin-bottom: 2px;
+}
+
+.sessionSubject {
+  font-size: 12px;
+  color: #adb5bd;
+}
+
+/* Meta: student count */
+.sessionMeta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: #868e96;
+  white-space: nowrap;
+}
+
+/* Time */
+.sessionTime {
+  font-size: 13px;
+  color: #868e96;
+  white-space: nowrap;
+  width: 70px;
+  text-align: right;
+}
+
+/* Status badges */
+.badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .badgeActive {
-  background-color: white;
+  background-color: #e6fcf5;
   color: #20c997;
 }
 
 .badgePending {
-  background-color: #f8f9fa;
-  color: #adb5bd;
+  background-color: #fff4e6;
+  color: #ff922b;
 }
 
 .badgeClosed {
-  background-color: #ffe3e3;
-  color: #fa5252;
+  background-color: #fff0f6;
+  color: #f06595;
 }
 
-.timeText {
-  font-size: 12px;
-  color: #adb5bd;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+/* Three-dot menu */
+.menuContainer {
+  position: relative;
 }
 
-.weekText {
-  font-size: 13px;
-  font-weight: 600;
-  color: #495057;
-  margin-bottom: 4px;
-}
-
-.cardTitle {
-  font-size: 20px;
-  font-weight: 700;
-  color: #212529;
-  margin-bottom: 32px;
-}
-
-.bottomBtn {
-  width: 100%;
-  padding: 12px;
+.moreBtn {
+  background: none;
   border: none;
-  border-radius: 8px;
+  color: #adb5bd;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  line-height: 0;
+}
+
+.moreBtn:hover {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.dropdownMenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background-color: white;
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  padding: 6px 0;
+  min-width: 130px;
+  z-index: 50;
+}
+
+.menuItem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 9px 16px;
+  background: none;
+  border: none;
   font-size: 13px;
-  font-weight: 600;
-  text-align: center;
-  background-color: #e6fcf5;
-  color: #20c997;
+  color: #343a40;
   cursor: pointer;
 }
 
-.bottomBtnActive {
-  background-color: white;
-  color: #20c997;
+.menuItem:hover {
+  background-color: #f8f9fa;
 }
 
-/* For links replacing buttons to enable navigation */
-.cardLink {
-  text-decoration: none;
-  color: inherit;
-  display: block;
-  height: 100%;
+.menuItemDanger {
+  color: #fa5252;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 28px;
+}
+
+.pageBtn {
+  background: none;
+  border: none;
+  color: #adb5bd;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 8px;
+}
+
+.pageBtn:hover {
+  color: #495057;
+}
+
+.pageNumber {
+  background: none;
+  border: none;
+  color: #495057;
+  cursor: pointer;
+  font-size: 14px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+.pageNumber:hover {
+  background-color: #f1f3f5;
+}
+
+.pageActive {
+  font-weight: 700;
+  color: #212529;
+  background-color: #f1f3f5;
 }

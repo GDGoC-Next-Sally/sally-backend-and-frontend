@@ -2,8 +2,8 @@
   display: flex;
   gap: 24px;
   padding: 24px;
-  background-color: #f8f9fa;
-  min-height: calc(100vh - 60px);
+  background-color: #F5F4F0;
+  min-height: calc(100vh - 56px);
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
@@ -11,19 +11,19 @@
 
 .leftSidebar {
   width: 280px;
-  background-color: #ffffff;
+  background-color: #FFFFFF;
   border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   display: flex;
   flex-direction: column;
   gap: 32px;
 }
 
 .sectionTitle {
-  font-size: 13px;
-  font-weight: 700;
-  color: #868e96;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6B6B6B;
   margin-bottom: 16px;
 }
 
@@ -43,7 +43,7 @@
 }
 
 .studentItemActive {
-  background-color: #e6fcf5;
+  background-color: #FDF0ED;
 }
 
 .studentInfo {
@@ -55,8 +55,8 @@
 .avatar {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  background-color: #ced4da;
+  border-radius: 9999px;
+  background-color: #D0CEC8;
 }
 
 .nameBlock {
@@ -67,19 +67,19 @@
 .name {
   font-size: 14px;
   font-weight: 700;
-  color: #212529;
+  color: #1A1A1A;
 }
 
 .subName {
-  font-size: 11px;
-  color: #868e96;
+  font-size: 10px;
+  color: #6B6B6B;
 }
 
 .statusDot {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
-  background-color: #20c997;
+  border-radius: 9999px;
+  background-color: #22C55E;
 }
 
 .unitList {
@@ -97,31 +97,31 @@
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  color: #495057;
+  color: #6B6B6B;
 }
 
 .unitItemActive {
-  background-color: #e6fcf5;
-  color: #20c997;
+  background-color: #FDF0ED;
+  color: #E8593C;
 }
 
 .unitDot {
   width: 16px;
   height: 16px;
-  border-radius: 50%;
-  background-color: #ced4da;
+  border-radius: 9999px;
+  background-color: #D0CEC8;
 }
 
 .unitDotActive {
-  background-color: #20c997;
+  background-color: #E8593C;
 }
 
 .chatArea {
   flex: 1;
-  background-color: #ffffff;
+  background-color: #FFFFFF;
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   display: flex;
   flex-direction: column;
 }
@@ -132,7 +132,7 @@
   align-items: flex-start;
   margin-bottom: 24px;
   padding-bottom: 24px;
-  border-bottom: 1px solid #f1f3f5;
+  border-bottom: 1px solid #EBEBEA;
 }
 
 .chatTitleBlock {
@@ -144,44 +144,45 @@
 .chatAvatar {
   width: 48px;
   height: 48px;
-  border-radius: 50%;
-  background-color: #ced4da;
+  border-radius: 9999px;
+  background-color: #D0CEC8;
 }
 
 .chatTitle {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
-  color: #212529;
+  color: #1A1A1A;
   margin-bottom: 4px;
+  line-height: 1.4;
 }
 
 .chatSub {
   font-size: 14px;
-  color: #868e96;
+  color: #6B6B6B;
 }
 
 .statusBar {
   display: flex;
   align-items: center;
   gap: 12px;
-  background-color: #f8f9fa;
-  border: 1px solid #f1f3f5;
+  background-color: #F5F4F0;
+  border: 1px solid #EBEBEA;
   padding: 8px 16px;
   border-radius: 8px;
   width: 400px;
 }
 
 .statusLabel {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: #868e96;
+  color: #6B6B6B;
   white-space: nowrap;
 }
 
 .progressTrack {
   flex: 1;
   height: 6px;
-  background-color: #dee2e6;
+  background-color: #E0DED8;
   border-radius: 3px;
   overflow: hidden;
 }
@@ -189,13 +190,13 @@
 .progressFill {
   width: 72%;
   height: 100%;
-  background-color: #20c997;
+  background-color: #22C55E;
 }
 
 .statusValue {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  color: #20c997;
+  color: #22C55E;
   white-space: nowrap;
 }
 
@@ -219,8 +220,8 @@
 .messageAvatar {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background-color: #ced4da;
+  border-radius: 9999px;
+  background-color: #D0CEC8;
   flex-shrink: 0;
 }
 
@@ -233,12 +234,12 @@
 
 .bubbleLeft {
   background-color: white;
-  border: 1px solid #dee2e6;
+  border: 1px solid #E0DED8;
   border-top-left-radius: 0;
 }
 
 .bubbleRight {
   background-color: white;
-  border: 1px solid #dee2e6;
+  border: 1px solid #E0DED8;
   border-top-right-radius: 0;
 }
