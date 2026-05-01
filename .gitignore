@@ -6,6 +6,16 @@ out/
 build/
 *.tsbuildinfo
 
+# --- [ Python ] ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+ENV/
+env/
+
 # --- [ Environment Variables (CRITICAL!) ] ---
 # 비밀번호, API 키 등이 들어있는 파일은 절대 올라가면 안 됩니다.
 .env
@@ -33,3 +43,10 @@ pnpm-lock.yaml  # (선택) 팀 협업 시에는 올리는 것이 권장되지만
 *.njsproj
 *.sln
 *.sw?
+
+# --- [ Logs ] ---
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

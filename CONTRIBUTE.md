@@ -12,7 +12,7 @@
 | **PM** | [@aground5](https://github.com/aground5) | 일정 관리 · 이슈 디스패치 · 통합 조율 |
 | **Frontend** | [@euichanlee0608-svg](https://github.com/euichanlee0608-svg) | `apps/frontend` (Next.js · UI · 상태/소켓) |
 | **Backend** | [@haimin13](https://github.com/haimin13) | `apps/backend` (NestJS · Prisma · Socket Gateway · Redis Publisher) |
-| **AI** | [@delaykimm](https://github.com/delaykimm) | `apps/ai-server` *(예정)* (Redis Subscriber · Claude API) |
+| **AI** | [@delaykimm](https://github.com/delaykimm) | `apps/ai_server` (FastAPI · OpenRouter API · Redis Subscriber) |
 
 ---
 
@@ -59,7 +59,9 @@ sally-backend-and-frontend/
 │   │   └── src/
 │   │       ├── app/
 │   │       │   ├── (auth)/         # 로그인/회원가입 라우트 그룹
-│   │       │   └── classes/        # 클래스 관련 페이지
+│   │       │   ├── t/home/         # 교사 홈 (T0)
+│   │       │   ├── s/home/         # 학생 홈 (S0)
+│   │       │   └── classes/        # 클래스 관련 페이지 (T1, T2)
 │   │       ├── components/
 │   │       │   ├── auth/           # 인증 컴포넌트
 │   │       │   ├── classes/        # T1, T2 관련
@@ -68,17 +70,24 @@ sally-backend-and-frontend/
 │   │       │   ├── students/       # T4.2, S2 관련
 │   │       │   ├── layout/
 │   │       │   └── icons/
-│   │       └── lib/
-│   └── backend/            # NestJS 11
-│       ├── src/
-│       │   ├── modules/
-│       │   │   └── auth/           # Passport JWT (ES256/JWKS)
-│       │   └── providers/
-│       │       └── supabase/       # Supabase 클라이언트
-│       └── prisma/
-│           └── schema.prisma       # ⚠️ 모델 정의 필요
-│
-├── apps/ai-server/         # ⚠️ 미생성 — AI 트랙에서 추가 예정
+│   │       ├── lib/                # API 유틸 (api.ts)
+│   │       └── store/              # Zustand 스토어 (authStore.ts)
+│   ├── backend/            # NestJS 11
+│   │   ├── src/
+│   │   │   ├── modules/
+│   │   │   │   ├── auth/           # Passport JWT (ES256/JWKS)
+│   │   │   │   └── classes/        # 클래스 CRUD (T1)
+│   │   │   └── providers/
+│   │   │       └── supabase/       # Supabase 클라이언트
+│   │   └── prisma/
+│   │       └── schema.prisma       # Supabase 테이블 동기화 완료
+│   └── ai_server/          # FastAPI (Python 3.11)
+│       ├── main.py
+│       ├── models.py
+│       ├── routers/
+│       ├── services/
+│       ├── requirements.txt
+│       └── .env.example            # OPENROUTER_API_KEY
 │
 ├── packages/               # 공유 패키지 (필요 시)
 ├── docker-compose.yml      # Redis 로컬 컨테이너
@@ -101,32 +110,50 @@ IA 모듈 ID와 디렉토리를 1:1 매핑하지 않습니다. 의미 단위(`cl
 | React | `19.2.4` | UI |
 | Tailwind CSS | `^4` | 스타일링 |
 | Supabase JS | `^2.105.0` | 인증 클라이언트 |
+| Zustand | 설치 완료 | 전역 상태 관리 (`store/authStore.ts`) |
 | TypeScript | `^5` | 언어 |
 | ESLint | `^9` | 린트 |
 
-> 📦 **추가 설치 예정** (작업 시작 시 본인이 PR로 추가)
-> - **Zustand** — 전역 상태 관리 (`pnpm --filter frontend add zustand`)
+> 📦 **추가 설치 예정**
 > - **Socket.io-client** — 실시간 통신 (`pnpm --filter frontend add socket.io-client`)
 
 ### Backend (`apps/backend`)
 | 기술 | 버전 | 용도 |
 |------|------|------|
 | NestJS | `^11.0.1` | 프레임워크 |
-| Prisma | `^7.8.0` | ORM |
+| Prisma | `^7.8.0` + `@prisma/adapter-pg` | ORM (pg 어댑터로 호이스팅 오류 해결) |
 | Passport | `^0.7.0` + `passport-jwt` | 인증 |
 | `jwks-rsa` | `^4.0.1` | Supabase JWT 검증 (ES256) |
 | Supabase JS | `^2.105.0` | Auth/DB/Storage |
+| `@nestjs/swagger` | `^11.4.2` | API 문서 (Swagger UI) |
 | Jest | `^30` | 테스트 |
 
 > 📦 **추가 설치 예정**
 > - **Socket.io** — `@nestjs/websockets`, `@nestjs/platform-socket.io`
 > - **Redis 클라이언트** — `ioredis` 또는 `@nestjs-modules/ioredis`
 
-### AI Server (`apps/ai-server`) *— 미생성*
-- Redis Subscriber + Publisher
-- Claude API 연동
-- Prisma 또는 Supabase JS 직접 사용 (DB 접근)
-- 언어: Node.js/TypeScript 권장 (모노레포 통일성)
+### AI Server (`apps/ai_server`)
+| 기술 | 버전 | 용도 |
+|------|------|------|
+| Python | `3.11` | 언어 |
+| FastAPI | 최신 | 웹 프레임워크 |
+| Uvicorn | 최신 | ASGI 서버 |
+| OpenRouter API | — | LLM 호출 (`OPENROUTER_API_KEY`) |
+| python-dotenv | 최신 | 환경 변수 관리 |
+
+> 📦 **추가 예정**
+> - **Redis 클라이언트** — `redis-py` (Pub/Sub 연동)
+
+환경 변수: `apps/ai_server/.env` 생성 후 `OPENROUTER_API_KEY` 입력
+
+```bash
+# AI 서버 실행
+cd apps/ai_server
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
 
 ### Infra
 - **Supabase**: PostgreSQL · Auth · Storage
@@ -157,10 +184,9 @@ pnpm docker
 #    apps/frontend/.env.local
 #    상세 항목은 README.md 참고
 
-# 4. Prisma 스키마 적용 (BE 트랙 작업 시작 후)
+# 4. Prisma Client 생성
 cd apps/backend
 pnpm prisma generate
-pnpm prisma migrate dev
 
 # 5. 전체 dev 서버 동시 실행 (FE + BE)
 pnpm dev
@@ -170,6 +196,11 @@ pnpm dev
 ```bash
 pnpm --filter frontend dev   # FE만
 pnpm --filter backend dev    # BE만
+
+# AI 서버 (별도 터미널)
+cd apps/ai_server
+source .venv/bin/activate
+uvicorn main:app --reload
 ```
 
 ---

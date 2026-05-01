@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -29,8 +29,10 @@ model chat_messages {
 model classes {
   id           Int          @id @default(autoincrement())
   teacher_id   String       @db.Uuid
-  status       class_status @default(PLANNING)
-  grade        Int
+  invite_code  String       @unique @db.VarChar(10)
+  registerable Boolean      @default(true)
+  status       class_status @default(ACTIVE)
+  grade        Int?         @default(1)
   homeroom     String?      @db.VarChar(50)
   subject      String       @db.VarChar(100)
   explanation  String?
