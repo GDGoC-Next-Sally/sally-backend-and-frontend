@@ -1,0 +1,239 @@
+.container {
+  background-color: #F5F4F0;
+  min-height: calc(100vh - 56px);
+  padding: 24px;
+}
+
+.layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 20px;
+  background: white;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  align-items: start;
+}
+
+.leftPanel {
+  min-width: 0;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1A1A1A;
+  margin: 0;
+}
+
+.newBtn {
+  background: #22C55E;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.newBtn:hover { background: #16A34A; }
+
+/* Filter bar */
+.filterBar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.searchBox {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: #6B6B6B;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 9px 12px 9px 36px;
+  border: 1px solid #E0DED8;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1A1A1A;
+  background: #F5F4F0;
+  outline: none;
+}
+
+.searchInput:focus {
+  border-color: #22C55E;
+  background: white;
+}
+
+.searchInput::placeholder { color: #6B6B6B; }
+
+.sortSelect {
+  padding: 9px 32px 9px 12px;
+  border: 1px solid #E0DED8;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1A1A1A;
+  background: white;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B6B6B' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+/* Card grid */
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  border: 1.5px solid #E0DED8;
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.card:hover { border-color: #22C55E; }
+
+.cardSelected {
+  background: #22C55E;
+  border-color: #22C55E;
+}
+
+.cardTopRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.statusDotRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #D0CEC8;
+}
+
+.dotActive { background: #22C55E; }
+.dotPlanning { background: #F59E0B; }
+.dotDone { background: #D0CEC8; }
+
+.cardTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1A1A1A;
+  margin-bottom: 4px;
+}
+
+.cardTitleSelected { color: white; }
+
+.cardTeacher {
+  font-size: 13px;
+  color: #6B6B6B;
+  margin-bottom: 16px;
+}
+
+.cardTeacherSelected { color: rgba(255, 255, 255, 0.85); }
+
+.moveBtn {
+  width: 100%;
+  background: white;
+  border: 1px solid #E0DED8;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #6B6B6B;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+
+.moveBtn:hover { border-color: #22C55E; color: #22C55E; }
+
+.moveBtnSelected {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: white;
+}
+
+.moveBtnSelected:hover {
+  background: rgba(255, 255, 255, 0.35);
+  color: white;
+}
+
+.empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px 0;
+  color: #6B6B6B;
+  font-size: 14px;
+}
+
+/* Right sidebar */
+.rightPanel {
+  border-left: 1px solid #EBEBEA;
+  padding-left: 20px;
+}
+
+.sidebarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sidebarTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1A1A1A;
+}
+
+.sidebarCount {
+  color: #E8593C;
+  font-size: 16px;
+  margin-left: 4px;
+}
+
+.refreshBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6B6B6B;
+  padding: 4px;
+  line-height: 0;
+}
+
+.refreshBtn:hover { color: #1A1A1A; }

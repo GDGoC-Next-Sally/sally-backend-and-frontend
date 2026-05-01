@@ -1,0 +1,317 @@
+.container {
+  background-color: #F5F4F0;
+  min-height: calc(100vh - 56px);
+  padding: 24px;
+}
+
+.layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+}
+
+.leftCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rightCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.topRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.card {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1A1A1A;
+}
+
+.moreBtn {
+  font-size: 12px;
+  color: #6B6B6B;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.moreBtn:hover { color: #1A1A1A; }
+
+/* Notice */
+.noticeItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.noticeText {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.noticeDate {
+  font-size: 11px;
+  color: #6B6B6B;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+
+.noticeSub {
+  font-size: 12px;
+  color: #6B6B6B;
+  margin: 0;
+}
+
+/* Progress */
+.progressRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progressValue {
+  font-size: 36px;
+  font-weight: 700;
+  color: #1A1A1A;
+  line-height: 1;
+}
+
+.pct { font-size: 20px; }
+
+.progressDelta {
+  font-size: 12px;
+  color: #6B6B6B;
+  margin-top: 6px;
+}
+
+.up {
+  color: #22C55E;
+  font-weight: 600;
+}
+
+/* AI feedback */
+.feedbackSub {
+  font-size: 13px;
+  color: #6B6B6B;
+  margin: 0;
+}
+
+/* Shortcuts */
+.shortcutGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.shortcutItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s;
+  text-align: center;
+}
+
+.shortcutItem:hover { background: #F5F4F0; }
+
+.shortcutPlaceholder { cursor: default; }
+.shortcutPlaceholder:hover { background: none; }
+
+.shortcutIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: #D0CEC8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.shortcutLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1A1A1A;
+  word-break: keep-all;
+}
+
+.shortcutSub {
+  font-size: 11px;
+  color: #6B6B6B;
+  word-break: keep-all;
+}
+
+/* Today's class */
+.dateLabel {
+  font-size: 12px;
+  color: #6B6B6B;
+}
+
+.todaySub {
+  font-size: 12px;
+  color: #6B6B6B;
+  margin-bottom: 12px;
+}
+
+.liveCard {
+  background: #22C55E;
+  border-radius: 10px;
+  padding: 16px;
+  color: white;
+}
+
+.liveBadgeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.liveBadge {
+  background: white;
+  color: #22C55E;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1.4;
+}
+
+.liveSubLabel {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.liveTitle {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.liveMeta {
+  font-size: 12px;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  opacity: 0.9;
+}
+
+.joinBtn {
+  width: 100%;
+  background: white;
+  color: #22C55E;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.joinBtn:hover { opacity: 0.9; }
+
+.motivationText {
+  font-size: 12px;
+  color: #6B6B6B;
+  margin-top: 12px;
+  text-align: center;
+}
+
+/* Recent sessions */
+.recentList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.recentItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.recentAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #D0CEC8;
+  flex-shrink: 0;
+}
+
+.recentInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.recentTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.recentTeacher {
+  font-size: 11px;
+  color: #6B6B6B;
+}
+
+.recentBadge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.badge_live { background: #F0FBF4; color: #22C55E; }
+.badge_wait { background: #FEF9EC; color: #F59E0B; }
+.badge_done { background: #F5F4F0; color: #6B6B6B; }
+
+.viewAllBtn {
+  width: 100%;
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #6B6B6B;
+  cursor: pointer;
+  padding: 10px 0 0;
+  text-align: center;
+}
+
+.viewAllBtn:hover { color: #1A1A1A; }

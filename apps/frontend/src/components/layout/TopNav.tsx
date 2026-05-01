@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { HomeIcon } from '../icons/HomeIcon';
 import { BookIcon } from '../icons/BookIcon';
 import { GridIcon } from '../icons/GridIcon';
@@ -11,20 +11,31 @@ import { useAuthStore } from '@/store/authStore';
 
 export const TopNav = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const user = useAuthStore((state) => state.user);
 
   // 닉네임과 직함 설정
   const displayName = user?.name || '사용자';
   const roleTitle = user?.role === 'teacher' ? '선생님' : '학생';
 
+  const homeHref =
+    user?.role === 'teacher' ? '/classes' :
+    user?.role === 'student' ? '/s/home' :
+    '/';
+
+  const isHomePage =
+    pathname === '/' ||
+    pathname === '/classes' ||
+    pathname === '/s/home';
+
   return (
     <nav className={styles.nav}>
       <div className={styles.logoPlaceholder}></div>
 
       <div className={styles.centerIcons}>
-        <Link href="/" className={`${styles.iconWrapper} ${pathname === '/' ? styles.activeIcon : ''}`}>
+        <Link href={homeHref} className={`${styles.iconWrapper} ${isHomePage ? styles.activeIcon : ''}`}>
           <HomeIcon className="w-6 h-6" />
-          {pathname === '/' && <span className={styles.tooltip}>홈</span>}
+          {isHomePage && <span className={styles.tooltip}>홈</span>}
         </Link>
         <div className={styles.iconWrapper}>
           <BookIcon className="w-6 h-6" />
