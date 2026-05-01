@@ -7,9 +7,15 @@ import { HomeIcon } from '../icons/HomeIcon';
 import { BookIcon } from '../icons/BookIcon';
 import { GridIcon } from '../icons/GridIcon';
 import styles from './TopNav.module.css';
+import { useAuthStore } from '@/store/authStore';
 
 export const TopNav = () => {
   const pathname = usePathname();
+  const user = useAuthStore((state) => state.user);
+
+  // 닉네임과 직함 설정
+  const displayName = user?.name || '사용자';
+  const roleTitle = user?.role === 'teacher' ? '선생님' : '학생';
 
   return (
     <nav className={styles.nav}>
@@ -32,7 +38,7 @@ export const TopNav = () => {
         <div className={styles.avatar}>
           {/* Using a simple div instead of user icon for exact look from design if needed, but user avatar icon is good */}
         </div>
-        <span className={styles.userName}>김샐리 선생님</span>
+        <span className={styles.userName}>{displayName} {roleTitle}</span>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={styles.dropdownArrow}>
           <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
         </svg>

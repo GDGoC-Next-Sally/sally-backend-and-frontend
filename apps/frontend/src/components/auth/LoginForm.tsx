@@ -63,14 +63,16 @@ export const LoginForm = () => {
             const profile = await fetchWithAuth('/auth/profile');
             console.log('백엔드 프로필 정보 획득:', profile);
             
-            // 서버에서 넘어온 role 값 (예: "TEACHER", "STUDENT")
-            const serverRole = profile?.role;
+            // 서버에서 넘어온 정보 (예: { userId, email, name, role })
+            const serverRole = profile.role;
+            const serverName = profile.name;
             const finalRole = serverRole === 'TEACHER' ? 'teacher' : 'student';
-
-            // 정확한 권한으로 전역 상태 다시 업데이트
+            
+            // 정확한 권한과 닉네임으로 전역 상태 다시 업데이트
             setAuth({
               id: data.session.user.id,
               email: data.session.user.email,
+              name: serverName,
               role: finalRole,
             }, token);
 
