@@ -64,6 +64,7 @@ export const LoginForm = () => {
             console.log('백엔드 프로필 정보 획득:', profile);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
             // 서버에서 넘어온 실제 역할 (예: "ADMIN", "TEACHER", "STUDENT")
             const serverRole = profile?.role;
 
@@ -85,6 +86,17 @@ export const LoginForm = () => {
               name: serverName,
               role: finalRole,
 >>>>>>> ba21c68 (상단 네비게이션 바 사용자 로그인 정보 연동)
+=======
+            // 서버에서 넘어온 role 값 (예: "TEACHER", "STUDENT")
+            const serverRole = profile?.role;
+            const finalRole = serverRole === 'TEACHER' ? 'teacher' : 'student';
+
+            // 정확한 권한으로 전역 상태 다시 업데이트
+            setAuth({
+              id: data.session.user.id,
+              email: data.session.user.email,
+              role: finalRole,
+>>>>>>> be97c4b95dff94733c89fb4b1c56017f56442fd8
             }, token);
 
             // 2. 역할에 맞는 홈으로 리다이렉트 (관리자는 선택한 탭에 따라 이동)
