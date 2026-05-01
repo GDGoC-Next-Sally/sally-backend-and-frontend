@@ -16,21 +16,17 @@ from ai_server.services.prompt_builder import build_teacher_system_prompt
 env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-MODEL = "google/gemma-3-27b-it:free"
+MODEL = "google/gemma-4-31b-it"
 
 
 def _get_client() -> AsyncOpenAI:
     """API Key를 런타임에 읽어서 클라이언트를 생성합니다 (lazy init)."""
-    api_key = os.getenv("OPENROUTER_API_KEY")
+    api_key = os.getenv("NVIDIA_API_KEY")
     if not api_key:
-        raise RuntimeError(".env 파일에 OPENROUTER_API_KEY가 설정되어 있지 않습니다.")
+        raise RuntimeError(".env 파일에 NVIDIA_API_KEY가 설정되어 있지 않습니다.")
     return AsyncOpenAI(
-        base_url="https://openrouter.ai/api/v1",
+        base_url="https://integrate.api.nvidia.com/v1",
         api_key=api_key,
-        default_headers={
-            "HTTP-Referer": "http://localhost:8000",
-            "X-Title": "Sally-AI",
-        }
     )
 
 
