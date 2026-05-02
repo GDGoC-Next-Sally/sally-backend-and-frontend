@@ -10,7 +10,7 @@ from ai_server.services.storage_client import upload_report
 from ai_server.services.db_client import (
     get_dialog,
     mark_dialog_analyzed,
-    save_report_file_url,
+    save_student_report,
 )
 
 router = APIRouter()
@@ -73,9 +73,9 @@ async def end_session(request: EndSessionRequest):
 
     대화가 완전히 종료되었을 때 NestJS 백엔드가 호출합니다.
     누적된 teacher_summary 목록을 분석하여 FinalReport를 생성한 뒤:
-      1. Supabase Storage에 JSON 파일로 업로드
-      2. supplementary_data 테이블에 파일 URL 저장
-      3. dialogs 테이블의 is_analyzed 플래그를 true로 업데이트
+      1. student_reports 테이블의 content 컬럼에 JSON 데이터를 직접 삽입합니다.
+      2. dialogs 테이블의 is_analyzed 플래그를 true로 업데이트합니다.
+      (※ Supabase Storage 파일 업로드 방식은 사용 중지됨)
 
     요청(Request):
         - session_id: 수업 세션 ID (int)
@@ -102,28 +102,8 @@ async def end_session(request: EndSessionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"리포트 생성 실패: {str(e)}")
 
-    # ── Step 2: Supabase Storage에 JSON 파일 업로드 ──────────────────────────
-    report_url: str = ""
-    try:
-        report_url = await upload_report(report)
-    except Exception as e:
-        # Storage 업로드 실패해도 리포트 자체는 반환 (비치명적 오류)
-        print(f"[WARN] Storage 업로드 실패 (리포트는 정상 반환): {e}")
-
-    # ── Step 3: supplementary_data 테이블에 파일 URL 저장 ───────────────────
-    if report_url and request.student_id:
-        try:
-            student_part = request.student_id.replace("-", "")
-            file_name = f"report_{request.session_id}_{student_part}.json"
-            await save_report_file_url(
-                session_id=request.session_id,
-                file_name=file_name,
-                file_url=report_url,
-            )
-        except Exception as e:
-            print(f"[WARN] DB 파일 URL 저장 실패: {e}")
-
-    # ── Step 4: dialogs.is_analyzed = true 업데이트 ─────────────────────────
+    # ── Step 2: dialog 정보 조회 (dialog_id 획득) ────────────────────────────
+    dialog_id = None
     if request.student_id:
         try:
             dialog = await get_dialog(
@@ -131,13 +111,46 @@ async def end_session(request: EndSessionRequest):
                 student_id=request.student_id,
             )
             if dialog:
-                await mark_dialog_analyzed(dialog["id"])
+                dialog_id = dialog["id"]
+        except Exception as e:
+            print(f"[WARN] dialog 조회 실패: {e}")
+
+    # ── Step 3: student_reports 테이블에 리포트 JSON 직접 저장 ───────────────
+    if dialog_id and request.student_id:
+        try:
+            # Pydantic 모델을 딕셔너리로 변환하여 저장
+            report_dict = report.model_dump() if hasattr(report, "model_dump") else report.dict()
+            await save_student_report(
+                student_id=request.student_id,
+                session_id=request.session_id,
+                dialog_id=dialog_id,
+                content=report_dict
+            )
+        except Exception as e:
+            print(f"[WARN] student_reports 저장 실패: {e}")
+
+    # ── Step 4: dialogs.is_analyzed = true 업데이트 ─────────────────────────
+    if dialog_id:
+        try:
+            await mark_dialog_analyzed(dialog_id)
         except Exception as e:
             print(f"[WARN] is_analyzed 업데이트 실패: {e}")
+
+    # (참고) 이전 Supabase Storage 업로드 로직은 일단 비활성화(주석 처리) 해둡니다.
+    # report_url = ""
+    # try:
+    #     report_url = await upload_report(report)
+    #     if report_url and request.student_id:
+    #         student_part = request.student_id.replace("-", "")
+    #         file_name = f"report_{request.session_id}_{student_part}.json"
+    #         from ai_server.services.db_client import save_report_file_url
+    #         await save_report_file_url(request.session_id, file_name, report_url)
+    # except Exception as e:
+    #     print(f"[WARN] Storage 업로드 로직 무시됨: {e}")
 
     return EndSessionResponse(
         status="ok",
         session_id=str(request.session_id),
         report=report,
-        report_url=report_url,
+        report_url="", # 더 이상 파일 URL을 생성하지 않으므로 빈 문자열 반환
     )
