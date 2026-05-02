@@ -49,7 +49,7 @@ model dialogs {
   id                  Int              @id @default(autoincrement())
   session_id          Int
   student_id          String           @db.Uuid
-  is_report_generated Boolean          @default(false)
+  is_analyzed         Boolean          @default(false)
   real_time_analysis  Json?            @db.JsonB
   status              Boolean          @default(true)
   chat_messages       chat_messages[]
