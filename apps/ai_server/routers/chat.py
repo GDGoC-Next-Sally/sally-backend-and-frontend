@@ -3,7 +3,7 @@ routers/chat.py — AI 서버 API 엔드포인트 모음
 """
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-from ai_server.models import ChatRequest, TeacherSummary, EndSessionRequest, EndSessionResponse
+from ai_server.models import ChatRequest, TeacherSummary, EndSessionRequest, EndSessionResponse, UpdateRealtimeRequest
 from ai_server.services.llm_service import stream_chat, analyze_student
 from ai_server.services.report_builder import generate_final_report
 from ai_server.services.storage_client import upload_report
@@ -11,6 +11,7 @@ from ai_server.services.db_client import (
     get_dialog,
     mark_dialog_analyzed,
     save_student_report,
+    update_real_time_analysis,
 )
 
 router = APIRouter()
@@ -64,6 +65,37 @@ async def analyze(request: ChatRequest):
         return summary
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"LLM 학생 분석 실패: {str(e)}")
+
+
+@router.post("/update-realtime")
+async def update_realtime(request: UpdateRealtimeRequest):
+    """
+    [NestJS 백엔드 → 이 API] 실시간 분석 결과 DB 업데이트 전용 엔드포인트
+    
+    요청(Request):
+        - session_id: 수업 세션 ID
+        - student_id: 학생 UUID
+        - analysis: /analyze 에서 반환된 TeacherSummary JSON 객체
+        
+    응답(Response):
+        - status: "ok"
+    """
+    try:
+        dialog = await get_dialog(
+            session_id=request.session_id,
+            student_id=request.student_id,
+        )
+        if not dialog:
+            raise HTTPException(status_code=404, detail="해당 session_id와 student_id에 매칭되는 대화(dialog)를 찾을 수 없습니다.")
+            
+        summary_dict = request.analysis.model_dump() if hasattr(request.analysis, "model_dump") else request.analysis.dict()
+        await update_real_time_analysis(dialog["id"], summary_dict)
+        return {"status": "ok", "dialog_id": dialog["id"]}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"DB 업데이트 실패: {str(e)}")
 
 
 @router.post("/end-session", response_model=EndSessionResponse)

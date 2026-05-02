@@ -140,6 +140,19 @@ async def get_chat_messages(dialog_id: int) -> list[dict]:
     return await asyncio.to_thread(_query)
 
 
+async def update_real_time_analysis(dialog_id: int, analysis_json: dict) -> None:
+    """
+    /analyze 요청 직후 생성된 실시간 분석 결과(JSON)를 dialogs 테이블에 업데이트합니다.
+    """
+    def _query():
+        try:
+            db = _get_db()
+            db.table("dialogs").update({"real_time_analysis": analysis_json}).eq("id", dialog_id).execute()
+        except Exception as e:
+            print(f"[WARN] update_real_time_analysis 실패: {e}")
+
+    await asyncio.to_thread(_query)
+
 async def mark_dialog_analyzed(dialog_id: int, real_time_analysis: dict = None) -> None:
     """
     리포트 생성 완료 후 해당 대화의 is_analyzed 플래그를 true로 업데이트합니다.

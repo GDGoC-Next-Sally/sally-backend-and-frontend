@@ -24,7 +24,7 @@ class ConversationTurn(BaseModel):
     text: str
 
 
-# ── /generate-reply API 요청 바디 ─────────────────────────────────────────────
+# ── /chat 및 /analyze API 요청 바디 ─────────────────────────────────────────────
 class ChatRequest(BaseModel):
     conversation_history: List[ConversationTurn]
     student_profile: Optional[StudentProfile] = None
@@ -44,6 +44,14 @@ class TeacherSummary(BaseModel):
     confusion_type: Optional[str] = None          # 혼란 유형: 개념_모름/적용_실패/오개념/없음
     misconception_tag: Optional[str] = None       # 오개념 태그 (없으면 null)
     learning_mode: Optional[str] = None           # 학습 태도: passive/active/self_correct
+
+
+# ── /update-realtime API 요청 바디 ────────────────────────────────────────────
+class UpdateRealtimeRequest(BaseModel):
+    session_id: int
+    student_id: str
+    analysis: TeacherSummary
+
 
 
 
