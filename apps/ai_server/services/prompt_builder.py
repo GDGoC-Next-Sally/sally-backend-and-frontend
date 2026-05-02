@@ -6,17 +6,11 @@ from typing import Optional
 from ai_server.models import StudentProfile
 
 
-def build_teacher_system_prompt(profile: Optional[StudentProfile] = None) -> str:
-    """
-    학생 프로파일을 기반으로 AI 선생님 시스템 프롬프트를 생성합니다.
-    JS의 buildTeacherSystemPrompt() 함수와 동일한 역할을 합니다.
-    """
+def build_chat_system_prompt(profile: Optional[StudentProfile] = None) -> str:
+    """학생과 직접 대화하기 위한 AI 선생님의 페르소나 및 행동 지침을 생성합니다."""
     if profile is None:
         subject = scope = key_concepts = learning_objectives = "미설정"
         learning_style = forbidden_topics = "미설정"
-        topic_hints_str = "해당없음"
-        misconception_tag_hints_str = "해당없음"
-        first_topic = "개념학습"
     else:
         subject = profile.subject or "미설정"
         scope = profile.scope or "미설정"
@@ -24,9 +18,6 @@ def build_teacher_system_prompt(profile: Optional[StudentProfile] = None) -> str
         learning_objectives = profile.learning_objectives or "미설정"
         learning_style = profile.learning_style or "미설정"
         forbidden_topics = profile.forbidden_topics or "미설정"
-        topic_hints_str = " | ".join(profile.topic_hints) if profile.topic_hints else "해당없음"
-        misconception_tag_hints_str = " | ".join(profile.misconception_tag_hints) if profile.misconception_tag_hints else "해당없음"
-        first_topic = profile.topic_hints[0] if profile.topic_hints else "개념학습"
 
     return f"""# 역할
 당신은 Sally 플랫폼의 AI 선생님입니다.
@@ -61,10 +52,34 @@ def build_teacher_system_prompt(profile: Optional[StudentProfile] = None) -> str
 ## 3순위 — 정직 (정확한 정보)
 - 확신이 없는 내용은 단정하지 마십시오.
 
-# 교사를 위한 실시간 요약 (매 응답 후 생성)
-모든 응답(학생에게 할 말)을 작성한 뒤, 맨 마지막에 다음 구조의 JSON 블록을 **반드시** 작성하십시오.
+# 금지 사항
+- 숙제나 시험 답을 직접 알려주는 것
+- 학생을 다른 학생과 비교하는 것
+- 위협적이거나 압박감을 주는 언어 사용
+- {forbidden_topics}
+"""
 
-<!--TEACHER_SUMMARY
+
+def build_analysis_system_prompt(profile: Optional[StudentProfile] = None) -> str:
+    """학생의 대화 기록을 바탕으로 현재 상태를 JSON 형태로 분석하기 위한 시스템 프롬프트를 생성합니다."""
+    if profile is None:
+        topic_hints_str = "해당없음"
+        misconception_tag_hints_str = "해당없음"
+        first_topic = "개념학습"
+    else:
+        topic_hints_str = " | ".join(profile.topic_hints) if profile.topic_hints else "해당없음"
+        misconception_tag_hints_str = " | ".join(profile.misconception_tag_hints) if profile.misconception_tag_hints else "해당없음"
+        first_topic = profile.topic_hints[0] if profile.topic_hints else "개념학습"
+
+    return f"""당신은 AI 교육 시스템의 학생 상태 분석기입니다.
+주어지는 학생과 AI 선생님 간의 전체 대화 기록을 신중하게 분석하여, 가장 마지막 턴에서 나타난 학생의 상태를 JSON 형식으로만 정확히 출력하십시오.
+절대로 마크다운 코드 블록(```json)이나 다른 텍스트를 포함하지 말고 순수 JSON 문자열만 출력해야 합니다.
+
+# 분석 대상 규칙
+- current_topic은 반드시 다음 목록 중 하나를 정확히 선택하십시오: {topic_hints_str}
+- misconception_tag는 오개념이 감지된 경우에만 다음 목록 중 하나 선택, 없으면 null: {misconception_tag_hints_str}
+
+# JSON 출력 포맷 (반드시 아래 포맷 준수)
 {{
   "frustration_delta": 0,
   "student_understood": true,
@@ -72,21 +87,12 @@ def build_teacher_system_prompt(profile: Optional[StudentProfile] = None) -> str
   "understanding_score": 5,
   "current_topic": "{first_topic}",
   "student_emotion": "혼란",
-  "internal_reasoning": "AI가 위 판단을 내린 근거 한 줄",
-  "one_line_summary": "교사 기록용 짧은 상태 요약",
+  "internal_reasoning": "AI가 위 판단을 내린 근거 한 줄 요약",
+  "one_line_summary": "교사 기록용 매우 짧은 학생 상태 요약",
   "question_intent": "개념질문",
   "confusion_type": "개념_모름",
   "misconception_tag": null,
   "learning_mode": "passive"
 }}
--->
-
-current_topic은 반드시 다음 목록 중 하나를 정확히 선택하십시오: {topic_hints_str}
-misconception_tag는 오개념이 감지된 경우에만 다음 목록 중 하나 선택, 없으면 null: {misconception_tag_hints_str}
-
-# 금지 사항
-- 숙제나 시험 답을 직접 알려주는 것
-- 학생을 다른 학생과 비교하는 것
-- 위협적이거나 압박감을 주는 언어 사용
-- {forbidden_topics}
 """
+

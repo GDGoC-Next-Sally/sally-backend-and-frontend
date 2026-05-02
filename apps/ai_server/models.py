@@ -46,17 +46,11 @@ class TeacherSummary(BaseModel):
     learning_mode: Optional[str] = None           # 학습 태도: passive/active/self_correct
 
 
-# ── /generate-reply API 응답 바디 ─────────────────────────────────────────────
-class ChatResponse(BaseModel):
-    reply: str                        # 학생에게 보여줄 AI 답변 (HTML 주석 제거 완료)
-    teacher_summary: TeacherSummary   # 교사 대시보드용 분석 데이터
-    raw_text: str                     # LLM 원본 응답 (디버깅용)
-
 
 # ── /end-session API 요청 바디 ────────────────────────────────────────────────
 class EndSessionRequest(BaseModel):
-    session_id: str                                    # 세션 고유 ID (NestJS에서 관리)
-    student_id: Optional[str] = None                  # 학생 ID (리포트 귀속용)
+    session_id: int                                    # 세션 고유 ID (NestJS DB의 sessions.id)
+    student_id: Optional[str] = None                  # 학생 UUID (dialogs 테이블 조회용)
     summaries: List[TeacherSummary]                    # 대화 전체의 teacher_summary 누적 목록
     student_profile: Optional[StudentProfile] = None  # 학생 프로파일 (선택)
 
@@ -97,3 +91,5 @@ class EndSessionResponse(BaseModel):
     status: str = "ok"
     session_id: str
     report: FinalReport
+    report_url: str = ""      # Supabase Storage 업로드 URL (실패 시 빈 문자열)
+
