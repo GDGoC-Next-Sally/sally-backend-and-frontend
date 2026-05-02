@@ -1,8 +1,35 @@
 @import "tailwindcss";
 
+/* ─── Sally Design System Tokens ─────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Colors */
+  --color-primary:          #E8593C;
+  --color-primary-hover:    #CF4E35;
+  --color-primary-light:    #FDF0ED;
+  --color-secondary:        #D4C9F0;
+  --color-surface:          #FFFFFF;
+  --color-bg:               #F5F4F0;
+  --color-text-primary:     #1A1A1A;
+  --color-text-secondary:   #6B6B6B;
+  --color-live:             #22C55E;
+  --color-live-light:       #F0FBF4;
+  --color-planning:         #F59E0B;
+  --color-planning-light:   #FFF8EC;
+  --color-done:             #D0CEC8;
+  --color-done-light:       #F5F4F2;
+  --color-border:           #E0DED8;
+  --color-border-light:     #EBEBEA;
+
+  /* Border Radius */
+  --radius-badge:   4px;
+  --radius-button:  8px;
+  --radius-card:    12px;
+  --radius-modal:   16px;
+  --radius-pill:    9999px;
+
+  /* Legacy overrides */
+  --background: #F5F4F0;
+  --foreground: #1A1A1A;
 }
 
 @theme inline {
@@ -12,15 +39,10 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
   font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
 }

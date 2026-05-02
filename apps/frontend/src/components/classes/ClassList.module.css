@@ -2,303 +2,120 @@
   padding: 24px;
   background-color: #f8f9fa;
   min-height: calc(100vh - 60px);
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   width: 100%;
+  box-sizing: border-box;
 }
 
-.card {
+/* Two-column layout: card area + student sidebar */
+.layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.leftPanel {
+  flex: 1;
   background-color: #ffffff;
   border-radius: 12px;
-  padding: 32px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  padding: 28px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  min-width: 0;
 }
 
+/* Header */
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.titleArea {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.titleIcon {
-  width: 24px;
-  height: 24px;
-  background-color: #e9ecef;
-  border-radius: 4px;
+  align-items: flex-start;
+  margin-bottom: 20px;
 }
 
 .title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: #212529;
+  margin: 0 0 4px 0;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #adb5bd;
+  margin: 0;
 }
 
 .actionButtons {
   display: flex;
-  gap: 12px;
+  gap: 10px;
+  align-items: center;
 }
 
-.btnSecondary {
-  background-color: #495057;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-}
-
-.btnSecondary:hover {
+.btnDark {
   background-color: #343a40;
-}
-
-.btnPrimary {
-  background-color: #20c997;
   color: white;
-  padding: 10px 20px;
+  padding: 9px 18px;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   border: none;
   cursor: pointer;
+  white-space: nowrap;
 }
 
-.btnPrimary:hover {
-  background-color: #1aab82;
+.btnDark:hover {
+  background-color: #212529;
 }
 
-.filterBar {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 24px;
-}
-
-.searchBox {
-  display: flex;
-  align-items: center;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 8px 16px;
-  width: 300px;
-}
-
-.searchIcon {
-  color: #adb5bd;
-  margin-right: 8px;
-}
-
-.searchInput {
-  border: none;
-  outline: none;
-  width: 100%;
-  font-size: 14px;
-}
-
-.searchInput::placeholder {
-  color: #adb5bd;
-}
-
-.sortSelect {
-  padding: 8px 16px;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #495057;
+.btnOutline {
   background-color: white;
-  cursor: pointer;
-  outline: none;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.th {
-  text-align: center;
-  padding: 16px;
   color: #868e96;
-  font-weight: 500;
+  padding: 9px 18px;
+  border-radius: 8px;
   font-size: 14px;
-  border-bottom: 1px solid #f1f3f5;
-  background-color: #f8f9fa;
-}
-
-.th:first-child {
-  text-align: left;
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
-}
-
-.th:last-child {
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
-}
-
-.tr {
-  border-bottom: 1px solid #f1f3f5;
-  transition: background-color 0.2s;
-}
-
-.tr:hover {
-  background-color: #f8f9fa;
-}
-
-.td {
-  padding: 24px 16px;
-  text-align: center;
-  font-size: 14px;
-  color: #495057;
-  vertical-align: middle;
-}
-
-.td:first-child {
-  text-align: left;
-}
-
-.classInfo {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.classIcon {
-  width: 24px;
-  height: 24px;
-  background-color: #b2f2bb;
-  border-radius: 50%;
-}
-
-.className {
-  font-weight: 700;
-  color: #212529;
-  font-size: 16px;
-}
-
-.studentCount {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.badge {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
   font-weight: 600;
-  display: inline-block;
+  border: 1.5px solid #dee2e6;
+  cursor: not-allowed;
+  white-space: nowrap;
 }
 
-.badgeActive {
-  background-color: #e6fcf5;
-  color: #20c997;
-}
-
-.badgePending {
-  background-color: #fff4e6;
-  color: #ff922b;
-}
-
-.badgeClosed {
-  background-color: #ffe3e3;
-  color: #fa5252;
-}
-
-.moreBtn {
-  background: none;
-  border: none;
-  color: #adb5bd;
+.btnOutlineActive {
+  color: #212529;
+  border-color: #adb5bd;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
 }
 
-.moreBtn:hover {
-  background-color: #e9ecef;
-  color: #495057;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  margin-top: 40px;
-}
-
-.pageBtn {
-  background: none;
-  border: none;
-  color: #adb5bd;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.pageBtn:hover {
-  color: #495057;
-}
-
-.pageNumber {
-  background: none;
-  border: none;
-  color: #495057;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-}
-
-.pageNumber:hover {
+.btnOutlineActive:hover {
   background-color: #f1f3f5;
 }
 
-.activePage {
-  font-weight: 700;
-  color: #212529;
-}
-
-/* Dropdown Menu */
-.menuContainer {
+/* More button dropdown wrapper */
+.moreWrapper {
   position: relative;
-  display: inline-block;
 }
 
 .dropdownMenu {
   position: absolute;
   right: 0;
-  top: 100%;
+  top: calc(100% + 6px);
   background-color: white;
   border: 1px solid #e9ecef;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  padding: 8px 0;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  padding: 6px 0;
   min-width: 160px;
-  z-index: 10;
+  z-index: 100;
 }
 
 .menuItem {
   display: block;
   width: 100%;
   text-align: left;
-  padding: 10px 16px;
+  padding: 10px 18px;
   background: none;
   border: none;
-  font-size: 13px;
-  color: #495057;
+  font-size: 14px;
+  color: #343a40;
   cursor: pointer;
 }
 
@@ -308,4 +125,194 @@
 
 .menuItemDanger {
   color: #fa5252;
+}
+
+.menuItemDisabled {
+  color: #adb5bd;
+  cursor: not-allowed;
+}
+
+/* Layout expands to show sidebar when class is selected */
+.layoutWithSidebar {
+  align-items: flex-start;
+}
+
+/* Filter bar */
+.filterBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 8px 14px;
+  flex: 1;
+  max-width: 320px;
+}
+
+.searchIcon {
+  color: #adb5bd;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+  color: #343a40;
+}
+
+.searchInput::placeholder {
+  color: #adb5bd;
+}
+
+.sortSelect {
+  padding: 8px 14px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #495057;
+  background-color: white;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Card grid: 4 columns */
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+/* Class card */
+.card {
+  background: white;
+  border-radius: 12px;
+  border: 1.5px solid #e9ecef;
+  padding: 18px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover {
+  border-color: #adb5bd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.cardSelected {
+  background: #20c997;
+  border-color: #20c997;
+  box-shadow: 0 4px 14px rgba(32, 201, 151, 0.3);
+}
+
+/* Status row inside card */
+.cardStatusRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.statusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status_ACTIVE {
+  background-color: #20c997;
+}
+
+.status_PLANNING {
+  background-color: #fcc419;
+}
+
+.status_COMPLETED {
+  background-color: #adb5bd;
+}
+
+.statusText {
+  font-size: 12px;
+  color: #868e96;
+}
+
+.statusTextSelected {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Card title (e.g. 3학년 5반) */
+.cardTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.cardTitleSelected {
+  color: #ffffff;
+}
+
+/* Card subject (e.g. | 영어 문법) */
+.cardSubject {
+  font-size: 13px;
+  color: #868e96;
+  margin-bottom: auto;
+  padding-bottom: 14px;
+}
+
+.cardSubjectSelected {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Move button at bottom of card */
+.moveBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #868e96;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin-top: 14px;
+  border-top: 1px solid #f1f3f5;
+  padding-top: 12px;
+  width: 100%;
+  text-align: left;
+}
+
+.moveBtn:hover {
+  color: #495057;
+}
+
+.moveBtnSelected {
+  color: rgba(255, 255, 255, 0.9);
+  border-top-color: rgba(255, 255, 255, 0.25);
+}
+
+.moveBtnSelected:hover {
+  color: white;
+}
+
+/* Empty state */
+.empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 0;
+  color: #adb5bd;
+  font-size: 15px;
 }

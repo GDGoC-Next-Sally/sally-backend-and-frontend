@@ -50,7 +50,7 @@ export const LoginForm = () => {
         } else {
           const token = data.session.access_token;
           console.log('로그인 성공! JWT 토큰 획득:', token);
-          
+
           // 먼저 토큰을 스토어에 저장해야 fetchWithAuth가 토큰을 사용할 수 있습니다.
           setAuth({
             id: data.session.user.id,
@@ -62,15 +62,18 @@ export const LoginForm = () => {
           try {
             const profile = await fetchWithAuth('/auth/profile');
             console.log('백엔드 프로필 정보 획득:', profile);
+
+            // 서버에서 넘어온 정보 (예: { userId, email, name, role })
+            const serverRole = profile?.role;
+            const serverName = profile?.name;
+            const finalRole = serverRole === 'TEACHER' ? 'teacher' : (serverRole === 'ADMIN' ? activeTab : 'student');
             
-            // 서버에서 넘어온 실제 역할 (예: "ADMIN", "TEACHER", "STUDENT")
-            const serverRole = profile?.role; 
-            
-            // 1. 전역 상태(Store)에는 서버에서 준 "진짜 권한"을 저장합니다.
+            // 전역 상태 업데이트 (이름과 서버 권한 반영)
             setAuth({
               id: data.session.user.id,
               email: data.session.user.email,
-              role: serverRole?.toLowerCase() || 'student',
+              name: serverName,
+              role: finalRole,
             }, token);
 
             // 2. 역할에 맞는 홈으로 리다이렉트 (관리자는 선택한 탭에 따라 이동)
@@ -119,7 +122,7 @@ export const LoginForm = () => {
 
         <div className={styles.formContainer} style={{ marginTop: isSignup ? '1rem' : '0' }}>
           <h2 className={styles.title}>{isSignup ? '회원가입' : '로그인'}</h2>
-          
+
           <form onSubmit={handleSubmit}>
             <div className={styles.inputGroup}>
               <label className={styles.label}>아이디</label>
@@ -132,7 +135,7 @@ export const LoginForm = () => {
                 required
               />
             </div>
-            
+
             <div className={styles.inputGroup}>
               <label className={styles.label}>비밀번호</label>
               <input
@@ -151,20 +154,20 @@ export const LoginForm = () => {
                   <label className={styles.label}>가입 유형</label>
                   <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                      <input 
-                        type="radio" 
-                        value="student" 
-                        checked={signupRole === 'student'} 
-                        onChange={() => setSignupRole('student')} 
+                      <input
+                        type="radio"
+                        value="student"
+                        checked={signupRole === 'student'}
+                        onChange={() => setSignupRole('student')}
                       />
                       학생
                     </label>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                      <input 
-                        type="radio" 
-                        value="teacher" 
-                        checked={signupRole === 'teacher'} 
-                        onChange={() => setSignupRole('teacher')} 
+                      <input
+                        type="radio"
+                        value="teacher"
+                        checked={signupRole === 'teacher'}
+                        onChange={() => setSignupRole('teacher')}
                       />
                       선생님
                     </label>

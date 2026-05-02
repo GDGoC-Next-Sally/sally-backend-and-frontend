@@ -1,0 +1,153 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 440px;
+  padding: 36px 32px 28px;
+  position: relative;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.14);
+}
+
+.closeBtn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: #6B6B6B;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 0;
+}
+
+.closeBtn:hover { color: #1A1A1A; }
+
+.title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1A1A1A;
+  margin: 0 0 8px;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 13px;
+  color: #6B6B6B;
+  line-height: 1.6;
+  margin: 0 0 28px;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #343a40;
+  margin-bottom: 10px;
+}
+
+/* Digit boxes */
+.digitRow {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.digitBox {
+  width: 44px;
+  height: 44px;
+  border: 1.5px solid #E0DED8;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1A1A1A;
+  outline: none;
+  background: white;
+  transition: border-color 0.15s;
+}
+
+.digitBox:focus {
+  border-color: #22C55E;
+  background: #F0FBF4;
+}
+
+.validMsg {
+  font-size: 12px;
+  color: #22C55E;
+  font-weight: 600;
+  margin: 8px 0 0;
+  text-align: center;
+}
+
+/* Class info box */
+.classInfoBox {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #F5F4F0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  border: 1px solid #E0DED8;
+}
+
+.classInfoName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.classInfoTeacher {
+  font-size: 13px;
+  color: #6B6B6B;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.cancelBtn,
+.joinBtn {
+  flex: 1;
+  padding: 13px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cancelBtn {
+  background: white;
+  border: 1px solid #dee2e6;
+  color: #495057;
+}
+
+.cancelBtn:hover { background: #F5F4F0; }
+
+.joinBtn {
+  background: #22C55E;
+  border: none;
+  color: white;
+}
+
+.joinBtn:hover { background: #16A34A; }
+.joinBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.cancelBtn:disabled { opacity: 0.5; cursor: not-allowed; }

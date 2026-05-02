@@ -1,0 +1,479 @@
+.container {
+  background-color: #F5F4F0;
+  min-height: calc(100vh - 56px);
+  padding: 24px;
+}
+
+.inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 16px;
+  padding: 28px 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Back */
+.backBtn {
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #6B6B6B;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.backBtn:hover { color: #1A1A1A; }
+
+/* Header */
+.pageHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.classTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1A1A1A;
+  margin: 0;
+}
+
+.teacherBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #F5F4F0;
+  border-radius: 20px;
+  padding: 4px 12px;
+}
+
+.teacherDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #D0CEC8;
+}
+
+.teacherName {
+  font-size: 13px;
+  color: #6B6B6B;
+  font-weight: 500;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1.5px solid #EBEBEA;
+  margin-bottom: 24px;
+}
+
+.tab {
+  background: none;
+  border: none;
+  border-bottom: 2.5px solid transparent;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6B6B6B;
+  cursor: pointer;
+  margin-bottom: -1.5px;
+  transition: color 0.15s;
+}
+
+.tabActive {
+  color: #22C55E;
+  border-bottom-color: #22C55E;
+  font-weight: 700;
+}
+
+/* Overview */
+.overviewContent {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Live session banner */
+.liveBanner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1.5px solid #22C55E;
+  border-radius: 12px;
+  padding: 20px 24px;
+  background: #F0FBF4;
+  gap: 16px;
+}
+
+.liveBannerLeft { flex: 1; min-width: 0; }
+
+.liveBannerTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.liveBadge {
+  background: #22C55E;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.liveBannerLabel {
+  font-size: 12px;
+  color: #22C55E;
+  font-weight: 600;
+}
+
+.liveBannerTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1A1A1A;
+  margin-bottom: 6px;
+}
+
+.liveBannerDesc {
+  font-size: 13px;
+  color: #6B6B6B;
+}
+
+.liveBannerActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.joinSessionBtn {
+  background: #22C55E;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.joinSessionBtn:hover { background: #16A34A; }
+
+.detailBtn {
+  background: white;
+  color: #6B6B6B;
+  border: 1px solid #E0DED8;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.detailBtn:hover { border-color: #6B6B6B; }
+
+/* Sections */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sectionTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1A1A1A;
+}
+
+.viewAllBtn {
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #6B6B6B;
+  cursor: pointer;
+  padding: 0;
+}
+
+.viewAllBtn:hover { color: #1A1A1A; }
+
+/* Past session row */
+.pastRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #EBEBEA;
+}
+
+.pastNum {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid #E0DED8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #6B6B6B;
+  flex-shrink: 0;
+}
+
+.pastInfo { flex: 1; min-width: 0; }
+
+.pastDate {
+  font-size: 11px;
+  color: #6B6B6B;
+  margin-bottom: 2px;
+}
+
+.pastTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.pastStudents,
+.pastTime {
+  font-size: 13px;
+  color: #6B6B6B;
+  white-space: nowrap;
+}
+
+.pastGrade {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1A1A1A;
+  width: 32px;
+  text-align: center;
+}
+
+.reviewBtn {
+  background: white;
+  border: 1px solid #E0DED8;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6B6B6B;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.reviewBtn:hover { border-color: #22C55E; color: #22C55E; }
+
+.emptyText {
+  text-align: center;
+  padding: 48px 0;
+  color: #6B6B6B;
+  font-size: 14px;
+}
+
+/* Session list tab */
+.sessionsContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sessionsFilterBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.searchBox {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: #6B6B6B;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 9px 12px 9px 36px;
+  border: 1px solid #E0DED8;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1A1A1A;
+  background: white;
+  outline: none;
+}
+
+.searchInput:focus { border-color: #22C55E; }
+.searchInput::placeholder { color: #6B6B6B; }
+
+.sortSelect {
+  padding: 9px 32px 9px 12px;
+  border: 1px solid #E0DED8;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1A1A1A;
+  background: white;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B6B6B' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.sessionList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.sessionRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #EBEBEA;
+  position: relative;
+}
+
+.sessionIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #F0FBF4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sessionInfo { flex: 1; min-width: 0; }
+
+.sessionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin-bottom: 2px;
+}
+
+.sessionSubject {
+  font-size: 12px;
+  color: #6B6B6B;
+}
+
+.sessionStudents,
+.sessionTime {
+  font-size: 13px;
+  color: #6B6B6B;
+  white-space: nowrap;
+}
+
+.statusBadge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.badgeActive { background: #F0FBF4; color: #22C55E; }
+.badgePlanning { background: #FEF9EC; color: #F59E0B; }
+.badgeDone { background: #FDF0ED; color: #E8593C; }
+
+/* Session menu */
+.menuWrapper { position: relative; }
+
+.menuTrigger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #6B6B6B;
+  padding: 4px 8px;
+  letter-spacing: 2px;
+  border-radius: 4px;
+}
+
+.menuTrigger:hover { background: #F5F4F0; }
+
+.dropdownMenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: white;
+  border: 1px solid #E0DED8;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  min-width: 110px;
+  overflow: hidden;
+}
+
+.menuItem {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #1A1A1A;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menuItem:hover { background: #F5F4F0; }
+.menuItemDanger { color: #E8593C; }
+.menuItemDanger:hover { background: #FDF0ED; }
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.pageBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid #E0DED8;
+  background: white;
+  font-size: 13px;
+  color: #6B6B6B;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pageBtn:hover { border-color: #22C55E; color: #22C55E; }
+
+.pageBtnActive {
+  background: #22C55E;
+  border-color: #22C55E;
+  color: white;
+  font-weight: 700;
+}
+
+.pageBtnActive:hover { background: #16A34A; color: white; }
