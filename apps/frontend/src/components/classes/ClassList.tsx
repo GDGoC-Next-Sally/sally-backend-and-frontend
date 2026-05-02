@@ -1,139 +1,216 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { CreateClassModal } from './CreateClassModal';
+import { SessionCodeModal } from '../sessions/SessionCodeModal';
+import { StudentSidebar } from '../students/StudentSidebar';
+import { fetchWithAuth } from '@/lib/api';
 import styles from './ClassList.module.css';
 
-const MOCK_CLASSES = [
-  { id: 1, name: '고려중학교 3학년 4반', studentCount: 28, lastActive: '1시간 전', status: 'active' },
-  { id: 2, name: '고려중학교 3학년 4반', studentCount: 28, lastActive: '1시간 전', status: 'active' },
-  { id: 3, name: '고려중학교 3학년 4반', studentCount: 28, lastActive: '1시간 전', status: 'active' },
-  { id: 4, name: '고려중학교 3학년 4반', studentCount: 28, lastActive: '1시간 전', status: 'pending' },
-  { id: 5, name: '고려중학교 3학년 4반', studentCount: 28, lastActive: '1시간 전', status: 'closed' },
-  { id: 6, name: '고려중학교 3학년 4반', studentCount: 28, lastActive: '1시간 전', status: 'closed' },
-];
+interface ClassItem {
+  id: number;
+  invite_code: string;
+  registerable: boolean;
+  status: 'PLANNING' | 'ACTIVE' | 'COMPLETED';
+  grade: number | null;
+  homeroom: string | null;
+  subject: string;
+  explanation: string | null;
+  theme: string | null;
+  created_at: string;
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  ACTIVE: '진행중',
+  PLANNING: '예정',
+  COMPLETED: '종료',
+};
 
 export const ClassList = () => {
   const router = useRouter();
-  const [activeMenu, setActiveMenu] = useState<number | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [classes, setClasses] = useState<ClassItem[]>([]);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const toggleMenu = (id: number) => {
-    setActiveMenu(activeMenu === id ? null : id);
+  const fetchClasses = () => {
+    fetchWithAuth('/classes/teacher')
+      .then((data) => setClasses(data))
+      .catch(() => setClasses([]));
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <span className={`${styles.badge} ${styles.badgeActive}`}>진행중</span>;
-      case 'pending':
-        return <span className={`${styles.badge} ${styles.badgePending}`}>임시 예정</span>;
-      case 'closed':
-        return <span className={`${styles.badge} ${styles.badgeClosed}`}>종료</span>;
-      default:
-        return null;
+  useEffect(() => { fetchClasses(); }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedClass = classes.find((c) => c.id === selectedId) ?? null;
+
+  const filtered = classes.filter((c) => {
+    const label = `${c.grade ?? ''}학년 ${c.homeroom ?? ''} ${c.subject}`;
+    return label.includes(search);
+  });
+
+  const handleDelete = async () => {
+    if (!selectedId || !confirm('클래스를 삭제하시겠습니까?')) return;
+    try {
+      await fetchWithAuth(`/classes/${selectedId}`, { method: 'DELETE' });
+      setClasses((prev) => prev.filter((c) => c.id !== selectedId));
+      setSelectedId(null);
+    } catch {
+      alert('삭제에 실패했습니다.');
     }
-  };
-
-  const navigateToDetail = (id: number) => {
-    router.push(`/classes/${id}`);
+    setShowDropdown(false);
   };
 
   return (
     <div className={styles.container}>
-      <div className={styles.card}>
-        <div className={styles.header}>
-          <div className={styles.titleArea}>
-            <div className={styles.titleIcon}></div>
-            <h2 className={styles.title}>내 클래스</h2>
-          </div>
-          <div className={styles.actionButtons}>
-            <button className={styles.btnSecondary} onClick={() => setIsModalOpen(true)}>클래스 만들기</button>
-            <button className={styles.btnPrimary}>세션 시작하기</button>
-          </div>
-        </div>
-
-        <div className={styles.filterBar}>
-          <div className={styles.searchBox}>
-            <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input type="text" className={styles.searchInput} placeholder="클래스 검색" />
-          </div>
-          <select className={styles.sortSelect} defaultValue="정렬">
-            <option value="정렬" disabled hidden>정렬 ∨</option>
-            <option value="recent">최근 활동순</option>
-            <option value="name">이름순</option>
-          </select>
-        </div>
-
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th className={styles.th}>클래스 정보</th>
-              <th className={styles.th}>학생 수</th>
-              <th className={styles.th}>최근 활동</th>
-              <th className={styles.th}>상태</th>
-              <th className={styles.th}>관리</th>
-            </tr>
-          </thead>
-          <tbody>
-            {MOCK_CLASSES.map((cls) => (
-              <tr key={cls.id} className={styles.tr}>
-                <td className={styles.td} style={{ cursor: 'pointer' }} onClick={() => navigateToDetail(cls.id)}>
-                  <div className={styles.classInfo}>
-                    <div className={styles.classIcon}></div>
-                    <span className={styles.className}>{cls.name}</span>
-                  </div>
-                </td>
-                <td className={styles.td}>
-                  <div className={styles.studentCount}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                    </svg>
-                    {cls.studentCount}
-                  </div>
-                </td>
-                <td className={styles.td}>{cls.lastActive}</td>
-                <td className={styles.td}>{getStatusBadge(cls.status)}</td>
-                <td className={styles.td}>
-                  <div className={styles.menuContainer}>
-                    <button className={styles.moreBtn} onClick={() => toggleMenu(cls.id)}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                        <circle cx="5" cy="12" r="2"/>
-                        <circle cx="12" cy="12" r="2"/>
-                        <circle cx="19" cy="12" r="2"/>
-                      </svg>
+      <div className={`${styles.layout} ${selectedId ? styles.layoutWithSidebar : ''}`}>
+        {/* Left: class card area */}
+        <div className={styles.leftPanel}>
+          <div className={styles.header}>
+            <div>
+              <h2 className={styles.title}>클래스 목록</h2>
+              <p className={styles.subtitle}>클래스를 선택해주세요.</p>
+            </div>
+            <div className={styles.actionButtons}>
+              <button className={styles.btnDark} onClick={() => setIsCreateModalOpen(true)}>
+                클래스 만들기
+              </button>
+              <div className={styles.moreWrapper} ref={dropdownRef}>
+                <button
+                  className={`${styles.btnOutline} ${selectedId ? styles.btnOutlineActive : ''}`}
+                  onClick={() => selectedId && setShowDropdown((v) => !v)}
+                  disabled={!selectedId}
+                >
+                  더보기
+                </button>
+                {showDropdown && selectedClass && (
+                  <div className={styles.dropdownMenu}>
+                    <button
+                      className={styles.menuItem}
+                      onClick={() => { setIsCodeModalOpen(true); setShowDropdown(false); }}
+                    >
+                      입장 코드 관리
                     </button>
-                    {activeMenu === cls.id && (
-                      <div className={styles.dropdownMenu}>
-                        <button className={styles.menuItem} onClick={() => navigateToDetail(cls.id)}>클래스 상세보기</button>
-                        <button className={styles.menuItem}>세션 시작하기</button>
-                        <button className={styles.menuItem}>정보 수정</button>
-                        <button className={styles.menuItem}>입장 코드 관리</button>
-                        <button className={`${styles.menuItem} ${styles.menuItemDanger}`}>삭제</button>
-                      </div>
-                    )}
+                    <button
+                      className={styles.menuItem}
+                      onClick={() => { setIsEditModalOpen(true); setShowDropdown(false); }}
+                    >
+                      정보 수정
+                    </button>
+                    <button className={`${styles.menuItem} ${styles.menuItemDisabled}`} disabled>
+                      분석 리포트
+                    </button>
+                    <button
+                      className={`${styles.menuItem} ${styles.menuItemDanger}`}
+                      onClick={handleDelete}
+                    >
+                      삭제
+                    </button>
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                )}
+              </div>
+            </div>
+          </div>
 
-        <div className={styles.pagination}>
-          <button className={styles.pageBtn}>&lt;</button>
-          <button className={`${styles.pageNumber} ${styles.activePage}`}>1</button>
-          <button className={styles.pageNumber}>2</button>
-          <button className={styles.pageNumber}>3</button>
-          <button className={styles.pageBtn}>&gt;</button>
+          <div className={styles.filterBar}>
+            <div className={styles.searchBox}>
+              <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                className={styles.searchInput}
+                placeholder="클래스 검색"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <select className={styles.sortSelect} defaultValue="">
+              <option value="" disabled>정렬</option>
+              <option value="recent">최근 활동순</option>
+              <option value="name">이름순</option>
+            </select>
+          </div>
+
+          <div className={styles.cardGrid}>
+            {filtered.map((cls) => {
+              const isSelected = cls.id === selectedId;
+              return (
+                <div
+                  key={cls.id}
+                  className={`${styles.card} ${isSelected ? styles.cardSelected : ''}`}
+                  onClick={() => setSelectedId(isSelected ? null : cls.id)}
+                >
+                  <div className={styles.cardStatusRow}>
+                    <span className={`${styles.statusDot} ${styles[`status_${cls.status}`]}`} />
+                    <span className={`${styles.statusText} ${isSelected ? styles.statusTextSelected : ''}`}>
+                      {STATUS_LABEL[cls.status]}
+                    </span>
+                  </div>
+                  <div className={`${styles.cardTitle} ${isSelected ? styles.cardTitleSelected : ''}`}>
+                    {cls.grade ? `${cls.grade}학년 ` : ''}{cls.homeroom ?? '미지정'}
+                  </div>
+                  <div className={`${styles.cardSubject} ${isSelected ? styles.cardSubjectSelected : ''}`}>
+                    | {cls.subject}
+                  </div>
+                  <button
+                    className={`${styles.moveBtn} ${isSelected ? styles.moveBtnSelected : ''}`}
+                    onClick={(e) => { e.stopPropagation(); router.push(`/classes/${cls.id}`); }}
+                  >
+                    과목 대기실로 이동&nbsp;→
+                  </button>
+                </div>
+              );
+            })}
+            {filtered.length === 0 && (
+              <div className={styles.empty}>
+                {search ? '검색 결과가 없습니다.' : '등록된 클래스가 없습니다.'}
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Right: student sidebar — only visible when a class is selected */}
+        {selectedId && <StudentSidebar />}
       </div>
 
-      {isModalOpen && <CreateClassModal onClose={() => setIsModalOpen(false)} />}
+      {isCreateModalOpen && (
+        <CreateClassModal
+          mode="create"
+          onClose={() => setIsCreateModalOpen(false)}
+          onSuccess={fetchClasses}
+        />
+      )}
+      {isEditModalOpen && selectedClass && (
+        <CreateClassModal
+          mode="edit"
+          classId={selectedClass.id}
+          initialData={{ subject: selectedClass.subject, theme: 0 }}
+          onClose={() => setIsEditModalOpen(false)}
+          onSuccess={fetchClasses}
+        />
+      )}
+      {isCodeModalOpen && selectedClass && (
+        <SessionCodeModal
+          onClose={() => setIsCodeModalOpen(false)}
+          inviteCode={selectedClass.invite_code}
+        />
+      )}
     </div>
   );
 };

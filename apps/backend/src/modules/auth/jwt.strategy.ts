@@ -1,12 +1,13 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { passportJwtSecret } from 'jwks-rsa';
+import { PrismaService } from '../../providers/prisma/prisma.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(configService: ConfigService) {
+  constructor(configService: ConfigService, private readonly prismaService: PrismaService) {
     const supabaseUrl = configService.getOrThrow<string>('SUPABASE_URL');
 
     super({
@@ -27,6 +28,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   // 검증 성공했을 때 실행
   async validate(payload: any) {
     console.log('토큰 검증 성공! 페이로드:', payload);
-    return { userId: payload.sub, email: payload.email };
+    const user = await this.prismaService.users.findFirst({ where: { id: payload.sub } });
+    if (!user) {
+      throw new NotFoundException(`User #${payload.sub} not found`);
+    }
+    return {
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role
+    };
   }
 }

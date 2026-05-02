@@ -27,32 +27,35 @@ model chat_messages {
 }
 
 model classes {
-  id           Int          @id @default(autoincrement())
-  teacher_id   String       @db.Uuid
-  invite_code  String       @unique @db.VarChar(10)
-  registerable Boolean      @default(true)
-  status       class_status @default(ACTIVE)
-  grade        Int?         @default(1)
-  homeroom     String?      @db.VarChar(50)
-  subject      String       @db.VarChar(100)
-  explanation  String?
-  theme        String?      @db.VarChar(50)
-  created_at   DateTime     @default(now()) @db.Timestamptz(6)
-  completed_at DateTime?    @db.Timestamptz(6)
-  users        users        @relation(fields: [teacher_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  sessions     sessions[]
-  takes        takes[]
+  id            Int            @id @default(autoincrement())
+  teacher_id    String         @db.Uuid
+  invite_code   String         @unique @db.VarChar(10)
+  registerable  Boolean        @default(true)
+  status        class_status   @default(ACTIVE)
+  grade         Int?           @default(1)
+  homeroom      String?        @db.VarChar(50)
+  subject       String         @db.VarChar(100)
+  explanation   String?
+  theme         String?        @db.VarChar(50)
+  created_at    DateTime       @default(now()) @db.Timestamptz(6)
+  completed_at  DateTime?      @db.Timestamptz(6)
+  users         users          @relation(fields: [teacher_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  sessions      sessions[]
+  takes         takes[]
+  class_reports class_reports?
 }
 
 model dialogs {
-  id            Int             @id @default(autoincrement())
-  session_id    Int
-  student_id    String          @db.Uuid
-  is_analyzed   Boolean         @default(false)
-  status        Boolean         @default(true)
-  chat_messages chat_messages[]
-  sessions      sessions        @relation(fields: [session_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users         users           @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id                  Int              @id @default(autoincrement())
+  session_id          Int
+  student_id          String           @db.Uuid
+  is_analyzed         Boolean          @default(false)
+  real_time_analysis  Json?            @db.JsonB
+  status              Boolean          @default(true)
+  chat_messages       chat_messages[]
+  student_reports     student_reports?
+  sessions            sessions         @relation(fields: [session_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users               users            @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([session_id, student_id])
 }
@@ -73,6 +76,39 @@ model sessions {
   users              users                @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   unit_prompts       unit_prompts?        @relation(fields: [unit_prompt_id], references: [id], onUpdate: NoAction)
   supplementary_data supplementary_data[]
+  session_reports    session_reports?
+  student_reports    student_reports[]
+}
+
+model student_reports {
+  id         Int      @id @default(autoincrement())
+  student_id String   @db.Uuid
+  session_id Int
+  dialog_id  Int      @unique
+  content    Json?    @db.JsonB
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+
+  users    users    @relation(fields: [student_id], references: [id], onDelete: Cascade)
+  sessions sessions @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  dialogs  dialogs  @relation(fields: [dialog_id], references: [id], onDelete: Cascade)
+}
+
+model session_reports {
+  id         Int      @id @default(autoincrement())
+  session_id Int      @unique
+  content    Json?    @db.JsonB
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+
+  sessions sessions @relation(fields: [session_id], references: [id], onDelete: Cascade)
+}
+
+model class_reports {
+  id         Int      @id @default(autoincrement())
+  class_id   Int      @unique
+  content    Json?    @db.JsonB
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+
+  classes classes @relation(fields: [class_id], references: [id], onDelete: Cascade)
 }
 
 model supplementary_data {
@@ -112,15 +148,16 @@ model unit_prompts {
 }
 
 model users {
-  id       String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name     String     @db.VarChar(100)
-  email    String     @unique @db.VarChar(255)
-  role     user_role  @default(STUDENT)
-  attends  attends[]
-  classes  classes[]
-  dialogs  dialogs[]
-  sessions sessions[]
-  takes    takes[]
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String            @db.VarChar(100)
+  email           String            @unique @db.VarChar(255)
+  role            user_role         @default(STUDENT)
+  attends         attends[]
+  classes         classes[]
+  dialogs         dialogs[]
+  sessions        sessions[]
+  takes           takes[]
+  student_reports student_reports[]
 }
 
 enum class_status {

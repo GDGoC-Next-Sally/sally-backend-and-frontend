@@ -2,8 +2,8 @@
   display: flex;
   flex-direction: column;
   padding: 24px;
-  background-color: #f8f9fa;
-  min-height: calc(100vh - 60px);
+  background-color: #F5F4F0;
+  min-height: calc(100vh - 56px);
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
@@ -17,13 +17,13 @@
 
 .topCard {
   flex: 1;
-  background-color: #ffffff;
+  background-color: #FFFFFF;
   border-radius: 12px;
-  padding: 24px;
+  padding: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
 .topCardContent {
@@ -35,38 +35,39 @@
 .iconCircle {
   width: 48px;
   height: 48px;
-  border-radius: 50%;
-  background-color: #e9ecef;
+  border-radius: 9999px;
+  background-color: #EBEBEA;
 }
 
 .cardTitle {
   font-size: 16px;
-  font-weight: 700;
-  color: #212529;
+  font-weight: 600;
+  color: #1A1A1A;
   display: flex;
   align-items: center;
   gap: 8px;
+  line-height: 1.5;
 }
 
 .highlightCount {
-  color: #fa5252;
+  color: #E8593C;
 }
 
 .cardSubtitle {
-  font-size: 13px;
-  color: #868e96;
+  font-size: 12px;
+  color: #6B6B6B;
   margin-top: 4px;
 }
 
 .cardDate {
   font-size: 12px;
-  color: #ced4da;
+  color: #D0CEC8;
   margin-top: 4px;
 }
 
 .moreLink {
-  font-size: 13px;
-  color: #adb5bd;
+  font-size: 12px;
+  color: #6B6B6B;
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -85,10 +86,10 @@
 }
 
 .aiInsightCard {
-  background-color: #ffffff;
+  background-color: #FFFFFF;
   border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
 .sectionHeader {
@@ -100,22 +101,23 @@
 
 .sectionTitle {
   font-size: 18px;
-  font-weight: 700;
-  color: #212529;
+  font-weight: 600;
+  color: #1A1A1A;
+  line-height: 1.4;
 }
 
 .sectionSubtitle {
-  font-size: 13px;
-  color: #868e96;
+  font-size: 12px;
+  color: #6B6B6B;
   margin-top: 4px;
 }
 
 .reportBtn {
   padding: 8px 16px;
-  border: 1px solid #e9ecef;
-  border-radius: 20px;
-  font-size: 13px;
-  color: #495057;
+  border: 1px solid #E0DED8;
+  border-radius: 9999px;
+  font-size: 12px;
+  color: #6B6B6B;
   background: none;
   cursor: pointer;
 }
@@ -134,7 +136,7 @@
 .chartTitle {
   font-size: 14px;
   font-weight: 600;
-  color: #343a40;
+  color: #1A1A1A;
   margin-bottom: 24px;
 }
 
@@ -149,10 +151,10 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 16px solid #e9ecef;
-  border-top-color: #20c997;
-  border-right-color: #20c997;
-  border-bottom-color: #20c997;
+  border: 16px solid #EBEBEA;
+  border-top-color: #22C55E;
+  border-right-color: #22C55E;
+  border-bottom-color: #22C55E;
   transform: rotate(-45deg);
 }
 
@@ -163,7 +165,7 @@
   transform: translate(-50%, -50%);
   font-size: 32px;
   font-weight: 700;
-  color: #212529;
+  color: #1A1A1A;
 }
 
 .donutSmall {
@@ -173,7 +175,7 @@
 .chartFooter {
   margin-top: 24px;
   height: 60px;
-  background-color: #f8f9fa;
+  background-color: #F5F4F0;
   border-radius: 8px;
 }
 
@@ -182,14 +184,14 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  border-left: 1px solid #f1f3f5;
+  border-left: 1px solid #EBEBEA;
   padding-left: 24px;
 }
 
 .listTitle {
   font-size: 14px;
   font-weight: 600;
-  color: #343a40;
+  color: #1A1A1A;
   margin-bottom: 16px;
 }
 
@@ -203,18 +205,18 @@
 .listRank {
   width: 20px;
   font-weight: 700;
-  color: #20c997;
+  color: #22C55E;
 }
 
 .listName {
   flex: 1;
-  color: #495057;
+  color: #6B6B6B;
 }
 
 .progressBar {
   width: 100px;
   height: 4px;
-  background-color: #e9ecef;
+  background-color: #EBEBEA;
   border-radius: 2px;
   margin-right: 12px;
   position: relative;
@@ -225,34 +227,34 @@
   top: 0;
   left: 0;
   height: 100%;
-  background-color: #20c997;
+  background-color: #22C55E;
   border-radius: 2px;
   width: 86%;
 }
 
 .progressText {
-  color: #868e96;
+  color: #6B6B6B;
 }
 
 .listReason {
-  color: #868e96;
+  color: #6B6B6B;
   flex: 2;
 }
 
 .badge {
   padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 11px;
+  border-radius: 4px;
+  font-size: 10px;
   font-weight: 600;
-  background-color: #ffe3e3;
-  color: #fa5252;
+  background-color: #FDF0ED;
+  color: #E8593C;
 }
 
 .quickLinksCard {
-  background-color: #ffffff;
+  background-color: #FFFFFF;
   border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
 .quickLinksGrid {
@@ -270,8 +272,8 @@
 .quickLinkIcon {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background-color: #e9ecef;
+  border-radius: 9999px;
+  background-color: #EBEBEA;
 }
 
 .quickLinkText {
@@ -282,12 +284,12 @@
 .quickLinkTitle {
   font-size: 14px;
   font-weight: 600;
-  color: #343a40;
+  color: #1A1A1A;
 }
 
 .quickLinkSub {
   font-size: 12px;
-  color: #868e96;
+  color: #6B6B6B;
 }
 
 .rightColumn {
@@ -297,10 +299,10 @@
 }
 
 .classCard {
-  background-color: #ffffff;
+  background-color: #FFFFFF;
   border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
 .classHeader {
@@ -312,11 +314,11 @@
 
 .classDate {
   font-size: 12px;
-  color: #adb5bd;
+  color: #D0CEC8;
 }
 
 .activeClassBox {
-  background-color: #20c997;
+  background-color: #22C55E;
   border-radius: 12px;
   padding: 20px;
   color: white;
@@ -326,8 +328,8 @@
 .liveTag {
   display: inline-block;
   background-color: white;
-  color: #20c997;
-  font-size: 11px;
+  color: #22C55E;
+  font-size: 10px;
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 4px;
@@ -341,9 +343,10 @@
 }
 
 .className {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   margin-bottom: 12px;
+  line-height: 1.4;
 }
 
 .classStats {
@@ -363,7 +366,7 @@
   width: 100%;
   padding: 12px;
   background-color: white;
-  color: #20c997;
+  color: #22C55E;
   border: none;
   border-radius: 8px;
   font-weight: 600;
@@ -376,22 +379,22 @@
 }
 
 .classNote {
-  background-color: #f8f9fa;
+  background-color: #F5F4F0;
   border-radius: 8px;
   padding: 16px;
   font-size: 13px;
-  color: #495057;
+  color: #6B6B6B;
 }
 
 .noteHighlight {
-  color: #20c997;
+  color: #E8593C;
   margin-right: 4px;
 }
 
 .emptyClassCard {
-  background-color: #ffffff;
+  background-color: #FFFFFF;
   border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   min-height: 250px;
 }
