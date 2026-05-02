@@ -140,19 +140,35 @@ async def get_chat_messages(dialog_id: int) -> list[dict]:
     return await asyncio.to_thread(_query)
 
 
-async def mark_dialog_analyzed(dialog_id: int) -> None:
+async def update_real_time_analysis(dialog_id: int, analysis_json: dict) -> None:
     """
-    리포트 생성 완료 후 해당 대화의 is_analyzed 플래그를 true로 업데이트합니다.
+    /analyze 요청 직후 생성된 실시간 분석 결과(JSON)를 dialogs 테이블에 업데이트합니다.
     """
     def _query():
         try:
             db = _get_db()
-            db.table("dialogs").update({"is_analyzed": True}).eq("id", dialog_id).execute()
+            db.table("dialogs").update({"real_time_analysis": analysis_json}).eq("id", dialog_id).execute()
+        except Exception as e:
+            print(f"[WARN] update_real_time_analysis 실패: {e}")
+
+    await asyncio.to_thread(_query)
+
+async def mark_dialog_analyzed(dialog_id: int, real_time_analysis: dict = None) -> None:
+    """
+    리포트 생성 완료 후 해당 대화의 is_analyzed 플래그를 true로 업데이트합니다.
+    real_time_analysis 값이 주어지면 함께 업데이트합니다.
+    """
+    def _query():
+        try:
+            db = _get_db()
+            update_data = {"is_analyzed": True}
+            if real_time_analysis is not None:
+                update_data["real_time_analysis"] = real_time_analysis
+            db.table("dialogs").update(update_data).eq("id", dialog_id).execute()
         except Exception as e:
             print(f"[WARN] mark_dialog_analyzed 실패: {e}")
 
     await asyncio.to_thread(_query)
-
 
 # ── 리포트 파일 URL 저장 ───────────────────────────────────────────────────────
 
@@ -163,13 +179,7 @@ async def save_report_file_url(
     file_type: str = "application/json",
 ) -> None:
     """
-    Storage에 업로드된 리포트 파일 URL을 supplementary_data 테이블에 저장합니다.
-
-    Args:
-        session_id: 수업 세션 ID
-        file_name: 저장할 파일명 (예: "report_session1_student42.json")
-        file_url: Supabase Storage 공개 URL
-        file_type: MIME 타입 (기본값: application/json)
+    (Deprecated) Storage에 업로드된 리포트 파일 URL을 supplementary_data 테이블에 저장합니다.
     """
     def _query():
         try:
@@ -182,5 +192,31 @@ async def save_report_file_url(
             }).execute()
         except Exception as e:
             print(f"[WARN] save_report_file_url 실패: {e}")
+
+    await asyncio.to_thread(_query)
+
+
+# ── 학생 리포트 JSON 직접 저장 (신규 테이블 대응) ──────────────────────────────
+
+async def save_student_report(
+    student_id: str,
+    session_id: int,
+    dialog_id: int,
+    content: dict,
+) -> None:
+    """
+    백엔드가 새로 생성한 student_reports 테이블에 JSON 데이터를 직접 삽입합니다.
+    """
+    def _query():
+        try:
+            db = _get_db()
+            db.table("student_reports").insert({
+                "student_id": student_id,
+                "session_id": session_id,
+                "dialog_id": dialog_id,
+                "content": content,
+            }).execute()
+        except Exception as e:
+            print(f"[WARN] save_student_report 실패: {e}")
 
     await asyncio.to_thread(_query)

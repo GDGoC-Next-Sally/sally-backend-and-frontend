@@ -24,7 +24,7 @@ class ConversationTurn(BaseModel):
     text: str
 
 
-# ── /generate-reply API 요청 바디 ─────────────────────────────────────────────
+# ── /chat 및 /analyze API 요청 바디 ─────────────────────────────────────────────
 class ChatRequest(BaseModel):
     conversation_history: List[ConversationTurn]
     student_profile: Optional[StudentProfile] = None
@@ -46,11 +46,13 @@ class TeacherSummary(BaseModel):
     learning_mode: Optional[str] = None           # 학습 태도: passive/active/self_correct
 
 
-# ── /generate-reply API 응답 바디 ─────────────────────────────────────────────
-class ChatResponse(BaseModel):
-    reply: str                        # 학생에게 보여줄 AI 답변 (HTML 주석 제거 완료)
-    teacher_summary: TeacherSummary   # 교사 대시보드용 분석 데이터
-    raw_text: str                     # LLM 원본 응답 (디버깅용)
+# ── /update-realtime API 요청 바디 ────────────────────────────────────────────
+class UpdateRealtimeRequest(BaseModel):
+    session_id: int
+    student_id: str
+    analysis: TeacherSummary
+
+
 
 
 # ── /end-session API 요청 바디 ────────────────────────────────────────────────
