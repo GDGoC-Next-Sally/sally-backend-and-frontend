@@ -146,7 +146,7 @@ export class ClassesService {
       throw new ConflictException(`Student ${studentId} is already a member of class #${classId}`);
     }
 
-    this.prisma.takes.create({
+    await this.prisma.takes.create({
       data: {
         class_id: classId,
         student_id: studentId

@@ -9,19 +9,74 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
+import { PrismaService } from '../../providers/prisma/prisma.service';
+import { SupabaseService } from '../../providers/supabase/supabase.service';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
-
   private logger: Logger = new Logger('EventsGateway');
 
-  handleConnection(client: Socket) {
-    this.logger.log(`Client connected: ${client.id}`);
+  private userSocketMap: Map<string, Socket> = new Map();
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly supabaseService: SupabaseService,
+  ) { }
+
+  async handleConnection(client: Socket) {
+    try {
+      // 1. 토큰가져오기
+      const token = client.handshake.auth?.token || client.handshake.headers?.authorization?.split(' ')[1];
+      if (!token) {
+        client.disconnect();
+        return;
+      }
+
+      // 2. 토큰 검증
+      const { data: { user }, error } = await this.supabaseService.getClient().auth.getUser(token);
+      if (error || !user) {
+        client.disconnect();
+        return;
+      }
+      const userId = user.id;
+
+      // 3. Map에 저장
+      this.userSocketMap.set(userId, client);
+      this.logger.log(`User ${userId} 접속 완료 (Socket: ${client.id})`);
+
+      // 4. 이 유저가 선생님이거나 학생으로 속한 모든 클래스 검색
+      const userClasses = await this.prisma.classes.findMany({
+        where: {
+          OR: [
+            { teacher_id: userId },
+            { takes: { some: { student_id: userId } } },
+          ],
+        },
+        select: { id: true }
+      });
+
+      // 5. 해당 클래스들의 Room에 모두 입장
+      userClasses.forEach(c => {
+        client.join(`class:${c.id}`);
+      });
+      this.logger.log(`User ${userId} joined ${userClasses.length} class rooms.`);
+
+    } catch (err) {
+      this.logger.error('Connection failed', err);
+      client.disconnect();
+    }
   }
 
   handleDisconnect(client: Socket) {
+    for (const [userId, socket] of this.userSocketMap.entries()) {
+      if (socket.id === client.id) {
+        this.userSocketMap.delete(userId);
+        this.logger.log(`User ${userId} 접속 종료`);
+        break;
+      }
+    }
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 
@@ -64,5 +119,17 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
    */
   sendToRoom(room: string, event: string, payload: any) {
     this.server.to(room).emit(event, payload);
+  }
+
+  // 특정 유저를 강제로 방에 넣는 함수
+  forceJoinRoom(userId: string, roomName: string) {
+    const socket = this.userSocketMap.get(userId);
+    if (socket) socket.join(roomName);
+  }
+
+  // 특정 유저를 강제로 방에서 빼는 함수
+  forceLeaveRoom(userId: string, roomName: string) {
+    const socket = this.userSocketMap.get(userId);
+    if (socket) socket.leave(roomName);
   }
 }
