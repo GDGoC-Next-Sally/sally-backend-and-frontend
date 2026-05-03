@@ -14,33 +14,37 @@ interface ClassItem {
   status: 'PLANNING' | 'ACTIVE' | 'COMPLETED';
   explanation: string | null;
   theme: string | null;
+  schedule?: string;
+  teacher?: string;
 }
 
-const STATUS_COLOR: Record<string, string> = {
-  ACTIVE: styles.dotActive,
-  PLANNING: styles.dotPlanning,
-  COMPLETED: styles.dotDone,
-};
-
 const MOCK_FALLBACK_CLASSES: ClassItem[] = [
-  { id: 1, subject: '영어 수업', grade: 3, homeroom: '2반', status: 'ACTIVE', explanation: null, theme: null },
-  { id: 2, subject: '수학 수업', grade: 3, homeroom: '2반', status: 'PLANNING', explanation: null, theme: null },
-  { id: 3, subject: '국어 수업', grade: 3, homeroom: '2반', status: 'ACTIVE', explanation: null, theme: null },
-  { id: 4, subject: '한국사 수업', grade: 3, homeroom: '2반', status: 'COMPLETED', explanation: null, theme: null },
-  { id: 5, subject: '통합과학 수업', grade: 3, homeroom: '2반', status: 'PLANNING', explanation: null, theme: null },
-  { id: 6, subject: '통합사회 수업', grade: 3, homeroom: '2반', status: 'PLANNING', explanation: null, theme: null },
+  { id: 1, subject: '영어 수업', grade: 3, homeroom: '2반', status: 'ACTIVE', explanation: null, theme: null, schedule: '월6, 목6', teacher: '박수빈 선생님' },
+  { id: 2, subject: '수학 수업', grade: 3, homeroom: '2반', status: 'PLANNING', explanation: null, theme: null, schedule: '월1, 화4, 수4, 금4', teacher: '김하린 선생님' },
+  { id: 3, subject: '국어 수업', grade: 3, homeroom: '2반', status: 'ACTIVE', explanation: null, theme: null, schedule: '월4, 수1, 금2', teacher: '김하린 선생님' },
+  { id: 4, subject: '한국사 수업', grade: 3, homeroom: '2반', status: 'COMPLETED', explanation: null, theme: null, schedule: '화2, 목2, 금1', teacher: '김하린 선생님' },
+  { id: 5, subject: '통합과학 수업', grade: 3, homeroom: '2반', status: 'PLANNING', explanation: null, theme: null, schedule: '수2, 목1', teacher: '김하린 선생님' },
+  { id: 6, subject: '통합사회 수업', grade: 3, homeroom: '2반', status: 'PLANNING', explanation: null, theme: null, schedule: '화3, 금6', teacher: '김하린 선생님' },
 ];
 
 export const StudentClassList = () => {
   const router = useRouter();
   const [classes, setClasses] = useState<ClassItem[]>([]);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number>(1); // Default select the first one as per image
   const [search, setSearch] = useState('');
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
   useEffect(() => {
     fetchWithAuth('/classes/student')
-      .then((data) => setClasses(data.length > 0 ? data : MOCK_FALLBACK_CLASSES))
+      .then((data) => {
+        // If data from server doesn't have schedule/teacher, map mock data onto it
+        const enriched = (data.length > 0 ? data : MOCK_FALLBACK_CLASSES).map((c: any, i: number) => ({
+          ...c,
+          schedule: c.schedule || MOCK_FALLBACK_CLASSES[i]?.schedule || '미지정',
+          teacher: c.teacher || MOCK_FALLBACK_CLASSES[i]?.teacher || '김샐리 선생님'
+        }));
+        setClasses(enriched);
+      })
       .catch(() => setClasses(MOCK_FALLBACK_CLASSES));
   }, []);
 
@@ -62,7 +66,7 @@ export const StudentClassList = () => {
 
           <div className={styles.filterBar}>
             <div className={styles.searchBox}>
-              <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg className={styles.searchIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
@@ -88,24 +92,39 @@ export const StudentClassList = () => {
                 <div
                   key={cls.id}
                   className={`${styles.card} ${isSelected ? styles.cardSelected : ''}`}
-                  onClick={() => setSelectedId(isSelected ? null : cls.id)}
+                  onClick={() => setSelectedId(cls.id)}
                 >
-                  <div className={styles.cardTopRow}>
-                    <div className={styles.statusDotRow}>
-                      <span className={`${styles.dot} ${STATUS_COLOR[cls.status] ?? ''}`} />
+                  {isSelected && (
+                    <div className={styles.starIcon}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                      </svg>
                     </div>
+                  )}
+
+                  <div className={styles.cardSchedule}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    {cls.schedule}
                   </div>
-                  <div className={`${styles.cardTitle} ${isSelected ? styles.cardTitleSelected : ''}`}>
+
+                  <div className={styles.cardTitle}>
                     {cls.subject}
                   </div>
-                  <div className={`${styles.cardTeacher} ${isSelected ? styles.cardTeacherSelected : ''}`}>
-                    | {cls.grade ? `${cls.grade}학년 ` : ''}{cls.homeroom ?? '미지정'}
+                  <div className={styles.cardTeacher}>
+                    | {cls.teacher}
                   </div>
+
                   <button
                     className={`${styles.moveBtn} ${isSelected ? styles.moveBtnSelected : ''}`}
                     onClick={(e) => { e.stopPropagation(); router.push(`/s/classes/${cls.id}`); }}
                   >
-                    과목 대기실로 이동&nbsp;→
+                    <span>과목 대기실로 이동</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
                   </button>
                 </div>
               );
@@ -125,12 +144,14 @@ export const StudentClassList = () => {
               접속 중인 학생 <span className={styles.sidebarCount}>34</span>
             </span>
             <button className={styles.refreshBtn}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 2v6h-6" /><path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
                 <path d="M3 22v-6h6" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
               </svg>
             </button>
           </div>
+          {/* Placeholder for student list if needed, or just a simple card look as per image */}
+          <div style={{ height: '400px' }}></div>
         </div>
       </div>
 
@@ -139,7 +160,7 @@ export const StudentClassList = () => {
           onClose={() => setIsJoinModalOpen(false)}
           onSuccess={() => {
             setIsJoinModalOpen(false);
-            fetchWithAuth('/classes/student').then(setClasses).catch(() => {});
+            fetchWithAuth('/classes/student').then(setClasses).catch(() => { });
           }}
         />
       )}

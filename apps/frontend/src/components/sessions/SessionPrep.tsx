@@ -11,11 +11,11 @@ export const SessionPrep = () => {
   const sessionId = params.sessionId as string;
 
   const handleStart = () => {
-    router.push(`/classes/${classId}/sessions/${sessionId}/active`);
+    router.push(`/t/classes/${classId}/sessions/${sessionId}/active`);
   };
 
   const handleBack = () => {
-    router.push(`/classes/${classId}`);
+    router.push(`/t/classes/${classId}`);
   };
 
   return (

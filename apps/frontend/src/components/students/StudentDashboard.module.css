@@ -62,7 +62,9 @@
   gap: 4px;
 }
 
-.moreBtn:hover { color: #1A1A1A; }
+.moreBtn:hover {
+  color: #1A1A1A;
+}
 
 /* Notice */
 .noticeItem {
@@ -105,7 +107,9 @@
   line-height: 1;
 }
 
-.pct { font-size: 20px; }
+.pct {
+  font-size: 20px;
+}
 
 .progressDelta {
   font-size: 12px;
@@ -147,10 +151,17 @@
   text-align: center;
 }
 
-.shortcutItem:hover { background: #F5F4F0; }
+.shortcutItem:hover {
+  background: #F5F4F0;
+}
 
-.shortcutPlaceholder { cursor: default; }
-.shortcutPlaceholder:hover { background: none; }
+.shortcutPlaceholder {
+  cursor: default;
+}
+
+.shortcutPlaceholder:hover {
+  background: none;
+}
 
 .shortcutIcon {
   width: 44px;
@@ -244,7 +255,9 @@
   transition: opacity 0.15s;
 }
 
-.joinBtn:hover { opacity: 0.9; }
+.joinBtn:hover {
+  opacity: 0.9;
+}
 
 .motivationText {
   font-size: 12px;
@@ -299,9 +312,20 @@
   white-space: nowrap;
 }
 
-.badge_live { background: #F0FBF4; color: #22C55E; }
-.badge_wait { background: #FEF9EC; color: #F59E0B; }
-.badge_done { background: #F5F4F0; color: #6B6B6B; }
+.badge_live {
+  background: #F0FBF4;
+  color: #22C55E;
+}
+
+.badge_wait {
+  background: #FEF9EC;
+  color: #F59E0B;
+}
+
+.badge_done {
+  background: #F5F4F0;
+  color: #6B6B6B;
+}
 
 .viewAllBtn {
   width: 100%;
@@ -314,4 +338,6 @@
   text-align: center;
 }
 
-.viewAllBtn:hover { color: #1A1A1A; }
+.viewAllBtn:hover {
+  color: #1A1A1A;
+}

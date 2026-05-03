@@ -18,6 +18,7 @@ interface ClassItem {
   explanation: string | null;
   theme: string | null;
   created_at: string;
+  schedule?: string; // Add schedule for matching design
 }
 
 const STATUS_DOT: Record<string, string> = {
@@ -27,12 +28,10 @@ const STATUS_DOT: Record<string, string> = {
 };
 
 const MOCK_STUDENTS = [
-  { id: 1, name: '김민준', progress: 72, active: true },
-  { id: 2, name: '이서윤', progress: 45, active: false },
-  { id: 3, name: '박지후', progress: 88, active: true },
-  { id: 4, name: '최수아', progress: 31, active: true },
-  { id: 5, name: '정도윤', progress: 60, active: false },
-  { id: 6, name: '한예린', progress: 55, active: true },
+  { id: 1, name: '김학생', progress: 40, active: true, summary: '학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약' },
+  { id: 2, name: '김학생', progress: 40, active: true, summary: '학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약' },
+  { id: 3, name: '김학생', progress: 40, active: true, summary: '학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약' },
+  { id: 4, name: '김학생', progress: 40, active: true, summary: '학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약' },
 ];
 
 export const ClassList = () => {
@@ -48,7 +47,14 @@ export const ClassList = () => {
 
   const fetchClasses = () => {
     fetchWithAuth('/classes/teacher')
-      .then((data) => setClasses(data))
+      .then((data) => {
+        // Enriched with mock schedule to match design if missing
+        const enriched = data.map((c: any) => ({
+          ...c,
+          schedule: c.schedule || '월1, 화4, 수4, 금4'
+        }));
+        setClasses(enriched);
+      })
       .catch(() => setClasses([]));
   };
 
@@ -91,7 +97,10 @@ export const ClassList = () => {
         {/* Left: class card area */}
         <div className={styles.leftPanel}>
           <div className={styles.header}>
-            <h2 className={styles.title}>클래스 목록</h2>
+            <div>
+              <h2 className={styles.title}>클래스 목록</h2>
+              <p className={styles.subtitle}>클래스를 선택해주세요.</p>
+            </div>
             <div className={styles.actionButtons}>
               <button className={styles.btnCreate} onClick={() => setIsCreateModalOpen(true)}>
                 클래스 만들기
@@ -163,8 +172,12 @@ export const ClassList = () => {
                   className={`${styles.card} ${isSelected ? styles.cardSelected : ''}`}
                   onClick={() => setSelectedId(isSelected ? null : cls.id)}
                 >
-                  <div className={styles.cardTopRow}>
-                    <span className={`${styles.dot} ${STATUS_DOT[cls.status] ?? ''}`} />
+                  <div className={styles.cardSchedule}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}>
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    {cls.schedule}
                   </div>
                   <div className={`${styles.cardTitle} ${isSelected ? styles.cardTitleSelected : ''}`}>
                     {cls.grade ? `${cls.grade}학년 ` : ''}{cls.homeroom ?? '미지정'}
@@ -174,9 +187,12 @@ export const ClassList = () => {
                   </div>
                   <button
                     className={`${styles.moveBtn} ${isSelected ? styles.moveBtnSelected : ''}`}
-                    onClick={(e) => { e.stopPropagation(); router.push(`/classes/${cls.id}`); }}
+                    onClick={(e) => { e.stopPropagation(); router.push(`/t/classes/${cls.id}`); }}
                   >
-                    과목 대기실로 이동&nbsp;→
+                    <span>과목 대기실로 이동</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
                   </button>
                 </div>
               );
@@ -213,10 +229,22 @@ export const ClassList = () => {
           ) : (
             <div className={styles.studentList}>
               {MOCK_STUDENTS.map((student) => (
-                <div key={student.id} className={styles.studentItem}>
-                  <div className={`${styles.studentDot} ${student.active ? styles.studentDotActive : ''}`} />
-                  <span className={styles.studentName}>{student.name}</span>
-                  <span className={styles.progressBadge}>진행률 {student.progress}%</span>
+                <div key={student.id} className={styles.studentCard}>
+                  <div className={styles.studentTopRow}>
+                    <div className={styles.studentAvatar} />
+                    <span className={styles.studentName}>{student.name}</span>
+                    <span className={styles.progressBadge}>진행률 {student.progress}%</span>
+                    <button className={styles.studentMenuBtn}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="5" cy="12" r="1.5" />
+                        <circle cx="12" cy="12" r="1.5" />
+                        <circle cx="19" cy="12" r="1.5" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className={styles.studentSummary}>
+                    {student.summary}
+                  </div>
                 </div>
               ))}
             </div>

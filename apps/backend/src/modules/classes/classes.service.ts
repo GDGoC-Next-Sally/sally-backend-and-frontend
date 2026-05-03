@@ -74,6 +74,18 @@ export class ClassesService {
     });
   }
 
+  async findByCode(inviteCode: string) {
+    const classEntity = await this.prisma.classes.findUnique({
+      where: { invite_code: inviteCode },
+      include: { users: { select: { name: true } } }
+    });
+
+    if (!classEntity) {
+      throw new NotFoundException('Invalid invite code');
+    }
+    return classEntity;
+  }
+
   async findAllByStudentId(studentId: string) {
     return this.prisma.classes.findMany({
       where: { takes: { some: { student_id: studentId } } },
@@ -108,6 +120,18 @@ export class ClassesService {
     return this.prisma.classes.delete({
       where: { id }
     });
+  }
+
+  async joinByCode(studentId: string, inviteCode: string) {
+    const classEntity = await this.prisma.classes.findUnique({
+      where: { invite_code: inviteCode }
+    });
+
+    if (!classEntity || !classEntity.registerable) {
+      throw new NotFoundException('Invalid or non-registerable invite code');
+    }
+
+    return this.joinClass(classEntity.id, studentId, inviteCode);
   }
 
   async joinClass(classId: number, studentId: string, inviteCode: string) {

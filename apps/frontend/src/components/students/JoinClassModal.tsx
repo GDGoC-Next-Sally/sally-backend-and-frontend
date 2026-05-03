@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
+import { fetchWithAuth } from '@/lib/api';
 import styles from './JoinClassModal.module.css';
 
 interface Props {
@@ -8,20 +9,56 @@ interface Props {
   onSuccess?: () => void;
 }
 
+interface FoundClass {
+  id: number;
+  subject: string;
+  grade: number;
+  homeroom: string;
+  users: { name: string };
+}
+
 export const JoinClassModal: React.FC<Props> = ({ onClose, onSuccess }) => {
   const [digits, setDigits] = useState<string[]>(Array(8).fill(''));
   const [validated, setValidated] = useState(false);
+  const [foundClass, setFoundClass] = useState<FoundClass | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  const inviteCode = digits.join('');
+
+  useEffect(() => {
+    if (inviteCode.length === 8) {
+      validateCode(inviteCode);
+    } else {
+      setValidated(false);
+      setFoundClass(null);
+      setError('');
+    }
+  }, [inviteCode]);
+
+  const validateCode = async (code: string) => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await fetchWithAuth(`/classes/code/${code}`);
+      setFoundClass(data);
+      setValidated(true);
+    } catch (err) {
+      setError('유효하지 않은 코드입니다.');
+      setValidated(false);
+      setFoundClass(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDigit = (idx: number, val: string) => {
-    const ch = val.replace(/\s/g, '').slice(-1);
+    const ch = val.replace(/\s/g, '').toUpperCase().slice(-1);
     const next = [...digits];
     next[idx] = ch;
     setDigits(next);
     if (ch && idx < 7) inputRefs.current[idx + 1]?.focus();
-    if (next.filter(Boolean).length === 8) setValidated(true);
-    else setValidated(false);
   };
 
   const handleKeyDown = (idx: number, e: React.KeyboardEvent) => {
@@ -31,24 +68,27 @@ export const JoinClassModal: React.FC<Props> = ({ onClose, onSuccess }) => {
   };
 
   const handlePaste = (e: React.ClipboardEvent) => {
-    const text = e.clipboardData.getData('text').replace(/\s/g, '').slice(0, 8);
+    const text = e.clipboardData.getData('text').replace(/\s/g, '').toUpperCase().slice(0, 8);
     if (!text) return;
     e.preventDefault();
     const next = Array(8).fill('');
     text.split('').forEach((ch, i) => { next[i] = ch; });
     setDigits(next);
-    if (text.length === 8) setValidated(true);
     inputRefs.current[Math.min(text.length, 7)]?.focus();
   };
 
   const handleJoin = async () => {
     setLoading(true);
+    setError('');
     try {
-      // Backend endpoint for joining by invite code is not yet implemented.
-      // Will connect to POST /classes/register when the endpoint is available.
-      await new Promise((r) => setTimeout(r, 500));
+      await fetchWithAuth('/classes/join', {
+        method: 'POST',
+        body: JSON.stringify({ invite_code: inviteCode }),
+      });
       onSuccess?.();
       onClose();
+    } catch (err: any) {
+      setError(err.message || '참여에 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -87,14 +127,19 @@ export const JoinClassModal: React.FC<Props> = ({ onClose, onSuccess }) => {
           {validated && (
             <p className={styles.validMsg}>✓ 유효한 코드입니다.</p>
           )}
+          {error && (
+            <p className={styles.errorMsg}>{error}</p>
+          )}
         </div>
 
-        {validated && (
+        {validated && foundClass && (
           <div className={styles.formGroup}>
             <label className={styles.label}>예상 클래스 정보</label>
             <div className={styles.classInfoBox}>
-              <span className={styles.classInfoName}>3학년 3반 과학</span>
-              <span className={styles.classInfoTeacher}>김셀리 선생님</span>
+              <span className={styles.classInfoName}>
+                {foundClass.grade}학년 {foundClass.homeroom} {foundClass.subject}
+              </span>
+              <span className={styles.classInfoTeacher}>{foundClass.users.name} 선생님</span>
             </div>
           </div>
         )}

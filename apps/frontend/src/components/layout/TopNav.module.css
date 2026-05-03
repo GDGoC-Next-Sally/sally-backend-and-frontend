@@ -39,12 +39,12 @@
 }
 
 .activeIcon {
-  background-color: #FDF0ED;
-  color: #E8593C;
+  background-color: #ecfdf5;
+  color: #10b981;
 }
 
 .activeIcon:hover {
-  background-color: #FADDCF;
+  background-color: #d1fae5;
 }
 
 .tooltip {
