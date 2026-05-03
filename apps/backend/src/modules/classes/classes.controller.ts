@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } fro
 import { ClassesService } from './classes.service';
 import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
+import { JoinClassDto } from './dto/join-class.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../auth/roles.decorator';
@@ -73,8 +74,8 @@ export class ClassesController {
   @Post('student/join')
   @Roles(UserRole.STUDENT)
   @ApiOperation({ summary: 'Join a class' })
-  joinClass(@Body('invite_code') inviteCode: string, @Req() req: any) {
-    return this.classesService.joinClass(req.user.userId, inviteCode);
+  joinClass(@Body() joinClassDto: JoinClassDto, @Req() req: any) {
+    return this.classesService.joinClass(req.user.userId, joinClassDto.invite_code);
   }
 
   @Post('student/:id/leave')
