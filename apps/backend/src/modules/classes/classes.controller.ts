@@ -69,4 +69,25 @@ export class ClassesController {
   remove(@Param('id') id: string, @Req() req: any) {
     return this.classesService.remove(+id, req.user.userId);
   }
+
+  @Post('student/:id/join')
+  @Roles(UserRole.STUDENT)
+  @ApiOperation({ summary: 'Join a class' })
+  joinClass(@Param('id') id: string, @Body('invite_code') inviteCode: string, @Req() req: any) {
+    return this.classesService.joinClass(+id, req.user.userId, inviteCode);
+  }
+
+  @Post('student/:id/leave')
+  @Roles(UserRole.STUDENT)
+  @ApiOperation({ summary: 'Leave a class' })
+  leaveClass(@Param('id') id: string, @Req() req: any) {
+    return this.classesService.leaveClass(+id, req.user.userId);
+  }
+
+  @Post('teacher/:id/kick')
+  @Roles(UserRole.TEACHER)
+  @ApiOperation({ summary: 'Kick a student from a class' })
+  kickStudent(@Param('id') id: string, @Body('student_id') studentId: string, @Req() req: any) {
+    return this.classesService.kickStudent(+id, req.user.userId, studentId);
+  }
 }

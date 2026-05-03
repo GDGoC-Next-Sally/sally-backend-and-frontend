@@ -109,4 +109,82 @@ export class ClassesService {
       where: { id }
     });
   }
+
+  async joinClass(classId: number, studentId: string, inviteCode: string) {
+    const classEntity = await this.prisma.classes.findFirst({
+      where: {
+        id: classId,
+        invite_code: inviteCode,
+        registerable: true
+      }
+    });
+    if (!classEntity) {
+      throw new NotFoundException(`Class #${classId} not found or registerable is false.`);
+    }
+
+    // TODO: 여기에 이제 socket room join 해야함.
+
+    return this.prisma.takes.create({
+      data: {
+        class_id: classId,
+        student_id: studentId
+      }
+    });
+  }
+
+  async leaveClass(classId: number, studentId: string) {
+    const classEntity = await this.prisma.classes.findFirst({
+      where: {
+        id: classId,
+        takes: { some: { student_id: studentId } }
+      }
+    });
+    if (!classEntity) {
+      throw new NotFoundException(`Class #${classId} not found or student is not a member of this class.`);
+    }
+
+    // TODO: 여기에 이제 socket room leave 해야함.
+
+    return this.prisma.takes.delete({
+      where: {
+        student_id_class_id: {
+          class_id: classId,
+          student_id: studentId
+        }
+      }
+    });
+  }
+
+  async kickStudent(classId: number, teacherId: string, studentId: string) {
+    const classEntity = await this.prisma.classes.findFirst({
+      where: {
+        id: classId,
+        teacher_id: teacherId
+      }
+    });
+    if (!classEntity) {
+      throw new NotFoundException(`Class #${classId} not found.`);
+    }
+
+    const takesEntity = await this.prisma.takes.findFirst({
+      where: {
+        class_id: classId,
+        student_id: studentId
+      }
+    });
+    if (!takesEntity) {
+      throw new NotFoundException(`Student #${studentId} is not a member of this class.`);
+    }
+
+    // TODO: 여기에 이제 socket room kick 해야함.
+
+    return this.prisma.takes.delete({
+      where: {
+        student_id_class_id: {
+          class_id: classId,
+          student_id: studentId
+        }
+      }
+    });
+  }
 }
