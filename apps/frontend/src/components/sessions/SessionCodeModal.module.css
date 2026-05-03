@@ -160,6 +160,11 @@
   background-color: #20c997;
 }
 
+.toggleDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .toggleKnob {
   width: 20px;
   height: 20px;

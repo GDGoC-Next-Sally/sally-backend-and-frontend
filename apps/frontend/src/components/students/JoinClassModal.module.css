@@ -151,3 +151,17 @@
 .joinBtn:hover { background: #16A34A; }
 .joinBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 .cancelBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.errorMsg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #FFF1F0;
+  border: 1px solid #FFCCC7;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #CF1322;
+}

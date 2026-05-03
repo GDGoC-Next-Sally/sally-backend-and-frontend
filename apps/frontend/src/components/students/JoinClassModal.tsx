@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import { fetchWithAuth } from '@/lib/api';
 import styles from './JoinClassModal.module.css';
 
@@ -9,55 +9,21 @@ interface Props {
   onSuccess?: () => void;
 }
 
-interface FoundClass {
-  id: number;
-  subject: string;
-  grade: number;
-  homeroom: string;
-  users: { name: string };
-}
-
 export const JoinClassModal: React.FC<Props> = ({ onClose, onSuccess }) => {
   const [digits, setDigits] = useState<string[]>(Array(8).fill(''));
-  const [validated, setValidated] = useState(false);
-  const [foundClass, setFoundClass] = useState<FoundClass | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const inviteCode = digits.join('');
-
-  useEffect(() => {
-    if (inviteCode.length === 8) {
-      validateCode(inviteCode);
-    } else {
-      setValidated(false);
-      setFoundClass(null);
-      setError('');
-    }
-  }, [inviteCode]);
-
-  const validateCode = async (code: string) => {
-    setLoading(true);
-    setError('');
-    try {
-      const data = await fetchWithAuth(`/classes/code/${code}`);
-      setFoundClass(data);
-      setValidated(true);
-    } catch (err) {
-      setError('유효하지 않은 코드입니다.');
-      setValidated(false);
-      setFoundClass(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const isComplete = digits.every((d) => d !== '');
 
   const handleDigit = (idx: number, val: string) => {
     const ch = val.replace(/\s/g, '').toUpperCase().slice(-1);
     const next = [...digits];
     next[idx] = ch;
     setDigits(next);
+    setError('');
     if (ch && idx < 7) inputRefs.current[idx + 1]?.focus();
   };
 
@@ -81,14 +47,14 @@ export const JoinClassModal: React.FC<Props> = ({ onClose, onSuccess }) => {
     setLoading(true);
     setError('');
     try {
-      await fetchWithAuth('/classes/join', {
+      await fetchWithAuth('/classes/student/join', {
         method: 'POST',
         body: JSON.stringify({ invite_code: inviteCode }),
       });
       onSuccess?.();
       onClose();
     } catch (err: any) {
-      setError(err.message || '참여에 실패했습니다.');
+      setError(err.message || '유효하지 않은 코드이거나 참여에 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -124,25 +90,15 @@ export const JoinClassModal: React.FC<Props> = ({ onClose, onSuccess }) => {
               />
             ))}
           </div>
-          {validated && (
-            <p className={styles.validMsg}>✓ 유효한 코드입니다.</p>
-          )}
           {error && (
-            <p className={styles.errorMsg}>{error}</p>
+            <div className={styles.errorMsg}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              {error}
+            </div>
           )}
         </div>
-
-        {validated && foundClass && (
-          <div className={styles.formGroup}>
-            <label className={styles.label}>예상 클래스 정보</label>
-            <div className={styles.classInfoBox}>
-              <span className={styles.classInfoName}>
-                {foundClass.grade}학년 {foundClass.homeroom} {foundClass.subject}
-              </span>
-              <span className={styles.classInfoTeacher}>{foundClass.users.name} 선생님</span>
-            </div>
-          </div>
-        )}
 
         <div className={styles.footer}>
           <button className={styles.cancelBtn} onClick={onClose} disabled={loading}>
@@ -151,7 +107,7 @@ export const JoinClassModal: React.FC<Props> = ({ onClose, onSuccess }) => {
           <button
             className={styles.joinBtn}
             onClick={handleJoin}
-            disabled={!validated || loading}
+            disabled={!isComplete || loading}
           >
             {loading ? '처리 중...' : '참여하기'}
           </button>

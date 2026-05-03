@@ -271,7 +271,10 @@ export const ClassList = () => {
       {isCodeModalOpen && selectedClass && (
         <SessionCodeModal
           onClose={() => setIsCodeModalOpen(false)}
+          classId={selectedClass.id}
           inviteCode={selectedClass.invite_code}
+          registerable={selectedClass.registerable}
+          onUpdate={fetchClasses}
         />
       )}
     </div>
