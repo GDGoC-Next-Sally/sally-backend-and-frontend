@@ -19,13 +19,13 @@ export const TopNav = () => {
   const roleTitle = user?.role === 'teacher' ? '선생님' : '학생';
 
   const homeHref =
-    user?.role === 'teacher' ? '/classes' :
+    user?.role === 'teacher' ? '/t/home' :
     user?.role === 'student' ? '/s/home' :
     '/';
 
   const isHomePage =
     pathname === '/' ||
-    pathname === '/classes' ||
+    pathname === '/t/home' ||
     pathname === '/s/home';
 
   return (

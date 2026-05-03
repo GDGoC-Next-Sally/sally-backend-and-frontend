@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { CreateClassModal } from './CreateClassModal';
 import { SessionCodeModal } from '../sessions/SessionCodeModal';
-import { StudentSidebar } from '../students/StudentSidebar';
 import { fetchWithAuth } from '@/lib/api';
 import styles from './ClassList.module.css';
 
@@ -21,11 +20,20 @@ interface ClassItem {
   created_at: string;
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  ACTIVE: '진행중',
-  PLANNING: '예정',
-  COMPLETED: '종료',
+const STATUS_DOT: Record<string, string> = {
+  ACTIVE: styles.dotActive,
+  PLANNING: styles.dotPlanning,
+  COMPLETED: styles.dotDone,
 };
+
+const MOCK_STUDENTS = [
+  { id: 1, name: '김민준', progress: 72, active: true },
+  { id: 2, name: '이서윤', progress: 45, active: false },
+  { id: 3, name: '박지후', progress: 88, active: true },
+  { id: 4, name: '최수아', progress: 31, active: true },
+  { id: 5, name: '정도윤', progress: 60, active: false },
+  { id: 6, name: '한예린', progress: 55, active: true },
+];
 
 export const ClassList = () => {
   const router = useRouter();
@@ -75,23 +83,22 @@ export const ClassList = () => {
     setShowDropdown(false);
   };
 
+  const activeCount = MOCK_STUDENTS.filter((s) => s.active).length;
+
   return (
     <div className={styles.container}>
-      <div className={`${styles.layout} ${selectedId ? styles.layoutWithSidebar : ''}`}>
+      <div className={styles.layout}>
         {/* Left: class card area */}
         <div className={styles.leftPanel}>
           <div className={styles.header}>
-            <div>
-              <h2 className={styles.title}>클래스 목록</h2>
-              <p className={styles.subtitle}>클래스를 선택해주세요.</p>
-            </div>
+            <h2 className={styles.title}>클래스 목록</h2>
             <div className={styles.actionButtons}>
-              <button className={styles.btnDark} onClick={() => setIsCreateModalOpen(true)}>
+              <button className={styles.btnCreate} onClick={() => setIsCreateModalOpen(true)}>
                 클래스 만들기
               </button>
               <div className={styles.moreWrapper} ref={dropdownRef}>
                 <button
-                  className={`${styles.btnOutline} ${selectedId ? styles.btnOutlineActive : ''}`}
+                  className={`${styles.btnMore} ${selectedId ? styles.btnMoreActive : ''}`}
                   onClick={() => selectedId && setShowDropdown((v) => !v)}
                   disabled={!selectedId}
                 >
@@ -156,11 +163,8 @@ export const ClassList = () => {
                   className={`${styles.card} ${isSelected ? styles.cardSelected : ''}`}
                   onClick={() => setSelectedId(isSelected ? null : cls.id)}
                 >
-                  <div className={styles.cardStatusRow}>
-                    <span className={`${styles.statusDot} ${styles[`status_${cls.status}`]}`} />
-                    <span className={`${styles.statusText} ${isSelected ? styles.statusTextSelected : ''}`}>
-                      {STATUS_LABEL[cls.status]}
-                    </span>
+                  <div className={styles.cardTopRow}>
+                    <span className={`${styles.dot} ${STATUS_DOT[cls.status] ?? ''}`} />
                   </div>
                   <div className={`${styles.cardTitle} ${isSelected ? styles.cardTitleSelected : ''}`}>
                     {cls.grade ? `${cls.grade}학년 ` : ''}{cls.homeroom ?? '미지정'}
@@ -185,8 +189,39 @@ export const ClassList = () => {
           </div>
         </div>
 
-        {/* Right: student sidebar — only visible when a class is selected */}
-        {selectedId && <StudentSidebar />}
+        {/* Right: student sidebar — always visible */}
+        <div className={styles.rightPanel}>
+          <div className={styles.sidebarHeader}>
+            <span className={styles.sidebarTitle}>
+              접속 중인 학생
+              {selectedId !== null && (
+                <span className={styles.sidebarCount}>&nbsp;{activeCount}</span>
+              )}
+            </span>
+            <button className={styles.refreshBtn}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 2v6h-6" /><path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+                <path d="M3 22v-6h6" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+              </svg>
+            </button>
+          </div>
+
+          {selectedId === null ? (
+            <p className={styles.sidebarEmpty}>
+              클래스를 선택하면<br />접속 중인 학생이 표시됩니다.
+            </p>
+          ) : (
+            <div className={styles.studentList}>
+              {MOCK_STUDENTS.map((student) => (
+                <div key={student.id} className={styles.studentItem}>
+                  <div className={`${styles.studentDot} ${student.active ? styles.studentDotActive : ''}`} />
+                  <span className={styles.studentName}>{student.name}</span>
+                  <span className={styles.progressBadge}>진행률 {student.progress}%</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {isCreateModalOpen && (
