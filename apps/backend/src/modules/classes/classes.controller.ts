@@ -76,13 +76,6 @@ export class ClassesController {
     return this.classesService.remove(+id, req.user.userId);
   }
 
-  @Post('join')
-  @Roles(UserRole.STUDENT)
-  @ApiOperation({ summary: 'Join a class by invite code' })
-  joinByCode(@Body('invite_code') inviteCode: string, @Req() req: any) {
-    return this.classesService.joinByCode(req.user.userId, inviteCode);
-  }
-
   @Post('student/join')
   @Roles(UserRole.STUDENT)
   @ApiOperation({ summary: 'Join a class' })
