@@ -70,11 +70,11 @@ export class ClassesController {
     return this.classesService.remove(+id, req.user.userId);
   }
 
-  @Post('student/:id/join')
+  @Post('student/join')
   @Roles(UserRole.STUDENT)
   @ApiOperation({ summary: 'Join a class' })
-  joinClass(@Param('id') id: string, @Body('invite_code') inviteCode: string, @Req() req: any) {
-    return this.classesService.joinClass(+id, req.user.userId, inviteCode);
+  joinClass(@Body('invite_code') inviteCode: string, @Req() req: any) {
+    return this.classesService.joinClass(req.user.userId, inviteCode);
   }
 
   @Post('student/:id/leave')

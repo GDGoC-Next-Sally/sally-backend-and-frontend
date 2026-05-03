@@ -1,12 +1,15 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
 import { PrismaService } from '../../providers/prisma/prisma.service';
-import { user_role } from '.prisma/client'
+import { EventsGateway } from '../../common/gateways/events.gateway';
 
 @Injectable()
 export class ClassesService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventsGateway: EventsGateway,
+  ) { }
 
   private async generateInviteCode(): Promise<string> {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -30,7 +33,6 @@ export class ClassesService {
 
   async create(userId: string, createClassDto: CreateClassDto) {
     const inviteCode = await this.generateInviteCode();
-
     return this.prisma.classes.create({
       data: {
         ...createClassDto,
@@ -110,26 +112,38 @@ export class ClassesService {
     });
   }
 
-  async joinClass(classId: number, studentId: string, inviteCode: string) {
+  async joinClass(studentId: string, inviteCode: string) {
     const classEntity = await this.prisma.classes.findFirst({
       where: {
-        id: classId,
         invite_code: inviteCode,
         registerable: true
       }
     });
     if (!classEntity) {
-      throw new NotFoundException(`Class #${classId} not found or registerable is false.`);
+      throw new NotFoundException(`Class with invite_code ${inviteCode} not found or registerable is false.`);
     }
 
-    // TODO: 여기에 이제 socket room join 해야함.
+    const classId = classEntity.id;
 
-    return this.prisma.takes.create({
+    if (await this.prisma.takes.findFirst({
+      where: {
+        class_id: classId,
+        student_id: studentId
+      }
+    })) {
+      throw new ConflictException(`Student ${studentId} is already a member of class #${classId}`);
+    }
+
+    this.prisma.takes.create({
       data: {
         class_id: classId,
         student_id: studentId
       }
     });
+
+    // TODO: 여기에 이제 socket room join 해야함.
+
+    return classEntity;
   }
 
   async leaveClass(classId: number, studentId: string) {
