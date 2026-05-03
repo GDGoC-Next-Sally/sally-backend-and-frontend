@@ -1,318 +1,348 @@
 .container {
+  background-color: #F5F4F0;
+  min-height: calc(100vh - 56px);
   padding: 24px;
-  background-color: #f8f9fa;
-  min-height: calc(100vh - 60px);
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-  box-sizing: border-box;
 }
 
-/* Two-column layout: card area + student sidebar */
 .layout {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 340px; /* Wider sidebar to match design */
+  gap: 0;
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  align-items: start;
 }
 
 .leftPanel {
-  flex: 1;
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 28px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
   min-width: 0;
+  padding-right: 32px;
 }
 
 /* Header */
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 20px;
+  align-items: center;
+  margin-bottom: 24px;
 }
 
 .title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
-  color: #212529;
+  color: #1A1A1A;
   margin: 0 0 4px 0;
 }
 
 .subtitle {
   font-size: 13px;
-  color: #adb5bd;
+  color: #6B6B6B;
   margin: 0;
 }
 
 .actionButtons {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
 }
 
-.btnDark {
-  background-color: #343a40;
+.moreWrapper {
+  position: relative;
+}
+
+.btnCreate {
+  background: #4B4B4B; /* Dark gray as per image */
   color: white;
-  padding: 9px 18px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
   border: none;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
+  transition: all 0.2s;
 }
 
-.btnDark:hover {
-  background-color: #212529;
+.btnCreate:hover { 
+  background: #1A1A1A;
+  transform: translateY(-1px);
 }
 
-.btnOutline {
-  background-color: white;
-  color: #868e96;
-  padding: 9px 18px;
-  border-radius: 8px;
-  font-size: 14px;
+.btnMore {
+  background: white;
+  color: #6B6B6B;
+  border: 1px solid #E0DED8;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: 15px;
   font-weight: 600;
-  border: 1.5px solid #dee2e6;
   cursor: not-allowed;
   white-space: nowrap;
 }
 
-.btnOutlineActive {
-  color: #212529;
-  border-color: #adb5bd;
+.btnMoreActive {
+  cursor: pointer;
+  color: #1A1A1A;
+}
+
+.btnMoreActive:hover { 
+  background: #F5F4F0;
+  border-color: #6B6B6B;
+}
+
+/* Filter bar */
+.filterBar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.searchBox {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  color: #6B6B6B;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px 14px 12px 42px;
+  border: 1.5px solid #E0DED8;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #1A1A1A;
+  background: white;
+  outline: none;
+}
+
+.searchInput:focus {
+  border-color: #10b981;
+}
+
+.sortSelect {
+  padding: 12px 36px 12px 14px;
+  border: 1.5px solid #E0DED8;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #6B6B6B;
+  background: white;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B6B6B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 1rem;
+}
+
+/* Card grid */
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: white;
+  border-radius: 14px;
+  border: 1.5px solid #E0DED8;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  border-color: #E8593C;
+  transform: translateY(-2px);
+}
+
+.cardSelected {
+  background: #10b981;
+  border-color: #10b981;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+}
+
+.cardSchedule {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.cardSelected .cardSchedule {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.cardTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1A1A1A;
+  margin-bottom: 6px;
+}
+
+.cardTitleSelected { color: white; }
+
+.cardSubject {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6B6B6B;
+  margin-bottom: 20px;
+}
+
+.cardSubjectSelected { color: rgba(255, 255, 255, 0.9); }
+
+.moveBtn {
+  width: 100%;
+  background: #ecfdf5;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #10b981;
+  font-weight: 700;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   cursor: pointer;
 }
 
-.btnOutlineActive:hover {
-  background-color: #f1f3f5;
+.moveBtnSelected {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
 }
 
-/* More button dropdown wrapper */
-.moreWrapper {
-  position: relative;
+/* Sidebar */
+.rightPanel {
+  border-left: 1px solid #EBEBEA;
+  padding-left: 28px;
+  min-height: 600px;
+}
+
+.sidebarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.sidebarTitle {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1A1A1A;
+}
+
+.sidebarCount {
+  color: #10b981;
+}
+
+.refreshBtn {
+  background: none;
+  border: none;
+  color: #6B6B6B;
+  cursor: pointer;
+}
+
+.studentList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.studentCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.studentTopRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.studentAvatar {
+  width: 32px;
+  height: 32px;
+  background: #EBEBEA;
+  border-radius: 50%;
+}
+
+.studentName {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1A1A1A;
+  flex: 1;
+}
+
+.progressBadge {
+  color: #22C55E;
+  font-size: 11px;
+  font-weight: 700;
+  background: #F0FBF4;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.studentMenuBtn {
+  background: none;
+  border: none;
+  color: #6B6B6B;
+  cursor: pointer;
+}
+
+.studentSummary {
+  background: white;
+  border: 1.5px solid #F1F5F9;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 11px;
+  color: #6B6B6B;
+  line-height: 1.6;
+}
+
+.sidebarEmpty {
+  text-align: center;
+  color: #6B6B6B;
+  font-size: 14px;
+  padding: 60px 0;
+  line-height: 1.8;
 }
 
 .dropdownMenu {
   position: absolute;
   right: 0;
-  top: calc(100% + 6px);
-  background-color: white;
-  border: 1px solid #e9ecef;
-  border-radius: 10px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  padding: 6px 0;
-  min-width: 160px;
+  top: calc(100% + 8px);
+  background: white;
+  border: 1px solid #E0DED8;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 8px 0;
+  min-width: 180px;
   z-index: 100;
 }
 
 .menuItem {
   display: block;
   width: 100%;
-  text-align: left;
-  padding: 10px 18px;
+  padding: 12px 20px;
   background: none;
   border: none;
-  font-size: 14px;
-  color: #343a40;
-  cursor: pointer;
-}
-
-.menuItem:hover {
-  background-color: #f8f9fa;
-}
-
-.menuItemDanger {
-  color: #fa5252;
-}
-
-.menuItemDisabled {
-  color: #adb5bd;
-  cursor: not-allowed;
-}
-
-/* Layout expands to show sidebar when class is selected */
-.layoutWithSidebar {
-  align-items: flex-start;
-}
-
-/* Filter bar */
-.filterBar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  gap: 12px;
-}
-
-.searchBox {
-  display: flex;
-  align-items: center;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 8px 14px;
-  flex: 1;
-  max-width: 320px;
-}
-
-.searchIcon {
-  color: #adb5bd;
-  margin-right: 8px;
-  flex-shrink: 0;
-}
-
-.searchInput {
-  border: none;
-  outline: none;
-  width: 100%;
-  font-size: 14px;
-  color: #343a40;
-}
-
-.searchInput::placeholder {
-  color: #adb5bd;
-}
-
-.sortSelect {
-  padding: 8px 14px;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #495057;
-  background-color: white;
-  cursor: pointer;
-  outline: none;
-}
-
-/* Card grid: 4 columns */
-.cardGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-}
-
-/* Class card */
-.card {
-  background: white;
-  border-radius: 12px;
-  border: 1.5px solid #e9ecef;
-  padding: 18px;
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  display: flex;
-  flex-direction: column;
-}
-
-.card:hover {
-  border-color: #adb5bd;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.cardSelected {
-  background: #20c997;
-  border-color: #20c997;
-  box-shadow: 0 4px 14px rgba(32, 201, 151, 0.3);
-}
-
-/* Status row inside card */
-.cardStatusRow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.statusDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.status_ACTIVE {
-  background-color: #20c997;
-}
-
-.status_PLANNING {
-  background-color: #fcc419;
-}
-
-.status_COMPLETED {
-  background-color: #adb5bd;
-}
-
-.statusText {
-  font-size: 12px;
-  color: #868e96;
-}
-
-.statusTextSelected {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-/* Card title (e.g. 3학년 5반) */
-.cardTitle {
-  font-size: 17px;
-  font-weight: 700;
-  color: #212529;
-  margin-bottom: 4px;
-  line-height: 1.3;
-}
-
-.cardTitleSelected {
-  color: #ffffff;
-}
-
-/* Card subject (e.g. | 영어 문법) */
-.cardSubject {
-  font-size: 13px;
-  color: #868e96;
-  margin-bottom: auto;
-  padding-bottom: 14px;
-}
-
-.cardSubjectSelected {
-  color: rgba(255, 255, 255, 0.85);
-}
-
-/* Move button at bottom of card */
-.moveBtn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #868e96;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  margin-top: 14px;
-  border-top: 1px solid #f1f3f5;
-  padding-top: 12px;
-  width: 100%;
   text-align: left;
+  font-size: 14px;
+  color: #1A1A1A;
+  cursor: pointer;
 }
 
-.moveBtn:hover {
-  color: #495057;
-}
-
-.moveBtnSelected {
-  color: rgba(255, 255, 255, 0.9);
-  border-top-color: rgba(255, 255, 255, 0.25);
-}
-
-.moveBtnSelected:hover {
-  color: white;
-}
-
-/* Empty state */
-.empty {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 60px 0;
-  color: #adb5bd;
-  font-size: 15px;
-}
+.menuItem:hover { background: #F5F4F0; }
+.menuItemDanger { color: #E8593C; }

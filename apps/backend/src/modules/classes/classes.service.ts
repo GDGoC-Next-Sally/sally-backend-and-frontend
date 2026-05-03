@@ -76,6 +76,18 @@ export class ClassesService {
     });
   }
 
+  async findByCode(inviteCode: string) {
+    const classEntity = await this.prisma.classes.findUnique({
+      where: { invite_code: inviteCode },
+      include: { users: { select: { name: true } } }
+    });
+
+    if (!classEntity) {
+      throw new NotFoundException('Invalid invite code');
+    }
+    return classEntity;
+  }
+
   async findAllByStudentId(studentId: string) {
     return this.prisma.classes.findMany({
       where: { takes: { some: { student_id: studentId } } },

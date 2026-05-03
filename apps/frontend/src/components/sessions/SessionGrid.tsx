@@ -57,7 +57,7 @@ export const SessionGrid = () => {
   return (
     <div className={styles.mainContent}>
       {/* Back link + class info */}
-      <button className={styles.backLink} onClick={() => router.push('/classes')}>
+      <button className={styles.backLink} onClick={() => router.push('/t/classes')}>
         &lt; 클래스 목록으로
       </button>
 
@@ -109,7 +109,7 @@ export const SessionGrid = () => {
             <div
               key={session.id}
               className={styles.sessionRow}
-              onClick={() => router.push(`/classes/${classId}/sessions/${session.id}`)}
+              onClick={() => router.push(`/t/classes/${classId}/sessions/${session.id}`)}
             >
               {/* Icon */}
               <div className={styles.sessionIcon}>
@@ -157,7 +157,7 @@ export const SessionGrid = () => {
                       className={styles.menuItem}
                       onClick={(e) => {
                         e.stopPropagation();
-                        router.push(`/classes/${classId}/sessions/${session.id}`);
+                        router.push(`/t/classes/${classId}/sessions/${session.id}`);
                         setOpenMenuId(null);
                       }}
                     >

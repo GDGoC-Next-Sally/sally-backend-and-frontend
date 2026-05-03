@@ -19,14 +19,21 @@ export const TopNav = () => {
   const roleTitle = user?.role === 'teacher' ? '선생님' : '학생';
 
   const homeHref =
-    user?.role === 'teacher' ? '/classes' :
+    user?.role === 'teacher' ? '/t/home' :
     user?.role === 'student' ? '/s/home' :
     '/';
 
+  const classesHref =
+    user?.role === 'teacher' ? '/t/classes' :
+    user?.role === 'student' ? '/s/classes' :
+    '/classes';
+
   const isHomePage =
     pathname === '/' ||
-    pathname === '/classes' ||
+    pathname === '/t/home' ||
     pathname === '/s/home';
+
+  const isClassesPage = pathname?.includes('/classes');
 
   return (
     <nav className={styles.nav}>
@@ -35,11 +42,10 @@ export const TopNav = () => {
       <div className={styles.centerIcons}>
         <Link href={homeHref} className={`${styles.iconWrapper} ${isHomePage ? styles.activeIcon : ''}`}>
           <HomeIcon className="w-6 h-6" />
-          {isHomePage && <span className={styles.tooltip}>홈</span>}
         </Link>
-        <div className={styles.iconWrapper}>
+        <Link href={classesHref} className={`${styles.iconWrapper} ${isClassesPage ? styles.activeIcon : ''}`}>
           <BookIcon className="w-6 h-6" />
-        </div>
+        </Link>
         <div className={styles.iconWrapper}>
           <GridIcon className="w-6 h-6" />
         </div>

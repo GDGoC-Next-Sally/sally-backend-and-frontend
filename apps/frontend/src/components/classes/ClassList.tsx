@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { CreateClassModal } from './CreateClassModal';
 import { SessionCodeModal } from '../sessions/SessionCodeModal';
-import { StudentSidebar } from '../students/StudentSidebar';
 import { fetchWithAuth } from '@/lib/api';
 import styles from './ClassList.module.css';
 
@@ -19,13 +18,21 @@ interface ClassItem {
   explanation: string | null;
   theme: string | null;
   created_at: string;
+  schedule?: string; // Add schedule for matching design
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  ACTIVE: '진행중',
-  PLANNING: '예정',
-  COMPLETED: '종료',
+const STATUS_DOT: Record<string, string> = {
+  ACTIVE: styles.dotActive,
+  PLANNING: styles.dotPlanning,
+  COMPLETED: styles.dotDone,
 };
+
+const MOCK_STUDENTS = [
+  { id: 1, name: '김학생', progress: 40, active: true, summary: '학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약' },
+  { id: 2, name: '김학생', progress: 40, active: true, summary: '학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약' },
+  { id: 3, name: '김학생', progress: 40, active: true, summary: '학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약' },
+  { id: 4, name: '김학생', progress: 40, active: true, summary: '학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약' },
+];
 
 export const ClassList = () => {
   const router = useRouter();
@@ -40,7 +47,14 @@ export const ClassList = () => {
 
   const fetchClasses = () => {
     fetchWithAuth('/classes/teacher')
-      .then((data) => setClasses(data))
+      .then((data) => {
+        // Enriched with mock schedule to match design if missing
+        const enriched = data.map((c: any) => ({
+          ...c,
+          schedule: c.schedule || '월1, 화4, 수4, 금4'
+        }));
+        setClasses(enriched);
+      })
       .catch(() => setClasses([]));
   };
 
@@ -75,9 +89,11 @@ export const ClassList = () => {
     setShowDropdown(false);
   };
 
+  const activeCount = MOCK_STUDENTS.filter((s) => s.active).length;
+
   return (
     <div className={styles.container}>
-      <div className={`${styles.layout} ${selectedId ? styles.layoutWithSidebar : ''}`}>
+      <div className={styles.layout}>
         {/* Left: class card area */}
         <div className={styles.leftPanel}>
           <div className={styles.header}>
@@ -86,12 +102,12 @@ export const ClassList = () => {
               <p className={styles.subtitle}>클래스를 선택해주세요.</p>
             </div>
             <div className={styles.actionButtons}>
-              <button className={styles.btnDark} onClick={() => setIsCreateModalOpen(true)}>
+              <button className={styles.btnCreate} onClick={() => setIsCreateModalOpen(true)}>
                 클래스 만들기
               </button>
               <div className={styles.moreWrapper} ref={dropdownRef}>
                 <button
-                  className={`${styles.btnOutline} ${selectedId ? styles.btnOutlineActive : ''}`}
+                  className={`${styles.btnMore} ${selectedId ? styles.btnMoreActive : ''}`}
                   onClick={() => selectedId && setShowDropdown((v) => !v)}
                   disabled={!selectedId}
                 >
@@ -156,11 +172,12 @@ export const ClassList = () => {
                   className={`${styles.card} ${isSelected ? styles.cardSelected : ''}`}
                   onClick={() => setSelectedId(isSelected ? null : cls.id)}
                 >
-                  <div className={styles.cardStatusRow}>
-                    <span className={`${styles.statusDot} ${styles[`status_${cls.status}`]}`} />
-                    <span className={`${styles.statusText} ${isSelected ? styles.statusTextSelected : ''}`}>
-                      {STATUS_LABEL[cls.status]}
-                    </span>
+                  <div className={styles.cardSchedule}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}>
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    {cls.schedule}
                   </div>
                   <div className={`${styles.cardTitle} ${isSelected ? styles.cardTitleSelected : ''}`}>
                     {cls.grade ? `${cls.grade}학년 ` : ''}{cls.homeroom ?? '미지정'}
@@ -170,9 +187,12 @@ export const ClassList = () => {
                   </div>
                   <button
                     className={`${styles.moveBtn} ${isSelected ? styles.moveBtnSelected : ''}`}
-                    onClick={(e) => { e.stopPropagation(); router.push(`/classes/${cls.id}`); }}
+                    onClick={(e) => { e.stopPropagation(); router.push(`/t/classes/${cls.id}`); }}
                   >
-                    과목 대기실로 이동&nbsp;→
+                    <span>과목 대기실로 이동</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
                   </button>
                 </div>
               );
@@ -185,8 +205,51 @@ export const ClassList = () => {
           </div>
         </div>
 
-        {/* Right: student sidebar — only visible when a class is selected */}
-        {selectedId && <StudentSidebar />}
+        {/* Right: student sidebar — always visible */}
+        <div className={styles.rightPanel}>
+          <div className={styles.sidebarHeader}>
+            <span className={styles.sidebarTitle}>
+              접속 중인 학생
+              {selectedId !== null && (
+                <span className={styles.sidebarCount}>&nbsp;{activeCount}</span>
+              )}
+            </span>
+            <button className={styles.refreshBtn}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 2v6h-6" /><path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+                <path d="M3 22v-6h6" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+              </svg>
+            </button>
+          </div>
+
+          {selectedId === null ? (
+            <p className={styles.sidebarEmpty}>
+              클래스를 선택하면<br />접속 중인 학생이 표시됩니다.
+            </p>
+          ) : (
+            <div className={styles.studentList}>
+              {MOCK_STUDENTS.map((student) => (
+                <div key={student.id} className={styles.studentCard}>
+                  <div className={styles.studentTopRow}>
+                    <div className={styles.studentAvatar} />
+                    <span className={styles.studentName}>{student.name}</span>
+                    <span className={styles.progressBadge}>진행률 {student.progress}%</span>
+                    <button className={styles.studentMenuBtn}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="5" cy="12" r="1.5" />
+                        <circle cx="12" cy="12" r="1.5" />
+                        <circle cx="19" cy="12" r="1.5" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className={styles.studentSummary}>
+                    {student.summary}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {isCreateModalOpen && (

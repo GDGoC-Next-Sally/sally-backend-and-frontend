@@ -1,16 +1,36 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { fetchWithAuth } from '@/lib/api';
 import styles from './Dashboard.module.css';
 
+interface ClassItem {
+  id: number;
+  subject: string;
+  grade: number | null;
+  homeroom: string | null;
+}
+
 export const Dashboard = () => {
+  const [classes, setClasses] = useState<ClassItem[]>([]);
+
+  useEffect(() => {
+    fetchWithAuth('/classes/teacher')
+      .then((data) => setClasses(data || []))
+      .catch(() => setClasses([]));
+  }, []);
+
   return (
     <div className={styles.container}>
       <div className={styles.topSection}>
         <div className={styles.topCard}>
           <div className={styles.topCardContent}>
-            <div className={styles.iconCircle}></div>
+            <div className={styles.iconCircle}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+            </div>
             <div>
               <h3 className={styles.cardTitle}>공지사항</h3>
               <p className={styles.cardSubtitle}>3월 학습 리포트 업데이트 안내<br/>새로운 분석 항목이 추가되었어요.</p>
@@ -24,7 +44,11 @@ export const Dashboard = () => {
 
         <div className={styles.topCard}>
           <div className={styles.topCardContent}>
-            <div className={styles.iconCircle}></div>
+            <div className={styles.iconCircle}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </div>
             <div>
               <h3 className={styles.cardTitle}>도움이 필요한 학생 <span className={styles.highlightCount}>3</span></h3>
               <p className={styles.cardSubtitle}>지난 7일간 멘션 요청 3건이 발생했어요.</p>
@@ -109,17 +133,41 @@ export const Dashboard = () => {
           <div className={styles.quickLinksCard}>
             <h3 className={styles.listTitle}>바로가기</h3>
             <div className={styles.quickLinksGrid}>
-              {[1, 2, 3, 4].map((i) => (
-                <Link href="/classes" key={i} style={{ textDecoration: 'none' }}>
+              {/* Actual connected classes */}
+              {classes.slice(0, 4).map((cls) => (
+                <Link href={`/t/classes/${cls.id}`} key={cls.id} style={{ textDecoration: 'none' }}>
                   <div className={styles.quickLinkItem}>
-                    <div className={styles.quickLinkIcon}></div>
+                    <div className={styles.quickLinkIcon}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                      </svg>
+                    </div>
                     <div className={styles.quickLinkText}>
-                      <span className={styles.quickLinkTitle}>내 클래스 관리</span>
-                      <span className={styles.quickLinkSub}>클래스 및 학생 관리</span>
+                      <span className={styles.quickLinkTitle}>{cls.subject}</span>
+                      <span className={styles.quickLinkSub}>
+                        {cls.grade ? `${cls.grade}학년 ` : ''}{cls.homeroom ?? ''}
+                      </span>
                     </div>
                   </div>
                 </Link>
               ))}
+              
+              {/* Default "Manage My Classes" if empty or for the remaining slots */}
+              {(classes.length === 0 || classes.length < 4) && (
+                <Link href="/t/classes" style={{ textDecoration: 'none' }}>
+                  <div className={styles.quickLinkItem}>
+                    <div className={styles.quickLinkIcon}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2">
+                        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+                      </svg>
+                    </div>
+                    <div className={styles.quickLinkText}>
+                      <span className={styles.quickLinkTitle}>내 클래스 관리</span>
+                      <span className={styles.quickLinkSub}>전체 목록 보기</span>
+                    </div>
+                  </div>
+                </Link>
+              )}
             </div>
           </div>
         </div>
