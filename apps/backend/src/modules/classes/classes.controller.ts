@@ -43,12 +43,6 @@ export class ClassesController {
     return this.classesService.findAllByTeacherId(req.user.userId);
   }
 
-  @Get('code/:code')
-  @ApiOperation({ summary: 'Find a class by invite code' })
-  findByCode(@Param('code') code: string) {
-    return this.classesService.findByCode(code);
-  }
-
   @Get('student')
   @Roles(UserRole.STUDENT)
   @ApiOperation({ summary: 'Find all classes by student id' })
