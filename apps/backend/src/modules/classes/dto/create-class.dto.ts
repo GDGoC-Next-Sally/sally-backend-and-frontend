@@ -26,31 +26,41 @@ export class ScheduleDto {
   period?: number;
 }
 
+// apps/backend/src/modules/classes/dto/create-class.dto.ts
+
 export class CreateClassDto {
-  @ApiProperty()
+  @ApiProperty({ description: '과목명', example: '인공지능과 미래사회' })
   @IsString()
   subject: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: '학년', example: 1, required: false })
   @IsInt()
   @IsOptional()
   grade?: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: '반 정보', example: 'A반', required: false })
   @IsString()
   @IsOptional()
   homeroom?: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: '클래스 설명', example: '2024년 1학기 정보 수업입니다.' })
   @IsString()
   explanation: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: '클래스 테마/색상', example: 'indigo', required: false })
   @IsString()
   @IsOptional()
   theme?: string;
 
-  @ApiProperty({ type: [ScheduleDto], description: '수업 시간표 (교시 정보)' })
+  @ApiProperty({
+    type: [ScheduleDto],
+    description: '수업 시간표 (요일 및 교시 배열)',
+    example: [
+      { day: 'MON', period: 1 },
+      { day: 'WED', period: 3 }
+    ],
+    required: false
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ScheduleDto)
