@@ -1,5 +1,4 @@
 import { createClient } from "@/utils/supabase/client";
-import { clearUserCookies } from "@/utils/useUser";
 
 export const signupWithEmail = async (
   email: string,
@@ -33,6 +32,5 @@ export const signinWithEmail = async (email: string, password: string) => {
 export const signOut = async () => {
   const supabase = createClient();
   const { error } = await supabase.auth.signOut();
-  clearUserCookies();
   return { error };
 };

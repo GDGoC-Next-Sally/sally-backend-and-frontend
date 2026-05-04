@@ -24,8 +24,7 @@ export const updateSession = async (request: NextRequest) => {
     },
   });
 
-  // Refresh session — do not remove this call.
-  await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  return supabaseResponse;
+  return { response: supabaseResponse, user };
 };

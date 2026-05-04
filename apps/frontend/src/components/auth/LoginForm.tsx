@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './LoginForm.module.css';
 import { signinWithEmail, signupWithEmail } from '@/lib/supabase';
-import { setUserCookies } from '@/utils/useUser';
 import { fetchWithAuth } from '@/lib/api';
 
 type Tab = 'student' | 'teacher';
@@ -53,8 +52,6 @@ export const LoginForm = () => {
             const serverRole = profile?.role;
             const serverName = profile?.name;
             const finalRole = serverRole === 'TEACHER' ? 'teacher' : (serverRole === 'ADMIN' ? activeTab : 'student');
-
-            setUserCookies(serverName ?? '', finalRole);
 
             if (serverRole === 'ADMIN') {
               router.push(activeTab === 'teacher' ? '/t/home' : '/s/home');

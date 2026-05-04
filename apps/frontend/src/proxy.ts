@@ -1,8 +1,19 @@
-import { type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/utils/supabase/middleware";
 
+const PUBLIC_PATHS = ["/login", "/signup"];
+
 export async function proxy(request: NextRequest) {
-  return await updateSession(request);
+  const { response, user } = await updateSession(request);
+  const { pathname } = request.nextUrl;
+
+  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+
+  if (!user && !isPublic) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  return response;
 }
 
 export const config = {

@@ -10,52 +10,35 @@ export interface AppUser {
   role?: 'student' | 'teacher';
 }
 
-function getCookie(name: string): string | undefined {
-  if (typeof document === 'undefined') return undefined;
-  return document.cookie
-    .split('; ')
-    .find((row) => row.startsWith(`${name}=`))
-    ?.split('=')[1];
-}
-
-export function setUserCookies(name: string, role: string) {
-  document.cookie = `app-user-name=${encodeURIComponent(name)}; path=/; SameSite=Lax`;
-  document.cookie = `app-user-role=${encodeURIComponent(role)}; path=/; SameSite=Lax`;
-}
-
-export function clearUserCookies() {
-  document.cookie = 'app-user-name=; path=/; max-age=0';
-  document.cookie = 'app-user-role=; path=/; max-age=0';
-}
-
 export function useUser() {
   const [user, setUser] = useState<AppUser | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
 
-    const load = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { setUser(null); return; }
+    const load = async (userId: string, email?: string) => {
+      const { data } = await supabase
+        .from('users')
+        .select('name, role')
+        .eq('id', userId)
+        .single();
 
       setUser({
-        id: session.user.id,
-        email: session.user.email,
-        name: getCookie('app-user-name') ?? session.user.user_metadata?.name,
-        role: (getCookie('app-user-role') as AppUser['role']) ?? session.user.user_metadata?.role,
+        id: userId,
+        email,
+        name: data?.name,
+        role: data?.role === 'TEACHER' ? 'teacher' : 'student',
       });
     };
 
-    load();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) { setUser(null); return; }
+      load(session.user.id, session.user.email);
+    });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) { setUser(null); return; }
-      setUser({
-        id: session.user.id,
-        email: session.user.email,
-        name: getCookie('app-user-name') ?? session.user.user_metadata?.name,
-        role: (getCookie('app-user-role') as AppUser['role']) ?? session.user.user_metadata?.role,
-      });
+      load(session.user.id, session.user.email);
     });
 
     return () => subscription.unsubscribe();
