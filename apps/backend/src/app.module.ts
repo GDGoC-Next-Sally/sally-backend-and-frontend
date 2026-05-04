@@ -9,6 +9,7 @@ import { PrismaModule } from './providers/prisma/prisma.module';
 import { StorageModule } from './providers/storage/storage.module';
 import { GatewaysModule } from './common/gateways/gateways.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
+import { LivechatModule } from './modules/livechat/livechat.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { SessionsModule } from './modules/sessions/sessions.module';
     StorageModule,
     GatewaysModule,
     SessionsModule,
+    LivechatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

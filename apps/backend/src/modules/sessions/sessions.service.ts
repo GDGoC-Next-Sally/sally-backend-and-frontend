@@ -21,9 +21,14 @@ export class SessionsService {
       throw new Error('Class not found');
     }
 
+    const { scheduled_date, scheduled_start, scheduled_end, ...rest } = createSessionDto;
+
     const session = await this.prisma.sessions.create({
       data: {
-        ...createSessionDto,
+        ...rest,
+        scheduled_date: scheduled_date ? new Date(scheduled_date) : null,
+        scheduled_start: scheduled_start ? new Date(scheduled_start) : null,
+        scheduled_end: scheduled_end ? new Date(scheduled_end) : null,
         teacher_id: teacherId,
       },
     });
@@ -86,9 +91,16 @@ export class SessionsService {
       throw new UnauthorizedException('You are not the owner of this session');
     }
 
+    const { scheduled_date, scheduled_start, scheduled_end, ...rest } = updateSessionDto;
+
     return this.prisma.sessions.update({
       where: { id },
-      data: updateSessionDto
+      data: {
+        ...rest,
+        scheduled_date: scheduled_date ? new Date(scheduled_date) : undefined,
+        scheduled_start: scheduled_start ? new Date(scheduled_start) : undefined,
+        scheduled_end: scheduled_end ? new Date(scheduled_end) : undefined,
+      }
     });
   }
 
@@ -101,5 +113,82 @@ export class SessionsService {
     }
 
     return this.prisma.sessions.delete({ where: { id } });
+  }
+
+  async startSession(id: number, teacherId: string) {
+    const session = await this.prisma.sessions.findUnique({ where: { id } });
+    if (!session) throw new NotFoundException(`Session #${id} not found`);
+    if (session.teacher_id !== teacherId) throw new UnauthorizedException('You are not the owner of this session');
+
+    const updatedSession = await this.prisma.sessions.update({
+      where: { id },
+      data: {
+        status: 'ACTIVE',
+        started_at: new Date()
+      }
+    });
+
+    this.eventsGateway.sendToRoom(`session:${id}`, 'session_started', updatedSession);
+    return updatedSession;
+  }
+
+  async finishSession(id: number, teacherId: string) {
+    const session = await this.prisma.sessions.findUnique({ where: { id } });
+    if (!session) throw new NotFoundException(`Session #${id} not found`);
+    if (session.teacher_id !== teacherId) throw new UnauthorizedException('You are not the owner of this session');
+
+    const updatedSession = await this.prisma.sessions.update({
+      where: { id },
+      data: {
+        status: 'FINISHED',
+        finished_at: new Date()
+      }
+    });
+
+    this.eventsGateway.sendToRoom(`session:${id}`, 'session_finished', updatedSession);
+    return updatedSession;
+  }
+
+  async joinSession(id: number, studentId: string) {
+    const session = await this.prisma.sessions.findUnique({ where: { id } });
+    if (!session) throw new NotFoundException(`Session #${id} not found`);
+    
+    if (session.status === 'FINISHED') {
+      throw new Error('This session has already finished.');
+    }
+
+    const isEnrolled = await this.prisma.takes.findFirst({
+      where: { class_id: session.class_id, student_id: studentId },
+    });
+    if (!isEnrolled) throw new UnauthorizedException('You are not a member of this class.');
+
+    // 다이얼로그(채팅방)가 없으면 생성
+    let dialog = await this.prisma.dialogs.findUnique({
+      where: { session_id_student_id: { session_id: id, student_id: studentId } }
+    });
+
+    if (!dialog) {
+      dialog = await this.prisma.dialogs.create({
+        data: {
+          session_id: id,
+          student_id: studentId
+        }
+      });
+    }
+
+    // 출석 기록
+    await this.prisma.attends.upsert({
+      where: { student_id_session_id: { student_id: studentId, session_id: id } },
+      update: {},
+      create: { student_id: studentId, session_id: id }
+    });
+
+    // 학생을 세션 소켓 룸에 입장시킴
+    this.eventsGateway.forceJoinRoom(studentId, `session:${id}`);
+
+    return {
+      dialog,
+      session_status: session.status
+    };
   }
 }

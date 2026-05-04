@@ -47,4 +47,25 @@ export class SessionsController {
   remove(@Param('id') id: string, @Req() req: any) {
     return this.sessionsService.remove(+id, req.user.userId);
   }
+
+  @Post(':id/start')
+  @Roles(UserRole.TEACHER)
+  @ApiOperation({ summary: '수업(세션) 시작' })
+  startSession(@Param('id') id: string, @Req() req: any) {
+    return this.sessionsService.startSession(+id, req.user.userId);
+  }
+
+  @Post(':id/finish')
+  @Roles(UserRole.TEACHER)
+  @ApiOperation({ summary: '수업(세션) 종료' })
+  finishSession(@Param('id') id: string, @Req() req: any) {
+    return this.sessionsService.finishSession(+id, req.user.userId);
+  }
+
+  @Post(':id/join')
+  @Roles(UserRole.STUDENT)
+  @ApiOperation({ summary: '학생 수업 참여 (대화방 생성)' })
+  joinSession(@Param('id') id: string, @Req() req: any) {
+    return this.sessionsService.joinSession(+id, req.user.userId);
+  }
 }
