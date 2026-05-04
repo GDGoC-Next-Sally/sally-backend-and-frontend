@@ -7,12 +7,12 @@ import { HomeIcon } from '../icons/HomeIcon';
 import { BookIcon } from '../icons/BookIcon';
 import { GridIcon } from '../icons/GridIcon';
 import styles from './TopNav.module.css';
-import { useAuthStore } from '@/store/authStore';
+import { useUser } from '@/utils/useUser';
 
 export const TopNav = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const user = useAuthStore((state) => state.user);
+  const user = useUser();
 
   // 닉네임과 직함 설정
   const displayName = user?.name || '사용자';

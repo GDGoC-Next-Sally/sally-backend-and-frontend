@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './LoginForm.module.css';
 import { signinWithEmail, signupWithEmail } from '@/lib/supabase';
-import { useAuthStore } from '@/store/authStore';
+import { setUserCookies } from '@/utils/useUser';
 import { fetchWithAuth } from '@/lib/api';
 
 type Tab = 'student' | 'teacher';
@@ -18,8 +18,6 @@ export const LoginForm = () => {
   const [signupRole, setSignupRole] = useState<Tab>('student');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const setAuth = useAuthStore((state) => state.setAuth);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -48,35 +46,16 @@ export const LoginForm = () => {
           console.warn('Supabase login failed:', error);
           alert('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
         } else {
-          const token = data.session.access_token;
-          console.log('로그인 성공! JWT 토큰 획득:', token);
-
-          // 먼저 토큰을 스토어에 저장해야 fetchWithAuth가 토큰을 사용할 수 있습니다.
-          setAuth({
-            id: data.session.user.id,
-            email: data.session.user.email,
-            role: 'student', // 임시 저장
-          }, token);
-
           // 백엔드 연동: /auth/profile 호출하여 실제 권한 받아오기
           try {
             const profile = await fetchWithAuth('/auth/profile');
-            console.log('백엔드 프로필 정보 획득:', profile);
 
-            // 서버에서 넘어온 정보 (예: { userId, email, name, role })
             const serverRole = profile?.role;
             const serverName = profile?.name;
             const finalRole = serverRole === 'TEACHER' ? 'teacher' : (serverRole === 'ADMIN' ? activeTab : 'student');
-            
-            // 전역 상태 업데이트 (이름과 서버 권한 반영)
-            setAuth({
-              id: data.session.user.id,
-              email: data.session.user.email,
-              name: serverName,
-              role: finalRole,
-            }, token);
 
-            // 2. 역할에 맞는 홈으로 리다이렉트 (관리자는 선택한 탭에 따라 이동)
+            setUserCookies(serverName ?? '', finalRole);
+
             if (serverRole === 'ADMIN') {
               router.push(activeTab === 'teacher' ? '/t/home' : '/s/home');
             } else if (serverRole === 'TEACHER') {

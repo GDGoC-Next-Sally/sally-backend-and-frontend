@@ -1,11 +1,13 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@/utils/supabase/client";
+import { clearUserCookies } from "@/utils/useUser";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-export const supabase = createClient(supabaseUrl, supabaseKey);
-
-export const signupWithEmail = async (email: string, password: string, nickname: string, role: string) => {
+export const signupWithEmail = async (
+  email: string,
+  password: string,
+  nickname?: string,
+  role?: string
+) => {
+  const supabase = createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -20,6 +22,7 @@ export const signupWithEmail = async (email: string, password: string, nickname:
 };
 
 export const signinWithEmail = async (email: string, password: string) => {
+  const supabase = createClient();
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -28,6 +31,8 @@ export const signinWithEmail = async (email: string, password: string) => {
 };
 
 export const signOut = async () => {
+  const supabase = createClient();
   const { error } = await supabase.auth.signOut();
+  clearUserCookies();
   return { error };
 };

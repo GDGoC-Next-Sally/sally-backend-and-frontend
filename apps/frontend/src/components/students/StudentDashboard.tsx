@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/authStore';
+import { useUser } from '@/utils/useUser';
 import { fetchWithAuth } from '@/lib/api';
 import styles from './StudentDashboard.module.css';
 
@@ -22,7 +22,7 @@ const RECENT_SESSIONS = [
 
 export const StudentDashboard = () => {
   const router = useRouter();
-  const user = useAuthStore((s) => s.user);
+  const user = useUser();
   const [classes, setClasses] = useState<ClassItem[]>([]);
 
   useEffect(() => {
