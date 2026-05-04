@@ -126,7 +126,7 @@ async def end_session(request: EndSessionRequest):
 
     # ── Step 1: FinalReport 생성 ─────────────────────────────────────────────
     try:
-        report = generate_final_report(
+        report = await generate_final_report(
             session_id=str(request.session_id),
             summaries=request.summaries,
             student_id=request.student_id,

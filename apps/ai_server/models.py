@@ -71,6 +71,7 @@ class FinalReport(BaseModel):
 
     # ── 이해도 ─────────────────────────────────────────────────────────────────
     avg_understanding_score: float                # 전체 평균 이해도 (1~10, 수업 회고용)
+    peak_understanding_score: int = 0             # 수업 중 최고 이해도 점수 (1~10, 학생이 도달한 최정점)
     recent_avg_understanding_pct: float           # 최근 3턴 평균 이해도 % (×10, 현재 상태용)
     final_understanding_score: int                # 마지막 턴 이해도 점수 (1~10)
     understanding_scores_timeline: List[int]      # 턴별 이해도 % 시계열 (×10, 꺾은선 차트용)
@@ -88,6 +89,7 @@ class FinalReport(BaseModel):
 
     # ── 학습 패턴 ──────────────────────────────────────────────────────────────
     learning_mode_distribution: Dict[str, int] = {}   # 학습 모드 분포 {"active": 3, "passive": 5}
+    active_ratio: float = 0.0                    # 능동 참여율 % (active + self_correct 회)
     one_line_summaries: List[str] = []            # 턴별 한 줄 요약 목록
 
     # ── 총평 ───────────────────────────────────────────────────────────────────
