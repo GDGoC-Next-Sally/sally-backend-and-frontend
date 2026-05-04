@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { fetchWithAuth } from '@/lib/api';
+import { createClass, updateClass } from '@/actions/classes';
 import styles from './CreateClassModal.module.css';
 
 interface ClassFormData {
@@ -67,15 +67,9 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
 
     try {
       if (isEdit && classId) {
-        await fetchWithAuth(`/classes/${classId}`, {
-          method: 'PATCH',
-          body: JSON.stringify(body),
-        });
+        await updateClass(classId, body);
       } else {
-        await fetchWithAuth('/classes', {
-          method: 'POST',
-          body: JSON.stringify(body),
-        });
+        await createClass(body);
       }
       onSuccess?.();
       onClose();

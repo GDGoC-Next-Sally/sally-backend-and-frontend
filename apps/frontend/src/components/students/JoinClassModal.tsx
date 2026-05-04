@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { fetchWithAuth } from '@/lib/api';
+import { joinClass } from '@/actions/classes';
 import styles from './JoinClassModal.module.css';
 
 interface Props {
@@ -47,10 +47,7 @@ export const JoinClassModal: React.FC<Props> = ({ onClose, onSuccess }) => {
     setLoading(true);
     setError('');
     try {
-      await fetchWithAuth('/classes/student/join', {
-        method: 'POST',
-        body: JSON.stringify({ invite_code: inviteCode }),
-      });
+      await joinClass(inviteCode);
       onSuccess?.();
       onClose();
     } catch (err: any) {

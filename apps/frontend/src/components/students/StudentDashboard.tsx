@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/authStore';
-import { fetchWithAuth } from '@/lib/api';
+import { useUser } from '@/utils/useUser';
+import { getStudentClasses } from '@/actions/classes';
 import styles from './StudentDashboard.module.css';
 
 interface ClassItem {
@@ -22,11 +22,11 @@ const RECENT_SESSIONS = [
 
 export const StudentDashboard = () => {
   const router = useRouter();
-  const user = useAuthStore((s) => s.user);
+  const user = useUser();
   const [classes, setClasses] = useState<ClassItem[]>([]);
 
   useEffect(() => {
-    fetchWithAuth('/classes/student')
+    getStudentClasses()
       .then(setClasses)
       .catch(() => setClasses([]));
   }, []);

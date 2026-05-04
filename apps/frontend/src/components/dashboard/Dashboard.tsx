@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { fetchWithAuth } from '@/lib/api';
+import { getTeacherClasses } from '@/actions/classes';
 import styles from './Dashboard.module.css';
 
 interface ClassItem {
@@ -16,7 +16,7 @@ export const Dashboard = () => {
   const [classes, setClasses] = useState<ClassItem[]>([]);
 
   useEffect(() => {
-    fetchWithAuth('/classes/teacher')
+    getTeacherClasses()
       .then((data) => setClasses(data || []))
       .catch(() => setClasses([]));
   }, []);

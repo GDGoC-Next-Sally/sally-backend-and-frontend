@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { CreateClassModal } from './CreateClassModal';
 import { SessionCodeModal } from '../sessions/SessionCodeModal';
-import { fetchWithAuth } from '@/lib/api';
+import { getTeacherClasses, deleteClass } from '@/actions/classes';
 import styles from './ClassList.module.css';
 
 interface ClassItem {
@@ -46,14 +46,13 @@ export const ClassList = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchClasses = () => {
-    fetchWithAuth('/classes/teacher')
+    getTeacherClasses()
       .then((data) => {
-        // Enriched with mock schedule to match design if missing
-        const enriched = data.map((c: any) => ({
+        const enriched = data.map((c) => ({
           ...c,
-          schedule: c.schedule || '월1, 화4, 수4, 금4'
+          schedule: c.schedule || '월1, 화4, 수4, 금4',
         }));
-        setClasses(enriched);
+        setClasses(enriched as any);
       })
       .catch(() => setClasses([]));
   };
@@ -80,7 +79,7 @@ export const ClassList = () => {
   const handleDelete = async () => {
     if (!selectedId || !confirm('클래스를 삭제하시겠습니까?')) return;
     try {
-      await fetchWithAuth(`/classes/${selectedId}`, { method: 'DELETE' });
+      await deleteClass(selectedId);
       setClasses((prev) => prev.filter((c) => c.id !== selectedId));
       setSelectedId(null);
     } catch {
