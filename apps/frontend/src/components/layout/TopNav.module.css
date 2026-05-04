@@ -86,4 +86,85 @@
   width: 16px;
   height: 16px;
   color: #6B6B6B;
+  transition: transform 0.2s;
+}
+
+.dropdownArrowOpen {
+  transform: rotate(180deg);
+}
+
+.profileWrapper {
+  position: relative;
+}
+
+.dropdownBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 200px;
+  background-color: #FFFFFF;
+  border: 1px solid #E0DED8;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  z-index: 20;
+  overflow: hidden;
+}
+
+.dropdownHeader {
+  padding: 12px 16px;
+}
+
+.dropdownName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin: 0;
+}
+
+.dropdownEmail {
+  font-size: 12px;
+  color: #6B6B6B;
+  margin: 2px 0 0;
+}
+
+.dropdownDivider {
+  height: 1px;
+  background-color: #E0DED8;
+}
+
+.dropdownItem {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 14px;
+  color: #E53E3E;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.dropdownItem:hover {
+  background-color: #FFF5F5;
+}
+
+.loginLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.loginText {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6B6B6B;
 }
