@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { fetchWithAuth } from '@/lib/api';
+import { getStudentClasses } from '@/actions/classes';
 import { JoinClassModal } from './JoinClassModal';
 import styles from './StudentClassList.module.css';
 
@@ -14,7 +14,7 @@ interface ClassItem {
   status: 'PLANNING' | 'ACTIVE' | 'COMPLETED';
   explanation: string | null;
   theme: string | null;
-  schedule?: string;
+  schedule?: string | null;
   teacher?: string;
 }
 
@@ -35,7 +35,7 @@ export const StudentClassList = () => {
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchWithAuth('/classes/student')
+    getStudentClasses()
       .then((data) => {
         // If data from server doesn't have schedule/teacher, map mock data onto it
         const enriched = (data.length > 0 ? data : MOCK_FALLBACK_CLASSES).map((c: any, i: number) => ({
@@ -160,7 +160,7 @@ export const StudentClassList = () => {
           onClose={() => setIsJoinModalOpen(false)}
           onSuccess={() => {
             setIsJoinModalOpen(false);
-            fetchWithAuth('/classes/student').then(setClasses).catch(() => { });
+            getStudentClasses().then(setClasses).catch(() => { });
           }}
         />
       )}

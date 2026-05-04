@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/utils/useUser';
-import { fetchWithAuth } from '@/lib/api';
+import { getStudentClasses } from '@/actions/classes';
 import styles from './StudentDashboard.module.css';
 
 interface ClassItem {
@@ -26,7 +26,7 @@ export const StudentDashboard = () => {
   const [classes, setClasses] = useState<ClassItem[]>([]);
 
   useEffect(() => {
-    fetchWithAuth('/classes/student')
+    getStudentClasses()
       .then(setClasses)
       .catch(() => setClasses([]));
   }, []);

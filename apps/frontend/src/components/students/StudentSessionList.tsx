@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { fetchWithAuth } from '@/lib/api';
+import { getClass } from '@/actions/classes';
 import styles from './StudentSessionList.module.css';
 
 interface ClassInfo {
@@ -59,7 +59,7 @@ export const StudentSessionList: React.FC<Props> = ({ classId, initialTab }) => 
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetchWithAuth(`/classes/${classId}`)
+    getClass(classId)
       .then(setClassInfo)
       .catch(() => setClassInfo(null));
   }, [classId]);

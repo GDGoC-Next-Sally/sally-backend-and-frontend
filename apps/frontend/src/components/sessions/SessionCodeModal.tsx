@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { fetchWithAuth } from '@/lib/api';
+import { refreshInviteCode, toggleRegisterable } from '@/actions/classes';
 import styles from './SessionCodeModal.module.css';
 
 interface SessionCodeModalProps {
@@ -38,7 +38,7 @@ export const SessionCodeModal: React.FC<SessionCodeModalProps> = ({
     if (!confirm('입장 코드를 재발급하시겠습니까? 기존 코드는 더 이상 사용할 수 없습니다.')) return;
     setReissuing(true);
     try {
-      const data = await fetchWithAuth(`/classes/${classId}/invite`, { method: 'PATCH' });
+      const data = await refreshInviteCode(classId);
       setCode(data.invite_code);
       onUpdate?.();
     } catch {
@@ -51,7 +51,7 @@ export const SessionCodeModal: React.FC<SessionCodeModalProps> = ({
   const handleToggle = async () => {
     setToggling(true);
     try {
-      await fetchWithAuth(`/classes/${classId}/registerable`, { method: 'PATCH' });
+      await toggleRegisterable(classId);
       setBlockNew((v) => !v);
       onUpdate?.();
     } catch {

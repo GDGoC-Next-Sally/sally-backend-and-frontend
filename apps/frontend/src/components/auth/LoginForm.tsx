@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './LoginForm.module.css';
 import { signinWithEmail, signupWithEmail } from '@/lib/supabase';
-import { fetchWithAuth } from '@/lib/api';
+import { getProfile } from '@/actions/auth';
 
 type Tab = 'student' | 'teacher';
 
@@ -47,7 +47,7 @@ export const LoginForm = () => {
         } else {
           // 백엔드 연동: /auth/profile 호출하여 실제 권한 받아오기
           try {
-            const profile = await fetchWithAuth('/auth/profile');
+            const profile = await getProfile();
 
             const serverRole = profile?.role;
             const serverName = profile?.name;
