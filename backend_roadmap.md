@@ -12,7 +12,8 @@
 
 ### [BE] Live Chat & Socket Gateway [#8]
 - **기간:** 2026-05-06 ~ 2026-05-08 (AI Chat Service 완료 후 시작)
-- [ ] **Socket Gateway**: 클래스 룸 Join, 실시간 채팅 WebSocket 이벤트 처리
+- [x] **Socket Gateway**: 클래스 룸 Join (자동 입장 및 서버 사이드 제어 완료)
+- [ ] **Live Chat WebSocket 이벤트 처리**: 채팅 전송, 알림 처리 로직 구현 예정
 - [ ] **Live Chat Service**: 채팅 전송, AI 직접 요청 Handler, 힌트 푸시 로직
 - [ ] **SSE (Server-Sent Events)**: AI 스트리밍 응답을 클라이언트에 전달
 

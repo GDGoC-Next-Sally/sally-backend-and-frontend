@@ -97,9 +97,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return { event: 'joined', room: data.room };
   }
 
-  /**
-   * 특정 Room을 나감 (범용)
-   */
+  
+  // 특정 Room을 나감 (범용)
   @SubscribeMessage('leave_room')
   handleLeaveRoom(
     @ConnectedSocket() client: Socket,
@@ -119,6 +118,24 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
    */
   sendToRoom(room: string, event: string, payload: any) {
     this.server.to(room).emit(event, payload);
+    this.logger.log(`Sent event ${event} to room ${room}`);
+  }
+
+  
+  // 특정 유저(userId)에게만 1:1 이벤트 전송
+  sendToUser(userId: string, event: string, payload: any) {
+    const socket = this.userSocketMap.get(userId);
+    if (socket) {
+      socket.emit(event, payload);
+      this.logger.log(`Sent event ${event} to user ${userId}`);
+    }
+    else this.logger.warn(`User ${userId} is not connected.`);
+  }
+
+  // 특정 방 삭제
+  deleteRoom(roomName: string) {
+    this.server.socketsLeave(roomName);
+    this.logger.log(`Deleted room ${roomName}`);
   }
 
   // 특정 유저를 강제로 방에 넣는 함수

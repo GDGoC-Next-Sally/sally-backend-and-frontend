@@ -41,7 +41,8 @@ export class ClassesService {
       }
     })
 
-    // TODO: 여기에 이제 socket room join 해야함.
+    this.eventsGateway.forceJoinRoom(userId, `class:${createdClass.id}`);
+
     return createdClass;
   }
 
@@ -132,6 +133,8 @@ export class ClassesService {
     if (!result) {
       throw new NotFoundException(`Class #${id} not found.`);
     }
+
+    this.eventsGateway.sendToRoom(`class:${id}`, 'class_updated', result);
     return result;
   }
 
@@ -142,6 +145,9 @@ export class ClassesService {
     if (!result) {
       throw new NotFoundException(`Class #${id} not found.`);
     }
+
+    this.eventsGateway.sendToRoom(`class:${id}`, 'class_deleted', { classId: id });
+    this.eventsGateway.deleteRoom(`class:${id}`);
     return result;
   }
 
@@ -173,8 +179,14 @@ export class ClassesService {
         student_id: studentId
       }
     });
+    
+    this.eventsGateway.forceJoinRoom(studentId, `class:${classId}`);
 
-    // TODO: 여기에 이제 socket room join 해야함.
+    const teacherId = classEntity.teacher_id;
+    this.eventsGateway.sendToUser(teacherId, 'new_student', {
+      classId,
+      studentId
+    });
 
     return classEntity;
   }
@@ -190,7 +202,12 @@ export class ClassesService {
       throw new NotFoundException(`Class #${classId} not found or student is not a member of this class.`);
     }
 
-    // TODO: 여기에 이제 socket room leave 해야함.
+    this.eventsGateway.forceLeaveRoom(studentId, `class:${classId}`);
+    const teacherId = classEntity.teacher_id;
+    this.eventsGateway.sendToUser(teacherId, 'student_left', {
+      classId,
+      studentId
+    });
 
     return this.prisma.takes.delete({
       where: {
@@ -223,7 +240,15 @@ export class ClassesService {
       throw new NotFoundException(`Student #${studentId} is not a member of this class.`);
     }
 
-    // TODO: 여기에 이제 socket room kick 해야함.
+    this.eventsGateway.forceLeaveRoom(studentId, `class:${classId}`);
+    this.eventsGateway.sendToUser(studentId, 'kicked', {
+      classId,
+      studentId
+    });
+    this.eventsGateway.sendToUser(teacherId, 'student_kicked', {
+      classId,
+      studentId
+    });
 
     return this.prisma.takes.delete({
       where: {
