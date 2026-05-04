@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Sally AI Coach - Socket Test</title>
+  <!-- Socket.io & Supabase -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background-color: #f9fafb; }
+    h2 { color: #1f2937; }
+    .container { display: flex; gap: 20px; }
+    .panel { background: white; border: 1px solid #e5e7eb; padding: 20px; width: 50%; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    #logs { background: #1f2937; color: #10b981; padding: 10px; height: 350px; overflow-y: auto; font-family: monospace; border-radius: 4px; }
+    .log-entry { margin-bottom: 8px; border-bottom: 1px solid #374151; padding-bottom: 8px; word-break: break-all; }
+    input[type="text"], input[type="password"] { width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; border: 1px solid #d1d5db; border-radius: 4px; }
+    button { padding: 10px 16px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; width: 100%; margin-bottom: 10px; }
+    .btn-login { background-color: #10b981; color: white; }
+    .btn-login:hover { background-color: #059669; }
+    .btn-connect { background-color: #3b82f6; color: white; }
+    .btn-connect:hover { background-color: #2563eb; }
+    .btn-disconnect { background-color: #ef4444; color: white; }
+    .btn-disconnect:hover { background-color: #dc2626; }
+    .status-box { margin-top: 15px; padding: 10px; border-radius: 4px; font-weight: bold; background: #f3f4f6; text-align: center; }
+    .divider { height: 1px; background-color: #e5e7eb; margin: 20px 0; }
+  </style>
+</head>
+<body>
+
+  <h2>📡 Sally Socket Tester (Login 통합 버전)</h2>
+  <p>이메일/비밀번호로 로그인하면 자동으로 JWT 토큰이 채워집니다.</p>
+  
+  <div class="container">
+    <div class="panel">
+      <h3>1. 로그인 (Supabase Auth)</h3>
+      <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <button onclick="fillLogin('teacher1@test.com', 'teacher1')" style="background: #e5e7eb; color: #374151; padding: 6px 12px; font-size: 13px;">👨‍🏫 선생님 자동완성</button>
+        <button onclick="fillLogin('student1@test.com', 'student1')" style="background: #e5e7eb; color: #374151; padding: 6px 12px; font-size: 13px;">👨‍🎓 학생 자동완성</button>
+      </div>
+      <input type="text" id="email" placeholder="이메일 입력 (예: teacher@test.com)">
+      <input type="password" id="password" placeholder="비밀번호 입력">
+      <button class="btn-login" onclick="login()">로그인 (토큰 가져오기)</button>
+      
+      <div class="divider"></div>
+
+      <h3>2. 연결 설정 (Socket)</h3>
+      <p style="font-size: 14px; color: #4b5563;">발급된 JWT 토큰:</p>
+      <input type="text" id="token" placeholder="로그인하면 여기에 토큰이 자동 입력됩니다." style="font-family: monospace; font-size: 12px;" readonly>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn-connect" onclick="connectSocket()">서버 접속 (Connect)</button>
+        <button class="btn-disconnect" onclick="disconnectSocket()">연결 끊기 (Disconnect)</button>
+      </div>
+      <div id="status" class="status-box" style="color: #6b7280;">Status: Disconnected</div>
+    </div>
+
+    <div class="panel">
+      <h3>3. 실시간 이벤트 수신 로그</h3>
+      <div id="logs"></div>
+      <button onclick="clearLogs()" style="margin-top: 15px; background: #e5e7eb; color: #374151;">로그 지우기</button>
+    </div>
+  </div>
+
+  <div class="container" style="margin-top: 20px;">
+    <div class="panel" style="width: 100%;">
+      <h3>4. 실시간 채팅 & 방 입장 테스트 (Quick Test)</h3>
+      <p style="font-size: 14px; color: #4b5563;">원하는 방에 입장하고 채팅을 보내보세요. 같은 방에 있는 사람에게 모두 보입니다.</p>
+      
+      <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <input type="text" id="chat-room" placeholder="방 이름 (예: class:1)" value="class:1" style="width: 30%; margin: 0;">
+        <button class="btn-connect" onclick="quickJoinRoom()" style="width: 20%; background-color: #6366f1;">방 입장하기</button>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <input type="text" id="chat-msg" placeholder="보낼 메시지 입력..." style="width: 70%; margin: 0;">
+        <button class="btn-connect" onclick="quickSendChat()" style="width: 30%; margin: 0; background-color: #ec4899;">채팅 보내기</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Supabase 설정 (backend/.env 파일 내용 하드코딩)
+    const SUPABASE_URL = "https://zeujdjitjsslrcxtzumu.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_jH88bsEtOtjuoZcMm1YAlw_ccxdlYJ5";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let socket;
+
+    function fillLogin(email, password) {
+      document.getElementById('email').value = email;
+      document.getElementById('password').value = password;
+    }
+
+    // ----- [로그인 로직] -----
+    async function login() {
+      try {
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!email || !password) {
+          alert("이메일과 비밀번호를 모두 입력해주세요.");
+          return;
+        }
+
+        document.getElementById('token').value = "로그인 중...";
+        addLog('System', '로그인 요청 중...');
+
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: password,
+        });
+
+        if (error) {
+          alert("로그인 실패: " + error.message);
+          document.getElementById('token').value = "";
+          addLog('Error', '로그인 실패: ' + error.message);
+        } else {
+          const token = data.session.access_token;
+          document.getElementById('token').value = token;
+          addLog('System', `로그인 성공! (${data.user.email})`);
+          // 로그인 성공 시 자동으로 소켓 접속
+          connectSocket();
+        }
+      } catch (err) {
+        alert("스크립트 에러: " + err.message);
+        addLog('Error', '스크립트 에러: ' + err.message);
+      }
+    }
+
+    // ----- [소켓 로직] -----
+    function addLog(event, data) {
+      const logs = document.getElementById('logs');
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      
+      let dataStr = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+      
+      div.innerHTML = `<strong style="color: #60a5fa;">[${time}] ${event}</strong><br><pre style="margin: 5px 0 0 0; font-size: 13px; color: #d1d5db;">${dataStr}</pre>`;
+      logs.prepend(div); 
+    }
+
+    function connectSocket() {
+      const token = document.getElementById('token').value.trim();
+      if (!token || token === "로그인 중...") {
+        alert("먼저 로그인하여 토큰을 발급받아주세요!");
+        return;
+      }
+
+      if (socket) socket.disconnect();
+
+      const statusEl = document.getElementById('status');
+      statusEl.innerText = 'Status: Connecting...';
+      statusEl.style.color = '#f59e0b';
+
+      socket = io('http://localhost:3001', {
+        auth: { token: token }
+      });
+
+      socket.on('connect', () => {
+        statusEl.innerText = 'Status: Connected (Socket ID: ' + socket.id + ')';
+        statusEl.style.color = '#10b981';
+        addLog('System', '서버에 연결되었습니다.');
+      });
+
+      socket.on('disconnect', () => {
+        statusEl.innerText = 'Status: Disconnected';
+        statusEl.style.color = '#ef4444';
+        addLog('System', '서버와 연결이 끊어졌습니다.');
+      });
+
+      socket.on('connect_error', (err) => {
+        statusEl.innerText = 'Status: Connection Error';
+        statusEl.style.color = '#ef4444';
+        addLog('Error', '연결 실패: ' + err.message);
+      });
+
+      const eventsToListen = [
+        'new_student', 'student_joined', 'student_left', 
+        'kicked', 'student_kicked', 'class_updated', 'class_deleted',
+        'chat_message' // 새로 추가한 채팅 이벤트
+      ];
+
+      eventsToListen.forEach(eventName => {
+        socket.on(eventName, (data) => {
+          addLog(eventName, data);
+        });
+      });
+    }
+
+    function disconnectSocket() {
+      if (socket) socket.disconnect();
+    }
+
+    function clearLogs() {
+      document.getElementById('logs').innerHTML = '';
+    }
+
+    function quickJoinRoom() {
+      if (!socket || !socket.connected) return alert('먼저 서버에 접속해주세요!');
+      const room = document.getElementById('chat-room').value.trim();
+      if (!room) return alert('방 이름을 입력하세요.');
+      
+      socket.emit('join_room', { room: room }, (response) => {
+        addLog('Server Ack (join_room)', response);
+      });
+      addLog('👉 Emit (join_room)', { room });
+    }
+
+    function quickSendChat() {
+      if (!socket || !socket.connected) return alert('먼저 서버에 접속해주세요!');
+      const room = document.getElementById('chat-room').value.trim();
+      const message = document.getElementById('chat-msg').value.trim();
+      
+      if (!room || !message) return alert('방 이름과 메시지를 모두 입력하세요.');
+
+      const payload = { room, message };
+      socket.emit('chat_message', payload);
+      
+      // 보낸 즉시 입력창 초기화
+      document.getElementById('chat-msg').value = '';
+    }
+  </script>
+</body>
+</html>

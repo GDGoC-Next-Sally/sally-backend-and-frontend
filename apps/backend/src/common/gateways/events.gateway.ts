@@ -112,6 +112,23 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return { event: 'left', room: data.room };
   }
 
+  // 실시간 채팅 테스트용 (범용)
+  @SubscribeMessage('chat_message')
+  handleChatMessage(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { room: string; message: string },
+  ) {
+    if (!data.room || !data.message) return { error: 'Room and message are required' };
+
+    // 해당 방에 있는 모두에게 메시지 브로드캐스트
+    this.server.to(data.room).emit('chat_message', {
+      sender: client.id,
+      message: data.message,
+      timestamp: new Date().toISOString()
+    });
+    this.logger.log(`Chat from ${client.id} in ${data.room}: ${data.message}`);
+  }
+
   /**
    * 특정 Room에 있는 모든 사용자에게 이벤트 전송 (범용)
    * 서비스 레이어에서 주입받아 실시간 알림을 보낼 때 사용합니다.
