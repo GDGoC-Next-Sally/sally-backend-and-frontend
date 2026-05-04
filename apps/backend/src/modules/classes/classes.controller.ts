@@ -91,4 +91,11 @@ export class ClassesController {
   kickStudent(@Param('id') id: string, @Body('student_id') studentId: string, @Req() req: any) {
     return this.classesService.kickStudent(+id, req.user.userId, studentId);
   }
+
+  @Get(':id/students')
+  @Roles(UserRole.TEACHER)
+  @ApiOperation({ summary: 'Get all students in a class' })
+  getStudents(@Param('id') id: string, @Req() req: any) {
+    return this.classesService.getStudents(+id, req.user.userId);
+  }
 }

@@ -8,6 +8,7 @@ import { ClassesModule } from './modules/classes/classes.module';
 import { PrismaModule } from './providers/prisma/prisma.module';
 import { StorageModule } from './providers/storage/storage.module';
 import { GatewaysModule } from './common/gateways/gateways.module';
+import { SessionsModule } from './modules/sessions/sessions.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { GatewaysModule } from './common/gateways/gateways.module';
     PrismaModule,
     StorageModule,
     GatewaysModule,
+    SessionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

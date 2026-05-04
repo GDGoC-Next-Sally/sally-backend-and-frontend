@@ -124,14 +124,13 @@ export class ClassesService {
   }
 
   async update(id: number, updateClassDto: UpdateClassDto, teacherId: string) {
-
     const result = await this.prisma.classes.update({
       where: { id, teacher_id: teacherId },
       data: updateClassDto
     });
 
     if (!result) {
-      throw new NotFoundException(`Class #${id} not found.`);
+      throw new NotFoundException(`Class #${id} not found or you are not a teacher of this class.`);
     }
 
     this.eventsGateway.sendToRoom(`class:${id}`, 'class_updated', result);
@@ -143,12 +142,27 @@ export class ClassesService {
       where: { id, teacher_id: teacherId }
     });
     if (!result) {
-      throw new NotFoundException(`Class #${id} not found.`);
+      throw new NotFoundException(`Class #${id} not found or you are not a teacher of this class.`);
     }
 
     this.eventsGateway.sendToRoom(`class:${id}`, 'class_deleted', { classId: id });
     this.eventsGateway.deleteRoom(`class:${id}`);
     return result;
+  }
+
+  async getStudents(classId: number, teacherId: string) {
+    const classEntity = await this.prisma.classes.findFirst({
+      where: { id: classId, teacher_id: teacherId }
+    });
+    if (!classEntity) {
+      throw new NotFoundException(`Class #${classId} not found or you are not a teacher of this class.`);
+    }
+    const students = await this.prisma.takes.findMany({
+      where: { class_id: classId },
+      select: { users: { select: { id: true, name: true, email: true } } }
+    });
+
+    return students.map(s => ({ id: s.users.id, name: s.users.name, email: s.users.email }));
   }
 
   async joinClass(studentId: string, inviteCode: string) {
