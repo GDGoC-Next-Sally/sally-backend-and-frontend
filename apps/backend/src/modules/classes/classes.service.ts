@@ -33,13 +33,16 @@ export class ClassesService {
 
   async create(userId: string, createClassDto: CreateClassDto) {
     const inviteCode = await this.generateInviteCode();
-    return this.prisma.classes.create({
+    const createdClass = await this.prisma.classes.create({
       data: {
         ...createClassDto,
         teacher_id: userId,
         invite_code: inviteCode,
       }
     })
+
+    // TODO: 여기에 이제 socket room join 해야함.
+    return createdClass;
   }
 
   async reissueInviteCode(userId: string, classId: number) {
@@ -99,29 +102,47 @@ export class ClassesService {
     const classEntity = await this.prisma.classes.findFirst({
       where: { id: classId }
     });
-
     if (!classEntity) {
       throw new NotFoundException(`Class #${classId} not found.`);
     }
-    // 학생이 요청했을 때와 선생님이 요청했을 때의 정보량 차이?
-    return classEntity;
+    const instructor = classEntity.teacher_id;
+    if (instructor === userId) {
+      return classEntity;
+    }
+    else if (await this.prisma.takes.findFirst({
+      where: {
+        class_id: classId,
+        student_id: userId
+      }
+    })) {
+      return classEntity;
+    }
+    else {
+      throw new UnauthorizedException(`You are not a member of class #${classId}.`);
+    }
   }
 
   async update(id: number, updateClassDto: UpdateClassDto, teacherId: string) {
-    await this.findOne(id, teacherId); // check ownership
 
-    return this.prisma.classes.update({
-      where: { id },
+    const result = await this.prisma.classes.update({
+      where: { id, teacher_id: teacherId },
       data: updateClassDto
     });
+
+    if (!result) {
+      throw new NotFoundException(`Class #${id} not found.`);
+    }
+    return result;
   }
 
   async remove(id: number, teacherId: string) {
-    await this.findOne(id, teacherId); // check ownership
-
-    return this.prisma.classes.delete({
-      where: { id }
+    const result = await this.prisma.classes.delete({
+      where: { id, teacher_id: teacherId }
     });
+    if (!result) {
+      throw new NotFoundException(`Class #${id} not found.`);
+    }
+    return result;
   }
 
   async joinClass(studentId: string, inviteCode: string) {
