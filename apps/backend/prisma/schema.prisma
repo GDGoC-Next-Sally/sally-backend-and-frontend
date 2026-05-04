@@ -12,7 +12,6 @@ model attends {
   session_id Int
   sessions   sessions @relation(fields: [session_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users      users    @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
   @@id([student_id, session_id])
 }
 
@@ -57,7 +56,6 @@ model dialogs {
   sessions           sessions         @relation(fields: [session_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users              users            @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   student_reports    student_reports?
-
   @@unique([session_id, student_id])
 }
 
@@ -127,7 +125,6 @@ model takes {
   class_id   Int
   classes    classes @relation(fields: [class_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users      users   @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
   @@id([student_id, class_id])
 }
 
