@@ -18,11 +18,11 @@ export class ScheduleDto {
   @IsEnum(DayOfWeek)
   day: DayOfWeek;
 
-  @ApiProperty({ description: '교시 (1~10), 요일이 FLEXIBLE일 경우 생략 가능', minimum: 1, maximum: 10, required: false })
+  @ApiProperty({ description: '교시 (0~20), 요일이 FLEXIBLE일 경우 생략 가능', minimum: 0, maximum: 20, required: false })
   @IsOptional()
   @IsInt()
-  @Min(1)
-  @Max(10)
+  @Min(0)
+  @Max(20)
   period?: number;
 }
 

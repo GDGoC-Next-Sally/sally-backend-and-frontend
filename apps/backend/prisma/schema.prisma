@@ -65,10 +65,11 @@ model sessions {
   id                 Int                  @id @default(autoincrement())
   class_id           Int
   teacher_id         String               @db.Uuid
-  unit_prompt_id     Int?
   session_name       String               @db.VarChar(255)
   status             session_status       @default(PLANNING)
   explanation        String?
+  objective          String?
+  session_prompt     String?
   scheduled_date     DateTime?            @db.Date
   scheduled_start    DateTime?            @db.Timestamptz(6)
   scheduled_end      DateTime?            @db.Timestamptz(6)
@@ -79,7 +80,6 @@ model sessions {
   dialogs            dialogs[]
   classes            classes              @relation(fields: [class_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users              users                @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  unit_prompts       unit_prompts?        @relation(fields: [unit_prompt_id], references: [id], onUpdate: NoAction)
   supplementary_data supplementary_data[]
   session_reports    session_reports?
   student_reports    student_reports[]
@@ -148,7 +148,6 @@ model unit_prompts {
   textbook_id Int?
   objective   String
   prompt      String
-  sessions    sessions[]
   textbooks   textbooks? @relation(fields: [textbook_id], references: [id], onUpdate: NoAction)
 }
 

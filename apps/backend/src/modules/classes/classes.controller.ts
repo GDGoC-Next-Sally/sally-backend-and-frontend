@@ -54,7 +54,7 @@ export class ClassesController {
   @Get(':id')
   @ApiOperation({ summary: 'Find a class by id' })
   findOne(@Param('id') id: string, @Req() req: any) {
-    return this.classesService.findOne(+id, req.user.userId);
+    return this.classesService.findOne(+id, req.user.userId, req.user.role);
   }
 
   @Patch(':id')

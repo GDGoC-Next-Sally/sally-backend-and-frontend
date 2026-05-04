@@ -33,18 +33,24 @@ export class ClassesService {
 
   async create(userId: string, createClassDto: CreateClassDto) {
     const inviteCode = await this.generateInviteCode();
+    
+    // DTO에서 schedule을 분리하고 나머지만 spread 합니다.
+    const { schedule, ...rest } = createClassDto;
+  
     const createdClass = await this.prisma.classes.create({
       data: {
-        ...createClassDto,
+        ...rest,
+        schedule: schedule as any, 
         teacher_id: userId,
         invite_code: inviteCode,
       }
-    })
-
+    });
+  
     this.eventsGateway.forceJoinRoom(userId, `class:${createdClass.id}`);
-
+  
     return createdClass;
   }
+  
 
   async reissueInviteCode(userId: string, classId: number) {
     const classEntity = await this.prisma.classes.findFirst({ where: { id: classId, teacher_id: userId } });
@@ -99,18 +105,23 @@ export class ClassesService {
     });
   }
 
-  async findOne(classId: number, userId: string) {
-    const classEntity = await this.prisma.classes.findFirst({
+  async findOne(classId: number, userId: string, role?: string) {
+    const classEntity = await this.prisma.classes.findFirst({ 
       where: { id: classId }
     });
     if (!classEntity) {
       throw new NotFoundException(`Class #${classId} not found.`);
     }
-    const instructor = classEntity.teacher_id;
-    if (instructor === userId) {
+
+    if (role === 'ADMIN') {
       return classEntity;
     }
-    else if (await this.prisma.takes.findFirst({
+
+    const instructor = classEntity.teacher_id;
+    if (role === 'TEACHER' && instructor === userId) {
+      return classEntity;
+    }
+    else if (role === 'STUDENT' && await this.prisma.takes.findFirst({
       where: {
         class_id: classId,
         student_id: userId
@@ -123,19 +134,27 @@ export class ClassesService {
     }
   }
 
-  async update(id: number, updateClassDto: UpdateClassDto, teacherId: string) {
-    const result = await this.prisma.classes.update({
-      where: { id, teacher_id: teacherId },
-      data: updateClassDto
-    });
+  // apps/backend/src/modules/classes/classes.service.ts
 
-    if (!result) {
-      throw new NotFoundException(`Class #${id} not found or you are not a teacher of this class.`);
+async update(id: number, updateClassDto: UpdateClassDto, teacherId: string) {
+  const { schedule, ...rest } = updateClassDto;
+
+  const result = await this.prisma.classes.update({
+    where: { id, teacher_id: teacherId },
+    data: {
+      ...rest,
+      schedule: schedule as any // Json 타입 호환성 해결
     }
+  });
 
-    this.eventsGateway.sendToRoom(`class:${id}`, 'class_updated', result);
-    return result;
+  if (!result) {
+    throw new NotFoundException(`Class #${id} not found or you are not a teacher of this class.`);
   }
+
+  this.eventsGateway.sendToRoom(`class:${id}`, 'class_updated', result);
+  return result;
+}
+
 
   async remove(id: number, teacherId: string) {
     const result = await this.prisma.classes.delete({
