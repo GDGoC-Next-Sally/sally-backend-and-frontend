@@ -1,0 +1,137 @@
+.sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.count {
+  color: #E8593C;
+}
+
+.refreshBtn {
+  background: none;
+  border: none;
+  color: #6B6B6B;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.refreshBtn:hover {
+  color: #1A1A1A;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 4px;
+}
+
+.list::-webkit-scrollbar { width: 4px; }
+.list::-webkit-scrollbar-thumb { background-color: #E0DED8; border-radius: 4px; }
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.itemClickable {
+  cursor: pointer;
+}
+
+.itemClickable:hover {
+  background-color: #F5F4F0;
+}
+
+.itemSelected {
+  background-color: #FDF0ED;
+  border-color: #E8593C;
+}
+
+.itemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.studentInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background-color: #D0CEC8;
+  flex-shrink: 0;
+}
+
+.dotOnline {
+  background-color: #22C55E;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.badge {
+  background-color: #F0FBF4;
+  color: #22C55E;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.moreBtn {
+  background: none;
+  border: none;
+  color: #6B6B6B;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+}
+
+.summary {
+  background-color: #F5F4F0;
+  border: 1px solid #EBEBEA;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: #6B6B6B;
+  line-height: 1.6;
+}
