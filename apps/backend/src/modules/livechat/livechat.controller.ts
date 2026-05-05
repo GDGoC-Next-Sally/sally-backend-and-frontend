@@ -37,9 +37,9 @@ export class LivechatController {
     return this.livechatService.getAiResponseStream(req.user.userId, dto);
   }
 
-  @Post('analytics-callback')
-  @ApiOperation({ summary: '(AI 서버 전용) 학생 대화 분석 콜백 웹훅' })
-  async analyticsCallback(@Body() body: { dialog_id: number; analysis: any }) {
-    return this.livechatService.handleAnalyticsCallback(body.dialog_id, body.analysis);
-  }
+  // @Post('analytics-callback')
+  // @ApiOperation({ summary: '(AI 서버 전용) 학생 대화 분석 콜백 웹훅' })
+  // async analyticsCallback(@Body() body: { dialog_id: number; analysis: any }) {
+  //   return this.livechatService.handleAnalytics(body.dialog_id, body.analysis);
+  // }
 }

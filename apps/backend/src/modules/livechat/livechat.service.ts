@@ -4,6 +4,9 @@ import { EventsGateway } from '../../common/gateways/events.gateway';
 import { SendChatMessageDto } from './dto/send-chat-message.dto';
 import { SendInterventionDto } from './dto/send-intervention.dto';
 import { Observable } from 'rxjs';
+import axios from 'axios';
+
+const AI_SERVER_URL = process.env.AI_SERVER_URL || 'http://localhost:8000';
 
 @Injectable()
 export class LivechatService {
@@ -64,7 +67,11 @@ export class LivechatService {
   async sendMessage(studentId: string, dto: SendChatMessageDto) {
     const dialog = await this.prisma.dialogs.findUnique({
       where: { id: dto.dialog_id }, 
-      include: { sessions: true }
+      include: { 
+        sessions: {
+          include: { classes: true }
+        }
+      }
     });
 
     if (!dialog || dialog.student_id !== studentId) {
@@ -90,33 +97,91 @@ export class LivechatService {
     };
   }
 
-  // AI 응답 스트림 생성
   getAiResponseStream(studentId: string, dto: SendChatMessageDto): Observable<any> {
     return new Observable((subscriber) => {
       this.sendMessage(studentId, dto).then(async ({ userMessage, dialog, intervention }) => {
-        
-        // TODO: 실제 AI 서버 연동 로직
-        const mockResponse = `(AI 서버 스트리밍 중...) 방금 학생이 보낸 메시지: "${userMessage.content}"\n${intervention ? `[선생님 가이드 반영: ${intervention}]` : ''}\n좋은 질문이에요! 계속 이야기해볼까요?`;
-        
-        const chunks = mockResponse.split(' ');
-        let aiFullContent = '';
+        try {
+          // 1. 과거 대화 내역 조회 (AI 서버용 conversation_history 구성)
+          const pastMessages = await this.prisma.chat_messages.findMany({
+            where: { dialog_id: dialog.id },
+            orderBy: { created_at: 'asc' },
+          });
 
-        for (let i = 0; i < chunks.length; i++) {
-          await new Promise(resolve => setTimeout(resolve, 300));
-          const chunk = chunks[i] + ' ';
-          aiFullContent += chunk;
-          
-          subscriber.next({ data: { chunk } });
+          const conversation_history = pastMessages
+            .filter(msg => msg.sender_type !== 'TEACHER')
+            .map(msg => ({
+              role: msg.sender_type === 'AI' ? 'model' : 'user',
+              text: msg.content
+            }));
+
+          // 선생님의 개입 메시지(TEACHER)를 시간순으로 topic_hints에 반영
+          const teacherHints = pastMessages
+            .filter(msg => msg.sender_type === 'TEACHER')
+            .map(msg => msg.content);
+
+          // 2. 학생 프로필(수업 컨텍스트) 구성
+          const student_profile = {
+            subject: dialog.sessions.classes.subject,
+            scope: dialog.sessions.session_name,
+            learning_objectives: dialog.sessions.objective || "미설정",
+            key_concepts: dialog.sessions.explanation || "미설정",
+            topic_hints: teacherHints,  // 선생님 개입 내용을 AI 힌트로 제공
+          };
+
+          // 3. AI 서버 스트리밍 요청
+          const response = await axios.post(`${AI_SERVER_URL}/api/chat`, {
+            conversation_history,
+            student_profile
+          }, { responseType: 'stream' });
+
+          let aiFullContent = '';
+
+          response.data.on('data', (chunk: Buffer) => {
+            const text = chunk.toString();
+            aiFullContent += text;
+            subscriber.next({ data: { chunk: text } });
+          });
+
+          response.data.on('end', async () => {
+            // AI 메시지 저장 및 선생님 알림
+            await this.saveAiMessage(dialog.id, aiFullContent.trim(), dialog.sessions.teacher_id);
+            subscriber.complete();
+
+            // 4. 답변 완료 후 백그라운드 분석 요청 (비동기)
+            this.requestAiAnalysis(conversation_history, student_profile, dialog.id, aiFullContent.trim());
+          });
+
+          response.data.on('error', (err: Error) => {
+            subscriber.error(err);
+          });
+
+        } catch (err) {
+          subscriber.error(err);
         }
-
-        // 전송 완료 후 저장 및 알림
-        await this.saveAiMessage(dialog.id, aiFullContent.trim(), dialog.sessions.teacher_id);
-        subscriber.complete();
-
       }).catch(err => {
         subscriber.error(err);
       });
     });
+  }
+
+  /**
+   * AI 서버에 분석 요청을 보내고 결과를 처리합니다.
+   */
+  private async requestAiAnalysis(history: any[], profile: any, dialogId: number, aiResponse: string) {
+    try {
+      // AI 답변까지 포함된 최신 히스토리 구성
+      const updatedHistory = [...history, { role: 'model', text: aiResponse }];
+      
+      const analysisResponse = await axios.post(`${AI_SERVER_URL}/api/analyze`, {
+        conversation_history: updatedHistory,
+        student_profile: profile
+      }, { timeout: 60000}); // 60초
+
+      // 분석 결과 처리 (기존에 만든 콜백 함수 활용)
+      await this.handleAnalytics(dialogId, analysisResponse.data);
+    } catch (err) {
+      console.error('AI Analysis failed:', err.message);
+    }
   }
 
   async saveAiMessage(dialogId: number, content: string, teacherId: string) {
@@ -133,7 +198,7 @@ export class LivechatService {
     return aiMessage;
   }
 
-  async handleAnalyticsCallback(dialogId: number, analysis: any) {
+  async handleAnalytics(dialogId: number, analysis: any) {
     const dialog = await this.prisma.dialogs.findUnique({
       where: { id: dialogId },
       include: { sessions: true }
@@ -141,18 +206,23 @@ export class LivechatService {
 
     if (!dialog) throw new NotFoundException('Dialog not found');
 
-    // 1. 분석 결과 저장
+    // 1. 기존 누적 배열에 새 분석 결과 추가 (없으면 빈 배열로 시작)
+    const existing = Array.isArray(dialog.real_time_analysis)
+      ? dialog.real_time_analysis
+      : [];
+    const updatedSummaries = [...existing, analysis];
+
     const updatedDialog = await this.prisma.dialogs.update({
       where: { id: dialogId },
-      data: { 
-        real_time_analysis: analysis as any
+      data: {
+        real_time_analysis: updatedSummaries as any
       }
     });
 
-    // 2. 선생님에게 실시간 분석 결과 발송
+    // 2. 선생님에게는 최신 분석 결과 1건만 소켓으로 발송
     this.eventsGateway.sendToUser(dialog.sessions.teacher_id, 'student_analysis_ready', {
       dialog_id: dialogId,
-      analysis: analysis
+      analysis: analysis  // 최신 것만 전송 (대시보드 갱신용)
     });
 
     return updatedDialog;

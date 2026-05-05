@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../providers/prisma/prisma.service';
 import { EventsGateway } from '../../common/gateways/events.gateway';
+import { ReportsService } from '../reports/reports.service';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
 
@@ -9,6 +10,7 @@ export class SessionsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventsGateway: EventsGateway,
+    private readonly reportsService: ReportsService,
   ) {}
 
   async create(teacherId: string, createSessionDto: CreateSessionDto) {
@@ -133,7 +135,10 @@ export class SessionsService {
   }
 
   async finishSession(id: number, teacherId: string) {
-    const session = await this.prisma.sessions.findUnique({ where: { id } });
+    const session = await this.prisma.sessions.findUnique({
+      where: { id },
+      include: { classes: true },
+    });
     if (!session) throw new NotFoundException(`Session #${id} not found`);
     if (session.teacher_id !== teacherId) throw new UnauthorizedException('You are not the owner of this session');
 
@@ -146,6 +151,17 @@ export class SessionsService {
     });
 
     this.eventsGateway.sendToRoom(`session:${id}`, 'session_finished', updatedSession);
+
+    // 세션에 속한 모든 학생 다이얼로그 조회 후 AI 서버에 최종 리포트 요청 (비동기, fire and forget)
+    this.prisma.dialogs.findMany({
+      where: { session_id: id },
+      select: { student_id: true, real_time_analysis: true },
+    }).then(dialogs => {
+      this.reportsService.requestFinalReports(id, dialogs, session);
+    }).catch(err => {
+      console.error(`Failed to fetch dialogs for final report (session ${id}):`, err.message);
+    });
+
     return updatedSession;
   }
 
