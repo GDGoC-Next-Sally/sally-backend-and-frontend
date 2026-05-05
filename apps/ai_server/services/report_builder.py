@@ -73,11 +73,14 @@ async def generate_final_report(
         s.understanding_score for s in summaries if s.understanding_score is not None
     ]
 
-    # 전체 평균 (1~10 원점수, 수업 회고용)
-    avg_understanding_score = (
-        round(sum(understanding_scores) / len(understanding_scores), 1)
-        if understanding_scores else 0.0
-    )
+    # 가중 평균 (1~10 원점수, 후반 턴에 더 높은 가중치 부여 → 수업 말미 주도 이해도 반영)
+    if understanding_scores:
+        weights = list(range(1, len(understanding_scores) + 1))  # [1, 2, 3, ... n]
+        avg_understanding_score = round(
+            sum(s * w for s, w in zip(understanding_scores, weights)) / sum(weights), 1
+        )
+    else:
+        avg_understanding_score = 0.0
 
     # 최근 3턴 평균 × 10 (0~100%, 대시보드 현재 상태 표시용)
     recent_scores = understanding_scores[-3:] if len(understanding_scores) >= 3 else understanding_scores
@@ -109,11 +112,13 @@ async def generate_final_report(
         frustration_trend = "stable"      # 변화 없음
 
     # 안정도 게이지 (0~100, 높을수록 안정)
-    # frustration_total을 URGENCY_MAX_THRESHOLD 기준으로 정규화하여 0~100으로 변환
-    stability_gauge = max(0, min(100, round((1 - frustration_total / URGENCY_MAX_THRESHOLD) * 100)))
+    # 턴당 최대 delta=30 기준으로 동적 산정 (턴 수가 많아도 산정가 차지 않도록)
+    max_possible_frustration = max(total_turns * 30, 1)
+    stability_gauge = max(0, min(100, round((1 - frustration_total / max_possible_frustration) * 100)))
 
-    # 긴급도 (0~5, frustration_total ÷ 20, 최대 5)
-    urgency_level = min(5, max(0, frustration_total // 20))
+    # 긴급도 (0~5, 콜수록 즉시 개입 필요)
+    # 동일한 동적 스케일 적용
+    urgency_level = min(5, max(0, round((frustration_total / max_possible_frustration) * 5)))
 
     # ── 환각 위험 횟수 ────────────────────────────────────────────────────────
     hallucination_risk_count = sum(
@@ -123,10 +128,22 @@ async def generate_final_report(
     # ── 최고 이해도 (수업 중 학생이 도달한 최고점) ───────────────────────────
     peak_understanding_score = max(understanding_scores) if understanding_scores else 0
 
-    # ── 주요 감정 (전체 최빈값, 최종 리포트 요약용) ───────────────────────────
+    # ── 주요 감정 + 감정 흐름 ───────────────────────────────────────────────────
     # 실시간 "최근 3턴 최빈값"은 NestJS가 스트리밍 데이터로 직접 계산 (역할 분리)
     emotions = [s.student_emotion for s in summaries if s.student_emotion]
     dominant_emotion = Counter(emotions).most_common(1)[0][0] if emotions else None
+
+    # 감정 흐름: 수업 전반부 vs 후반부 최빈값 비교
+    if emotions:
+        mid = max(len(emotions) // 2, 1)
+        first_half_emotion = Counter(emotions[:mid]).most_common(1)[0][0]
+        second_half_emotion = Counter(emotions[mid:]).most_common(1)[0][0] if emotions[mid:] else first_half_emotion
+        if first_half_emotion != second_half_emotion:
+            emotion_trend = f"{first_half_emotion} → {second_half_emotion}"
+        else:
+            emotion_trend = f"{dominant_emotion} (수업 내내 일관적)"
+    else:
+        emotion_trend = None
 
     # ── 오개념 태그 목록 (중복 제거, 순서 유지) ──────────────────────────────
     seen = set()
@@ -157,6 +174,7 @@ async def generate_final_report(
         frustration_total=frustration_total,
         stability_gauge=stability_gauge,
         dominant_emotion=dominant_emotion,
+        emotion_trend=emotion_trend,
         misconception_tags=misconception_tags,
         active_ratio=active_ratio,
         one_line_summaries=one_line_summaries,
@@ -177,6 +195,7 @@ async def generate_final_report(
         urgency_level=urgency_level,
         hallucination_risk_count=hallucination_risk_count,
         dominant_emotion=dominant_emotion,
+        emotion_trend=emotion_trend,
         misconception_tags=misconception_tags,
         learning_mode_distribution=learning_mode_distribution,
         active_ratio=active_ratio,
@@ -194,6 +213,7 @@ async def _generate_overall_summary_llm(
     frustration_total: int,
     stability_gauge: int,
     dominant_emotion: Optional[str],
+    emotion_trend: Optional[str],
     misconception_tags: List[str],
     active_ratio: float,
     one_line_summaries: List[str],
@@ -225,9 +245,9 @@ async def _generate_overall_summary_llm(
         "- 학생을 직접 지칭하지 말고 '이 학생'으로 표현하십시오.\n\n"
         "[수업 데이터]\n"
         f"- 총 대화 턴 수: {total_turns}턴\n"
-        f"- 평균 이해도: {avg_understanding_score}/10점 | 최고 이해도: {peak_understanding_score}/10점 | 마지막 턴 이해도: {final_understanding_score}/10점\n"
+        f"- 가중 평균 이해도: {avg_understanding_score}/10점 | 최고 이해도: {peak_understanding_score}/10점 | 마지막 턴 이해도: {final_understanding_score}/10점\n"
         f"- 좌절 추이: {trend_label} (누적 좌절 지수: {frustration_total}, 안정도: {stability_gauge}/100)\n"
-        f"- 주요 감정: {dominant_emotion or '미확인'}\n"
+        f"- 감정 흐름: {emotion_trend or dominant_emotion or '미확인'}\n"
         f"- 능동 참여율: {active_ratio}%\n"
         f"- 감지된 오개념: {misconception_text}\n"
         f"- 턴별 한 줄 요약:\n{summaries_text}\n\n"

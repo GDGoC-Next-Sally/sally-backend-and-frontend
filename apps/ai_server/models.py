@@ -84,6 +84,7 @@ class FinalReport(BaseModel):
 
     # ── 감정 / 오개념 ──────────────────────────────────────────────────────────
     dominant_emotion: Optional[str] = None        # 수업 전체 주요 감정 (전체 최빈값, 최종 요약용)
+    emotion_trend: Optional[str] = None           # 감정 흐름 (전반부 → 후반부, 예: "혼란 → 집중")
     misconception_tags: List[str] = []            # 감지된 오개념 태그 목록 (중복 제거)
     hallucination_risk_count: int = 0             # 환각 위험 감지 횟수
 
