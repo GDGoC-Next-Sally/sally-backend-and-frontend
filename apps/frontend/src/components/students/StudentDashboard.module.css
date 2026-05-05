@@ -66,6 +66,25 @@
   color: #1A1A1A;
 }
 
+.detailBtn {
+  font-size: 12px;
+  color: #22C55E;
+  background: none;
+  border: 1px solid #22C55E;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.detailBtn:hover {
+  background: #f0fdf4;
+}
+
 /* Notice */
 .noticeItem {
   display: flex;
@@ -253,6 +272,9 @@
   font-weight: 700;
   cursor: pointer;
   transition: opacity 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .joinBtn:hover {
@@ -313,18 +335,18 @@
 }
 
 .badge_live {
-  background: #F0FBF4;
-  color: #22C55E;
+  background: #ecfbf5;
+  color: #3eb476;
 }
 
 .badge_wait {
-  background: #FEF9EC;
-  color: #F59E0B;
+  background: #fff6e9;
+  color: #e3aa00;
 }
 
 .badge_done {
-  background: #F5F4F0;
-  color: #6B6B6B;
+  background: #f0f0f0;
+  color: #868686;
 }
 
 .viewAllBtn {
