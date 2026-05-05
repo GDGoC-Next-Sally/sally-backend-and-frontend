@@ -58,7 +58,12 @@ export const StudentDashboard = () => {
               <div className={styles.progressRow}>
                 <div>
                   <div className={styles.progressValue}>78<span className={styles.pct}>%</span></div>
-                  <div className={styles.progressDelta}>지난주 대비 <span className={styles.up}>▲ 6%p</span></div>
+                  <div className={styles.progressDelta}>지난주 대비 <span className={styles.up}>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="#22C55E" style={{ verticalAlign: 'middle', marginRight: '2px' }}>
+                      <path d="M12 3l9 18H3z" />
+                    </svg>
+                    6%p
+                  </span></div>
                 </div>
                 <svg viewBox="0 0 36 36" width="80" height="80">
                   <circle cx="18" cy="18" r="15.9" fill="none" stroke="#EBEBEA" strokeWidth="3" />
@@ -77,7 +82,12 @@ export const StudentDashboard = () => {
           <div className={styles.card}>
             <div className={styles.cardHeader}>
               <span className={styles.cardTitle}>AI 학습 피드백 요약</span>
-              <button className={styles.moreBtn}>상세보기 →</button>
+              <button className={styles.detailBtn}>
+                상세보기
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
             </div>
             <p className={styles.feedbackSub}>최근 학습 데이터를 분석했어요.</p>
           </div>
@@ -139,7 +149,13 @@ export const StudentDashboard = () => {
                 <span>👥 28</span>
               </div>
               <button className={styles.joinBtn} onClick={() => router.push('/s/classes')}>
-                참여하기 &nbsp;→
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+                참여하기
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
               </button>
             </div>
             <p className={styles.motivationText}>✦ 오늘도 즐거운 배움의 하루가 되세요!</p>

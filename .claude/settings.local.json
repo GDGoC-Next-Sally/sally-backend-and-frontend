@@ -9,7 +9,9 @@
       "Bash(Select-Object FullName)",
       "Bash(git push *)",
       "Bash(git pull *)",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "mcp__claude_ai_Figma__get_design_context",
+      "Bash(python -c ' *)"
     ]
   }
 }

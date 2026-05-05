@@ -72,25 +72,25 @@
 }
 
 .btnMore {
-  background: white;
-  color: #6B6B6B;
-  border: 1px solid #E0DED8;
+  background: #22cb84;
+  color: white;
+  border: none;
   border-radius: 10px;
   padding: 12px 24px;
   font-size: 15px;
   font-weight: 600;
   cursor: not-allowed;
   white-space: nowrap;
+  opacity: 0.45;
 }
 
 .btnMoreActive {
   cursor: pointer;
-  color: #1A1A1A;
+  opacity: 1;
 }
 
-.btnMoreActive:hover { 
-  background: #F5F4F0;
-  border-color: #6B6B6B;
+.btnMoreActive:hover {
+  background: #1ab574;
 }
 
 /* Filter bar */
@@ -243,7 +243,7 @@
 }
 
 .sidebarCount {
-  color: #10b981;
+  color: #ff6f6f;
 }
 
 .refreshBtn {
