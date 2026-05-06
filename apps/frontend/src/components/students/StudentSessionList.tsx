@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getClass } from '@/actions/classes';
+import { getSessionsByClass, joinSession, type Session } from '@/actions/sessions';
 import styles from './StudentSessionList.module.css';
 
 interface ClassInfo {
@@ -14,31 +15,16 @@ interface ClassInfo {
 
 type Tab = 'overview' | 'sessions' | 'materials';
 
-const MOCK_PAST_SESSIONS = [
-  { id: 1, date: '5월 13일 (월) 3교시', title: '영어 문법 – 관계대명사와 관계부사', students: 28, timeAgo: '1시간 전', grade: 'B' },
-  { id: 2, date: '5월 13일 (월) 3교시', title: '영어 문법 – 관계대명사와 관계부사', students: 28, timeAgo: '1시간 전', grade: 'A*' },
-  { id: 3, date: '5월 13일 (월) 3교시', title: '영어 문법 – 관계대명사와 관계부사', students: 28, timeAgo: '1시간 전', grade: 'A-' },
-];
-
-const MOCK_SESSION_LIST = [
-  { id: 1, title: '5월 3일 영어 수업', subject: '수업 주제', students: 28, timeAgo: '1시간 전', status: 'ACTIVE' },
-  { id: 2, title: '5월 3일 영어 수업', subject: '수업 주제', students: 28, timeAgo: '1시간 전', status: 'ACTIVE' },
-  { id: 3, title: '5월 3일 영어 수업', subject: '수업 주제', students: 28, timeAgo: '1시간 전', status: 'PLANNING' },
-  { id: 4, title: '5월 3일 영어 수업', subject: '수업 주제', students: 28, timeAgo: '1시간 전', status: 'PLANNING' },
-  { id: 5, title: '5월 3일 영어 수업', subject: '수업 주제', students: 28, timeAgo: '1시간 전', status: 'PLANNING' },
-  { id: 6, title: '5월 3일 영어 수업', subject: '수업 주제', students: 28, timeAgo: '1시간 전', status: 'COMPLETED' },
-];
-
 const STATUS_LABEL: Record<string, string> = {
   ACTIVE: '진행중',
-  PLANNING: '임시 예정',
-  COMPLETED: '종료',
+  PLANNING: '준비중',
+  FINISHED: '종료',
 };
 
 const STATUS_CLASS: Record<string, string> = {
   ACTIVE: styles.badgeActive,
   PLANNING: styles.badgePlanning,
-  COMPLETED: styles.badgeDone,
+  FINISHED: styles.badgeDone,
 };
 
 interface Props {
@@ -49,6 +35,8 @@ interface Props {
 export const StudentSessionList: React.FC<Props> = ({ classId, initialTab }) => {
   const router = useRouter();
   const [classInfo, setClassInfo] = useState<ClassInfo | null>(null);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [joining, setJoining] = useState<number | null>(null);
   const [tab, setTab] = useState<Tab>(() => {
     if (initialTab === 'sessions') return 'sessions';
     if (initialTab === 'materials') return 'materials';
@@ -58,11 +46,18 @@ export const StudentSessionList: React.FC<Props> = ({ classId, initialTab }) => 
   const [search, setSearch] = useState('');
   const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    getClass(classId)
-      .then(setClassInfo)
-      .catch(() => setClassInfo(null));
+  const fetchData = useCallback(async () => {
+    const [cls, sessionList] = await Promise.allSettled([
+      getClass(classId),
+      getSessionsByClass(classId),
+    ]);
+    if (cls.status === 'fulfilled') setClassInfo(cls.value);
+    if (sessionList.status === 'fulfilled') setSessions(sessionList.value);
   }, [classId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -74,28 +69,43 @@ export const StudentSessionList: React.FC<Props> = ({ classId, initialTab }) => 
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const classTitle = classInfo
-    ? classInfo.subject
-    : '클래스';
+  const handleJoin = async (sessionId: number) => {
+    setJoining(sessionId);
+    try {
+      await joinSession(String(sessionId));
+      router.push(`/s/classes/${classId}/sessions/${sessionId}`);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : '세션 참여에 실패했습니다.');
+      setJoining(null);
+    }
+  };
+
+  const activeSession = sessions.find((s) => s.status === 'ACTIVE');
+  const finishedSessions = sessions.filter((s) => s.status === 'FINISHED');
+  const classTitle = classInfo?.subject ?? '클래스';
+
+  const filteredSessions = sessions.filter((s) =>
+    s.session_name.toLowerCase().includes(search.toLowerCase()) ||
+    (s.explanation ?? '').toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className={styles.container}>
       <div className={styles.inner}>
-        {/* Back link */}
         <button className={styles.backBtn} onClick={() => router.push('/s/classes')}>
           ← 클래스 목록으로
         </button>
 
-        {/* Header */}
         <div className={styles.pageHeader}>
           <h1 className={styles.classTitle}>{classTitle}</h1>
-          <div className={styles.teacherBadge}>
-            <span className={styles.teacherDot} />
-            <span className={styles.teacherName}>박수빈 선생님</span>
-          </div>
+          {classInfo?.grade && (
+            <div className={styles.teacherBadge}>
+              <span className={styles.teacherDot} />
+              <span className={styles.teacherName}>{classInfo.grade}학년 {classInfo.homeroom ?? ''}</span>
+            </div>
+          )}
         </div>
 
-        {/* Tabs */}
         <div className={styles.tabs}>
           <button
             className={`${styles.tab} ${tab === 'overview' ? styles.tabActive : ''}`}
@@ -117,57 +127,69 @@ export const StudentSessionList: React.FC<Props> = ({ classId, initialTab }) => 
           </button>
         </div>
 
-        {/* Tab content */}
         {tab === 'overview' && (
           <div className={styles.overviewContent}>
-            {/* Live session banner */}
-            <div className={styles.liveBanner}>
-              <div className={styles.liveBannerLeft}>
-                <div className={styles.liveBannerTop}>
-                  <span className={styles.liveBadge}>LIVE</span>
-                  <span className={styles.liveBannerLabel}>진행 중인 세션</span>
-                </div>
-                <div className={styles.liveBannerTitle}>영어 문법 – 관계대명사와 관계부사</div>
-                <div className={styles.liveBannerDesc}>
-                  오늘의 목표 : 관계 대명사가 필요한 문장을 이해하고 알맞은 관계대명사를 사용해 문장 완성하기
-                </div>
-              </div>
-              <div className={styles.liveBannerActions}>
-                <button
-                  className={styles.joinSessionBtn}
-                  onClick={() => router.push(`/s/classes/${classId}/sessions/1`)}
-                >
-                  세션 참여하기
-                </button>
-                <button className={styles.detailBtn}>자세히 보기</button>
-              </div>
-            </div>
-
-            {/* Past sessions */}
-            <div className={styles.section}>
-              <div className={styles.sectionHeader}>
-                <span className={styles.sectionTitle}>지난 수업 복습</span>
-                <button className={styles.viewAllBtn}>전체보기</button>
-              </div>
-              {MOCK_PAST_SESSIONS.map((s, idx) => (
-                <div key={s.id} className={styles.pastRow}>
-                  <span className={styles.pastNum}>{idx + 1}</span>
-                  <div className={styles.pastInfo}>
-                    <div className={styles.pastDate}>{s.date}</div>
-                    <div className={styles.pastTitle}>{s.title}</div>
+            {activeSession ? (
+              <div className={styles.liveBanner}>
+                <div className={styles.liveBannerLeft}>
+                  <div className={styles.liveBannerTop}>
+                    <span className={styles.liveBadge}>LIVE</span>
+                    <span className={styles.liveBannerLabel}>진행 중인 세션</span>
                   </div>
-                  <span className={styles.pastStudents}>👥 {s.students}</span>
-                  <span className={styles.pastTime}>{s.timeAgo}</span>
-                  <span className={styles.pastGrade}>{s.grade}</span>
-                  <button className={styles.reviewBtn}>복습하기</button>
+                  <div className={styles.liveBannerTitle}>{activeSession.session_name}</div>
+                  {activeSession.objective && (
+                    <div className={styles.liveBannerDesc}>
+                      오늘의 목표 : {activeSession.objective}
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
+                <div className={styles.liveBannerActions}>
+                  <button
+                    className={styles.joinSessionBtn}
+                    onClick={() => handleJoin(activeSession.id)}
+                    disabled={joining === activeSession.id}
+                  >
+                    {joining === activeSession.id ? '참여 중...' : '세션 참여하기'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.noLiveBanner}>
+                <span>현재 진행 중인 세션이 없습니다.</span>
+              </div>
+            )}
 
-            {/* Materials */}
-            <div className={styles.section}>
-              <div className={styles.sectionTitle}>클래스 자료</div>
-            </div>
+            {finishedSessions.length > 0 && (
+              <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                  <span className={styles.sectionTitle}>지난 수업 복습</span>
+                  <button className={styles.viewAllBtn} onClick={() => setTab('sessions')}>
+                    전체보기
+                  </button>
+                </div>
+                {finishedSessions.slice(0, 3).map((s, idx) => (
+                  <div key={s.id} className={styles.pastRow}>
+                    <span className={styles.pastNum}>{idx + 1}</span>
+                    <div className={styles.pastInfo}>
+                      {s.scheduled_date && (
+                        <div className={styles.pastDate}>{s.scheduled_date}</div>
+                      )}
+                      <div className={styles.pastTitle}>{s.session_name}</div>
+                    </div>
+                    <button
+                      className={styles.reviewBtn}
+                      onClick={() => router.push(`/s/classes/${classId}/sessions/${s.id}`)}
+                    >
+                      복습하기
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {finishedSessions.length === 0 && !activeSession && (
+              <p className={styles.emptyText}>등록된 세션이 없습니다.</p>
+            )}
           </div>
         )}
 
@@ -182,7 +204,7 @@ export const StudentSessionList: React.FC<Props> = ({ classId, initialTab }) => 
                 <input
                   type="text"
                   className={styles.searchInput}
-                  placeholder="클래스 검색"
+                  placeholder="세션 검색"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -194,61 +216,65 @@ export const StudentSessionList: React.FC<Props> = ({ classId, initialTab }) => 
             </div>
 
             <div className={styles.sessionList} ref={menuRef}>
-              {MOCK_SESSION_LIST.filter((s) =>
-                s.title.includes(search) || s.subject.includes(search)
-              ).map((session) => (
-                <div key={session.id} className={styles.sessionRow}>
-                  <div className={styles.sessionIcon}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                    </svg>
-                  </div>
-                  <div className={styles.sessionInfo}>
-                    <div className={styles.sessionTitle}>{session.title}</div>
-                    <div className={styles.sessionSubject}>{session.subject}</div>
-                  </div>
-                  <span className={styles.sessionStudents}>👥 {session.students}</span>
-                  <span className={styles.sessionTime}>{session.timeAgo}</span>
-                  <span className={`${styles.statusBadge} ${STATUS_CLASS[session.status]}`}>
-                    {STATUS_LABEL[session.status]}
-                  </span>
-                  <div className={styles.menuWrapper}>
-                    <button
-                      className={styles.menuTrigger}
-                      onClick={() => setOpenMenuId(openMenuId === session.id ? null : session.id)}
-                    >
-                      •••
-                    </button>
-                    {openMenuId === session.id && (
-                      <div className={styles.dropdownMenu}>
+              {filteredSessions.length === 0 ? (
+                <p className={styles.emptyText}>
+                  {search ? '검색 결과가 없습니다.' : '등록된 세션이 없습니다.'}
+                </p>
+              ) : (
+                filteredSessions.map((session) => (
+                  <div key={session.id} className={styles.sessionRow}>
+                    <div className={styles.sessionIcon}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                      </svg>
+                    </div>
+                    <div className={styles.sessionInfo}>
+                      <div className={styles.sessionTitle}>{session.session_name}</div>
+                      {session.explanation && (
+                        <div className={styles.sessionSubject}>{session.explanation}</div>
+                      )}
+                    </div>
+                    {session.scheduled_date && (
+                      <span className={styles.sessionTime}>{session.scheduled_date}</span>
+                    )}
+                    <span className={`${styles.statusBadge} ${STATUS_CLASS[session.status] ?? ''}`}>
+                      {STATUS_LABEL[session.status] ?? session.status}
+                    </span>
+                    {session.status === 'ACTIVE' && (
+                      <button
+                        className={styles.joinSessionBtn}
+                        onClick={() => handleJoin(session.id)}
+                        disabled={joining === session.id}
+                      >
+                        {joining === session.id ? '참여 중...' : '참여하기'}
+                      </button>
+                    )}
+                    {session.status !== 'ACTIVE' && (
+                      <div className={styles.menuWrapper}>
                         <button
-                          className={styles.menuItem}
-                          onClick={() => { router.push(`/s/classes/${classId}/sessions/${session.id}`); setOpenMenuId(null); }}
+                          className={styles.menuTrigger}
+                          onClick={() => setOpenMenuId(openMenuId === session.id ? null : session.id)}
                         >
-                          상세보기
+                          •••
                         </button>
-                        <button className={styles.menuItem} onClick={() => setOpenMenuId(null)}>
-                          정보 수정
-                        </button>
-                        <button className={`${styles.menuItem} ${styles.menuItemDanger}`} onClick={() => setOpenMenuId(null)}>
-                          삭제
-                        </button>
+                        {openMenuId === session.id && (
+                          <div className={styles.dropdownMenu}>
+                            <button
+                              className={styles.menuItem}
+                              onClick={() => {
+                                router.push(`/s/classes/${classId}/sessions/${session.id}`);
+                                setOpenMenuId(null);
+                              }}
+                            >
+                              상세보기
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Pagination */}
-            <div className={styles.pagination}>
-              <button className={styles.pageBtn}>‹</button>
-              {[1, 2, 3].map((p) => (
-                <button key={p} className={`${styles.pageBtn} ${p === 1 ? styles.pageBtnActive : ''}`}>
-                  {p}
-                </button>
-              ))}
-              <button className={styles.pageBtn}>›</button>
+                ))
+              )}
             </div>
           </div>
         )}
