@@ -1,9 +1,10 @@
 import { StudentLiveSession } from '@/components/students/StudentLiveSession';
 
 interface Props {
-  params: { classId: string; sessionId: string };
+  params: Promise<{ classId: string; sessionId: string }>;
 }
 
-export default function StudentSessionPage({ params }: Props) {
-  return <StudentLiveSession classId={params.classId} sessionId={params.sessionId} />;
+export default async function StudentSessionPage({ params }: Props) {
+  const { classId, sessionId } = await params;
+  return <StudentLiveSession classId={classId} sessionId={sessionId} />;
 }

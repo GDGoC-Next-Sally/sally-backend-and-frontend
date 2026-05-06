@@ -1,10 +1,12 @@
 import { StudentSessionList } from '@/components/students/StudentSessionList';
 
 interface Props {
-  params: { classId: string };
-  searchParams: { tab?: string };
+  params: Promise<{ classId: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }
 
-export default function StudentClassDetailPage({ params, searchParams }: Props) {
-  return <StudentSessionList classId={params.classId} initialTab={searchParams.tab} />;
+export default async function StudentClassDetailPage({ params, searchParams }: Props) {
+  const { classId } = await params;
+  const { tab } = await searchParams;
+  return <StudentSessionList classId={classId} initialTab={tab} />;
 }
