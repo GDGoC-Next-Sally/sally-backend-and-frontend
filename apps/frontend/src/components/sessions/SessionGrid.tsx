@@ -1,73 +1,98 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { getSessionsByClass, deleteSession, type Session } from '@/actions/sessions';
+import { getClass, type ClassItem } from '@/actions/classes';
+import { SessionModal } from './SessionModal';
 import styles from './SessionGrid.module.css';
 
-interface Session {
-  id: number;
-  status: 'active' | 'pending' | 'closed';
-  title: string;
-  subject: string;
-  studentCount: number;
-  timeAgo: string;
-}
-
-const MOCK_SESSIONS: Session[] = [
-  { id: 1, status: 'active',  title: '5월 3일 영어 수업', subject: '수업 주제', studentCount: 28, timeAgo: '1시간 전' },
-  { id: 2, status: 'active',  title: '5월 3일 영어 수업', subject: '수업 주제', studentCount: 28, timeAgo: '1시간 전' },
-  { id: 3, status: 'pending', title: '5월 3일 영어 수업', subject: '수업 주제', studentCount: 28, timeAgo: '1시간 전' },
-  { id: 4, status: 'pending', title: '5월 3일 영어 수업', subject: '수업 주제', studentCount: 28, timeAgo: '1시간 전' },
-  { id: 5, status: 'pending', title: '5월 3일 영어 수업', subject: '수업 주제', studentCount: 28, timeAgo: '1시간 전' },
-  { id: 6, status: 'closed',  title: '5월 3일 영어 수업', subject: '수업 주제', studentCount: 28, timeAgo: '1시간 전' },
-];
-
 const STATUS_CONFIG = {
-  active:  { label: '진행중',  className: 'badgeActive' },
-  pending: { label: '임시 예정', className: 'badgePending' },
-  closed:  { label: '종료',    className: 'badgeClosed' },
-};
+  ACTIVE:   { label: '진행중',   className: 'badgeActive' },
+  PLANNING: { label: '임시 예정', className: 'badgePending' },
+  FINISHED: { label: '종료',     className: 'badgeClosed' },
+} as const;
+
+function formatDate(dateStr?: string | null) {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+}
 
 type Tab = '전체보기' | '세션 목록' | '과제 & 자료';
 
 export const SessionGrid = () => {
   const router = useRouter();
   const params = useParams();
-  const classId = params.id as string;
+  const classId = Number(params.id);
 
+  const [classInfo, setClassInfo] = useState<ClassItem | null>(null);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('세션 목록');
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [search, setSearch] = useState('');
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<Session | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [cls, ses] = await Promise.all([
+        getClass(classId),
+        getSessionsByClass(classId),
+      ]);
+      setClassInfo(cls);
+      setSessions(ses);
+    } catch {
+      setSessions([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [classId]);
+
+  useEffect(() => { load(); }, [load]);
+
   useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
+    const handler = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setOpenMenuId(null);
       }
     };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const filtered = MOCK_SESSIONS.filter((s) =>
-    s.title.includes(search) || s.subject.includes(search)
+  const handleDelete = async (id: number) => {
+    if (!confirm('세션을 삭제하시겠습니까?')) return;
+    try {
+      await deleteSession(id);
+      setSessions((prev) => prev.filter((s) => s.id !== id));
+    } catch {
+      alert('삭제에 실패했습니다.');
+    }
+    setOpenMenuId(null);
+  };
+
+  const filtered = sessions.filter((s) =>
+    s.session_name.includes(search) || (s.explanation ?? '').includes(search)
   );
+
+  const classTitle = classInfo
+    ? `${classInfo.grade ? `${classInfo.grade}학년 ` : ''}${classInfo.homeroom ?? ''}`
+    : '';
 
   return (
     <div className={styles.mainContent}>
-      {/* Back link + class info */}
       <button className={styles.backLink} onClick={() => router.push('/t/classes')}>
         &lt; 클래스 목록으로
       </button>
 
       <div className={styles.classHeader}>
-        <h1 className={styles.classTitle}>3학년 4반</h1>
-        <span className={styles.tag}>중동 영어</span>
-        <span className={styles.tag}>2026 1학기</span>
+        <h1 className={styles.classTitle}>{classTitle || '—'}</h1>
+        {classInfo?.subject && <span className={styles.tag}>{classInfo.subject}</span>}
       </div>
 
-      {/* Tabs */}
       <div className={styles.tabs}>
         {(['전체보기', '세션 목록', '과제 & 자료'] as Tab[]).map((tab) => (
           <button
@@ -80,7 +105,6 @@ export const SessionGrid = () => {
         ))}
       </div>
 
-      {/* Filter bar */}
       <div className={styles.filterBar}>
         <div className={styles.searchBox}>
           <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -89,56 +113,59 @@ export const SessionGrid = () => {
           <input
             type="text"
             className={styles.searchInput}
-            placeholder="클래스 검색"
+            placeholder="세션 검색"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <select className={styles.sortSelect} defaultValue="">
-          <option value="" disabled>정렬</option>
-          <option value="recent">최신순</option>
-          <option value="name">이름순</option>
-        </select>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <select className={styles.sortSelect} defaultValue="">
+            <option value="" disabled>정렬</option>
+            <option value="recent">최신순</option>
+            <option value="name">이름순</option>
+          </select>
+          <button className={styles.createBtn} onClick={() => setIsCreateOpen(true)}>
+            + 세션 만들기
+          </button>
+        </div>
       </div>
 
-      {/* Session list */}
       <div className={styles.sessionList} ref={menuRef}>
-        {filtered.map((session) => {
-          const cfg = STATUS_CONFIG[session.status];
+        {loading && (
+          <div className={styles.empty}>불러오는 중...</div>
+        )}
+        {!loading && filtered.length === 0 && (
+          <div className={styles.empty}>
+            {search ? '검색 결과가 없습니다.' : '등록된 세션이 없습니다.'}
+          </div>
+        )}
+        {!loading && filtered.map((session) => {
+          const cfg = STATUS_CONFIG[session.status] ?? STATUS_CONFIG.PLANNING;
           return (
             <div
               key={session.id}
               className={styles.sessionRow}
               onClick={() => router.push(`/t/classes/${classId}/sessions/${session.id}`)}
             >
-              {/* Icon */}
               <div className={styles.sessionIcon}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#20c997" strokeWidth="2">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
               </div>
 
-              {/* Title + subject */}
               <div className={styles.sessionInfo}>
-                <div className={styles.sessionTitle}>{session.title}</div>
-                <div className={styles.sessionSubject}>{session.subject}</div>
+                <div className={styles.sessionTitle}>{session.session_name}</div>
+                <div className={styles.sessionSubject}>{session.explanation ?? ''}</div>
               </div>
 
-              {/* Student count */}
-              <div className={styles.sessionMeta}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#adb5bd">
-                  <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-                </svg>
-                {session.studentCount}
-              </div>
+              {session.period && (
+                <div className={styles.sessionMeta}>{session.period}교시</div>
+              )}
 
-              {/* Time */}
-              <div className={styles.sessionTime}>{session.timeAgo}</div>
+              <div className={styles.sessionTime}>{formatDate(session.scheduled_date)}</div>
 
-              {/* Status badge */}
               <span className={`${styles.badge} ${styles[cfg.className]}`}>{cfg.label}</span>
 
-              {/* Three-dot menu */}
               <div className={styles.menuContainer}>
                 <button
                   className={styles.moreBtn}
@@ -153,20 +180,13 @@ export const SessionGrid = () => {
                 </button>
                 {openMenuId === session.id && (
                   <div className={styles.dropdownMenu}>
-                    <button
-                      className={styles.menuItem}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/t/classes/${classId}/sessions/${session.id}`);
-                        setOpenMenuId(null);
-                      }}
-                    >
+                    <button className={styles.menuItem} onClick={(e) => { e.stopPropagation(); router.push(`/t/classes/${classId}/sessions/${session.id}`); setOpenMenuId(null); }}>
                       상세보기
                     </button>
-                    <button className={styles.menuItem} onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }}>
+                    <button className={styles.menuItem} onClick={(e) => { e.stopPropagation(); setEditTarget(session); setOpenMenuId(null); }}>
                       정보 수정
                     </button>
-                    <button className={`${styles.menuItem} ${styles.menuItemDanger}`} onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }}>
+                    <button className={`${styles.menuItem} ${styles.menuItemDanger}`} onClick={(e) => { e.stopPropagation(); handleDelete(session.id); }}>
                       삭제
                     </button>
                   </div>
@@ -177,14 +197,21 @@ export const SessionGrid = () => {
         })}
       </div>
 
-      {/* Pagination */}
-      <div className={styles.pagination}>
-        <button className={styles.pageBtn}>&lt;</button>
-        <button className={`${styles.pageNumber} ${styles.pageActive}`}>1</button>
-        <button className={styles.pageNumber}>2</button>
-        <button className={styles.pageNumber}>3</button>
-        <button className={styles.pageBtn}>&gt;</button>
-      </div>
+      {isCreateOpen && (
+        <SessionModal
+          classId={classId}
+          onClose={() => setIsCreateOpen(false)}
+          onSuccess={load}
+        />
+      )}
+      {editTarget && (
+        <SessionModal
+          classId={classId}
+          session={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSuccess={load}
+        />
+      )}
     </div>
   );
 };
