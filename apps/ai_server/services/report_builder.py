@@ -230,7 +230,7 @@ async def _generate_overall_summary_llm(
         "improving": "호전(수업 후반 안정됨)",
         "worsening": "악화(수업 후반 어려움 증가)",
         "stable": "안정(큰 변화 없음)",
-    }.get(frustration_trend, 않음"")
+    }.get(frustration_trend, "")
 
     misconception_text = ", ".join(misconception_tags) if misconception_tags else "없음"
 

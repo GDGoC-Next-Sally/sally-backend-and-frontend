@@ -28,6 +28,10 @@ class ConversationTurn(BaseModel):
 class ChatRequest(BaseModel):
     conversation_history: List[ConversationTurn]
     student_profile: Optional[StudentProfile] = None
+    # 아래 두 필드는 /analyze 엔드포인트에서 백엔드 콜백 전송에 사용됩니다.
+    # NestJS가 호출할 때 함께 전달하면 분석 완료 후 자동으로 콜백이 발송됩니다.
+    session_id: Optional[int] = None    # 수업 세션 ID (dialogs 테이블 조회용)
+    student_id: Optional[str] = None    # 학생 UUID (dialogs 테이블 조회용)
 
 
 # ── TEACHER_SUMMARY 파싱 결과 (LLM이 매 턴 생성하는 원천 데이터 12개) ────────
@@ -59,7 +63,7 @@ class UpdateRealtimeRequest(BaseModel):
 class EndSessionRequest(BaseModel):
     session_id: int                                    # 세션 고유 ID (NestJS DB의 sessions.id)
     student_id: Optional[str] = None                  # 학생 UUID (dialogs 테이블 조회용)
-    summaries: List[TeacherSummary]                    # 대화 전체의 teacher_summary 누적 목록
+    summaries: Optional[List[TeacherSummary]] = None  # (선택) 프론트가 직접 전달 시 사용. 없으면 DB에서 자동 조회.
     student_profile: Optional[StudentProfile] = None  # 학생 프로파일 (선택)
 
 

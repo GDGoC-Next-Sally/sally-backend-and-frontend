@@ -1,17 +1,21 @@
 """
 routers/chat.py — AI 서버 API 엔드포인트 모음
 """
+import asyncio
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from ai_server.models import ChatRequest, TeacherSummary, EndSessionRequest, EndSessionResponse, UpdateRealtimeRequest
 from ai_server.services.llm_service import stream_chat, analyze_student
 from ai_server.services.report_builder import generate_final_report
 from ai_server.services.storage_client import upload_report
+from ai_server.services.callback_client import notify_backend_analytics_callback
 from ai_server.services.db_client import (
     get_dialog,
     mark_dialog_analyzed,
     save_student_report,
     update_real_time_analysis,
+    append_real_time_analysis,
+    get_real_time_analyses,
 )
 
 router = APIRouter()
@@ -50,9 +54,16 @@ async def analyze(request: ChatRequest):
     요청(Request):
         - conversation_history: 방금 AI가 한 대답까지 포함된 전체 대화 기록
         - student_profile: 학생 프로파일
+        - session_id: (선택) 수업 세션 ID — dialog 조회 및 백엔드 콜백에 사용
+        - student_id: (선택) 학생 UUID — dialog 조회 및 백엔드 콜백에 사용
         
     응답(Response):
         - TeacherSummary: 교사 대시보드용 분석 데이터 JSON
+        
+    사이드이펙트:
+        - session_id + student_id가 모두 제공된 경우, 분석 완료 후
+          NestJS 백엔드의 POST /livechat/analytics-callback을 비동기로 호출합니다.
+          (콜백 실패 시에도 이 API의 응답에는 영향을 주지 않습니다.)
     """
     if not request.conversation_history:
         raise HTTPException(status_code=400, detail="conversation_history가 비어있습니다.")
@@ -62,9 +73,31 @@ async def analyze(request: ChatRequest):
             conversation_history=request.conversation_history,
             student_profile=request.student_profile,
         )
-        return summary
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"LLM 학생 분석 실패: {str(e)}")
+
+    # ── 분석 완료 후 NestJS 백엔드 콜백 (Fire-and-Forget) ────────────────────
+    # session_id와 student_id가 모두 있을 때만 dialog를 조회하여 콜백 전송
+    session_id = getattr(request, "session_id", None)
+    student_id = getattr(request, "student_id", None)
+
+    if session_id and student_id:
+        async def _send_callback():
+            try:
+                dialog = await get_dialog(session_id=session_id, student_id=student_id)
+                if dialog:
+                    analysis_dict = summary.model_dump() if hasattr(summary, "model_dump") else summary.dict()
+                    await notify_backend_analytics_callback(
+                        dialog_id=dialog["id"],
+                        analysis=analysis_dict,
+                    )
+            except Exception as e:
+                print(f"[WARN] 백엔드 콜백 전송 실패 (session_id={session_id}): {e}")
+
+        # 응답을 블로킹하지 않고 백그라운드에서 실행
+        asyncio.create_task(_send_callback())
+
+    return summary
 
 
 @router.post("/update-realtime")
@@ -89,7 +122,7 @@ async def update_realtime(request: UpdateRealtimeRequest):
             raise HTTPException(status_code=404, detail="해당 session_id와 student_id에 매칭되는 대화(dialog)를 찾을 수 없습니다.")
             
         summary_dict = request.analysis.model_dump() if hasattr(request.analysis, "model_dump") else request.analysis.dict()
-        await update_real_time_analysis(dialog["id"], summary_dict)
+        await append_real_time_analysis(dialog["id"], summary_dict)  # 덮어쓰기 → 배열 누적 저장
         return {"status": "ok", "dialog_id": dialog["id"]}
         
     except HTTPException:
@@ -121,20 +154,7 @@ async def end_session(request: EndSessionRequest):
         - report: 최종 리포트 데이터 (FinalReport)
         - report_url: Supabase Storage에 업로드된 파일 공개 URL
     """
-    if not request.summaries:
-        raise HTTPException(status_code=400, detail="summaries가 비어있습니다. 대화 기록이 없습니다.")
-
-    # ── Step 1: FinalReport 생성 ─────────────────────────────────────────────
-    try:
-        report = await generate_final_report(
-            session_id=str(request.session_id),
-            summaries=request.summaries,
-            student_id=request.student_id,
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"리포트 생성 실패: {str(e)}")
-
-    # ── Step 2: dialog 정보 조회 (dialog_id 획득) ────────────────────────────
+    # ── Step 1: dialog 정보 조회 (dialog_id 획득) ────────────────────────────
     dialog_id = None
     if request.student_id:
         try:
@@ -147,7 +167,32 @@ async def end_session(request: EndSessionRequest):
         except Exception as e:
             print(f"[WARN] dialog 조회 실패: {e}")
 
-    # ── Step 3: student_reports 테이블에 리포트 JSON 직접 저장 ───────────────
+    # ── Step 2: DB에서 summaries 직접 읽기 (프론트 전달 불필요) ──────────────
+    summaries_from_db: list[TeacherSummary] = []
+    if dialog_id:
+        try:
+            raw_list = await get_real_time_analyses(dialog_id)
+            summaries_from_db = [TeacherSummary(**item) for item in raw_list]
+        except Exception as e:
+            print(f"[WARN] DB에서 summaries 읽기 실패: {e}")
+
+    # 프론트가 summaries를 직접 보낸 경우 DB 데이터보다 우선 사용 (하위 호환)
+    summaries = request.summaries if request.summaries else summaries_from_db
+
+    if not summaries:
+        raise HTTPException(status_code=400, detail="분석 데이터가 없습니다. /update-realtime이 먼저 호출되어야 합니다.")
+
+    # ── Step 3: FinalReport 생성 ─────────────────────────────────────────────
+    try:
+        report = await generate_final_report(
+            session_id=str(request.session_id),
+            summaries=summaries,
+            student_id=request.student_id,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"리포트 생성 실패: {str(e)}")
+
+    # ── Step 4: student_reports 테이블에 리포트 JSON 직접 저장 ───────────────
     if dialog_id and request.student_id:
         try:
             # Pydantic 모델을 딕셔너리로 변환하여 저장
@@ -161,7 +206,7 @@ async def end_session(request: EndSessionRequest):
         except Exception as e:
             print(f"[WARN] student_reports 저장 실패: {e}")
 
-    # ── Step 4: dialogs.is_analyzed = true 업데이트 ─────────────────────────
+    # ── Step 5: dialogs.is_analyzed = true 업데이트 ─────────────────────────
     if dialog_id:
         try:
             await mark_dialog_analyzed(dialog_id)
