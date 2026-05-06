@@ -202,8 +202,18 @@ export class SessionsService {
       create: { student_id: studentId, session_id: id }
     });
 
+    const studentName = await this.prisma.users.findUnique({
+      where: { id: studentId },
+      select: { name: true }
+    })
+
     // 학생을 세션 소켓 룸에 입장시킴
     this.eventsGateway.forceJoinRoom(studentId, `session:${id}`);
+    this.eventsGateway.sendToRoom(`session:${id}`, 'student_joined', { 
+      student_id: studentId,
+      student_name: studentName?.name,
+      dialog_id: dialog.id
+    })
 
     return {
       dialog,

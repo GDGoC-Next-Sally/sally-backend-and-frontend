@@ -2,7 +2,6 @@ import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/co
 import { PrismaService } from '../../providers/prisma/prisma.service';
 import { EventsGateway } from '../../common/gateways/events.gateway';
 import { SendChatMessageDto } from './dto/send-chat-message.dto';
-import { SendInterventionDto } from './dto/send-intervention.dto';
 import { Observable } from 'rxjs';
 import axios from 'axios';
 
@@ -32,35 +31,6 @@ export class LivechatService {
       where: { dialog_id: dialogId },
       orderBy: { created_at: 'asc' }
     });
-  }
-
-  async sendIntervention(teacherId: string, dto: SendInterventionDto) {
-    const dialog = await this.prisma.dialogs.findUnique({
-      where: { id: dto.dialog_id },
-      include: { sessions: true }
-    });
-
-    if (!dialog) throw new NotFoundException('대화를 찾을 수 없습니다.');
-    if (dialog.sessions.teacher_id !== teacherId) {
-      throw new UnauthorizedException('권한이 없습니다.');
-    }
-
-    // 1. 선생님의 개입 메시지도 기록으로 남김
-    const interventionMessage = await this.prisma.chat_messages.create({
-      data: {
-        dialog_id: dialog.id,
-        sender_type: 'TEACHER',
-        content: dto.content,
-      }
-    });
-
-    // 2. 학생에게 소켓으로 전송
-    this.eventsGateway.sendToUser(dialog.student_id, 'teacher_intervention', {
-      ...interventionMessage,
-      type: dto.type || 'ADVICE'
-    });
-
-    return interventionMessage;
   }
 
   // 학생 전용 메시지 전송
@@ -204,7 +174,7 @@ export class LivechatService {
       include: { sessions: true }
     });
 
-    if (!dialog) throw new NotFoundException('Dialog not found');
+    if (!dialog) throw new NotFoundException('대화를 찾을 수 없습니다.');
 
     // 1. 기존 누적 배열에 새 분석 결과 추가 (없으면 빈 배열로 시작)
     const existing = Array.isArray(dialog.real_time_analysis)

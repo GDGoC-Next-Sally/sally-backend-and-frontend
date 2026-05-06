@@ -10,6 +10,7 @@ import { StorageModule } from './providers/storage/storage.module';
 import { GatewaysModule } from './common/gateways/gateways.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
 import { LivechatModule } from './modules/livechat/livechat.module';
+import { MonitoringModule } from './modules/monitoring/monitoring.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { LivechatModule } from './modules/livechat/livechat.module';
     GatewaysModule,
     SessionsModule,
     LivechatModule,
+    MonitoringModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -2,7 +2,6 @@ import { Controller, Get, Post, Body, Param, UseGuards, Req, Sse } from '@nestjs
 import { Observable } from 'rxjs';
 import { LivechatService } from './livechat.service';
 import { SendChatMessageDto } from './dto/send-chat-message.dto';
-import { SendInterventionDto } from './dto/send-intervention.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { user_role as UserRole } from '.prisma/client';
@@ -20,13 +19,6 @@ export class LivechatController {
   @ApiOperation({ summary: '대화방 메시지 내역 조회' })
   getMessages(@Param('dialogId') dialogId: string, @Req() req: any) {
     return this.livechatService.getMessages(+dialogId, req.user.userId, req.user.role);
-  }
-
-  @Post('intervention')
-  @Roles(UserRole.TEACHER)
-  @ApiOperation({ summary: '선생님 개입 메시지 전송 (소켓으로 학생에게 전달)' })
-  sendIntervention(@Req() req: any, @Body() dto: SendInterventionDto) {
-    return this.livechatService.sendIntervention(req.user.userId, dto);
   }
 
   @Post('message')
