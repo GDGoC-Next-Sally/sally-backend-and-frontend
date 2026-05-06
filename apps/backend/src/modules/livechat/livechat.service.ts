@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../providers/prisma/prisma.service';
 import { EventsGateway } from '../../common/gateways/events.gateway';
 import { SendChatMessageDto } from './dto/send-chat-message.dto';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import axios from 'axios';
 
 const AI_SERVER_URL = process.env.AI_SERVER_URL || 'http://localhost:8000';
@@ -46,6 +46,10 @@ export class LivechatService {
 
     if (!dialog || dialog.student_id !== studentId) {
       throw new UnauthorizedException('권한이 없습니다.');
+    }
+
+    if (dialog.sessions.status === 'FINISHED') {
+      throw new ForbiddenException('이미 종료된 세션입니다.');
     }
 
     // 1. 학생 메시지 저장

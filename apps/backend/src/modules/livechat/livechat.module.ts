@@ -7,6 +7,7 @@ import { GatewaysModule } from '../../common/gateways/gateways.module';
 @Module({
   imports: [PrismaModule, GatewaysModule],
   providers: [LivechatService],
-  controllers: [LivechatController]
+  controllers: [LivechatController],
+  exports: [LivechatService]
 })
 export class LivechatModule {}
