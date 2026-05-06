@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 from typing import AsyncGenerator
 from ai_server.models import StudentProfile, ConversationTurn, TeacherSummary
-from ai_server.services.prompt_builder import build_chat_system_prompt, build_analysis_system_prompt
+from ai_server.services.prompt_builder import build_chat_system_prompt, build_analysis_system_prompt, build_chat_few_shot_messages
 
 # ai_server 폴더 안의 .env 파일을 명시적으로 지정
 env_path = Path(__file__).parent.parent / ".env"
@@ -41,16 +41,16 @@ async def stream_chat(
     client = _get_client()
     system_prompt = build_chat_system_prompt(student_profile)
 
-    messages = []
-    for idx, turn in enumerate(conversation_history):
+    # system 역할을 첫 번째 메시지로 명시적으로 분리
+    messages = [{"role": "system", "content": system_prompt}]
+
+    # few-shot 예시: AI가 실제 대화 패턴을 '보고' 따라 하도록 삽입 (리허설)
+    messages.extend(build_chat_few_shot_messages(student_profile))
+
+    # 실제 학생과의 대화 기록 이어 붙이기
+    for turn in conversation_history:
         role = "assistant" if turn.role == "model" else "user"
-        content = turn.text
-        
-        # 시스템 프롬프트 병합
-        if idx == 0 and turn.role == "user":
-            content = f"{system_prompt}\n\n[대화 기록 시작]\n학생 첫 메시지: {turn.text}"
-            
-        messages.append({"role": role, "content": content})
+        messages.append({"role": role, "content": turn.text})
 
     response = await client.chat.completions.create(
         model=MODEL,
@@ -81,10 +81,11 @@ async def analyze_student(
         speaker = "AI 선생님" if turn.role == "model" else "학생"
         history_text += f"{speaker}: {turn.text}\n"
 
-    # JSON 형태를 유도하는 구조
-    content = f"{system_prompt}\n\n[대화 기록 전체]\n{history_text}\n\n위 대화의 마지막 턴을 기준으로 학생 상태를 JSON으로만 응답하세요."
-
-    messages = [{"role": "user", "content": content}]
+    # system 역할을 분리하고, user 메시지는 대화 기록만 담음
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": f"[대화 기록 전체]\n{history_text}\n\n위 대화의 마지막 턴을 기준으로 학생 상태를 JSON으로만 응답하세요."},
+    ]
 
     response = await client.chat.completions.create(
         model=MODEL,

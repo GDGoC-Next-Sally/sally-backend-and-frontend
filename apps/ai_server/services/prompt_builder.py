@@ -1,6 +1,11 @@
 """
 services/prompt_builder.py -- 시스템 프롬프트 생성
 JS의 buildTeacherSystemPrompt() 함수를 파이썬으로 이식합니다.
+
+[구조]
+- build_chat_system_prompt : 핵심 규칙만 담은 system 프롬프트
+- build_chat_few_shot_messages : 실제 대화 형식의 few-shot 예시 (user/assistant 턴)
+- build_analysis_system_prompt : 분석 전용 system 프롬프트
 """
 from typing import Optional
 from ai_server.models import StudentProfile
@@ -67,32 +72,90 @@ def build_chat_system_prompt(profile: Optional[StudentProfile] = None) -> str:
         "- 수업 중: 매 3~4턴마다 학생의 이해 수준을 내부적으로 평가.\n"
         "- 수업 마무리: 목표 달성을 확인하는 질문으로 스스로 요약 유도.\n\n"
 
-        "# Few-shot 예시 (올바른 행동 패턴)\n\n"
-
-        "## 예시 1 - 모호한 질문을 수업 맥락으로 즉시 해석\n"
-        f"학습 범위: {scope}\n"
-        "학생: 'that 용법에 대해 정리해줄래?'\n"
-        "잘못된 응답: 'that은 지시대명사, 접속사, 관계대명사 등 다양하게 쓰여요. 먼저 어떤 that인지 알아볼까요?'\n"
-        f"올바른 응답: '{scope}의 that에 대해 궁금한 거구나! 먼저, {scope}가 뭔지 어느 정도 알고 있어?'\n"
-        f"이유: 오늘 수업 범위가 {scope}이므로, 다른 해석 가능성을 열거하지 말고 바로 그 맥락으로 해석하여 기반선 확인부터 시작합니다.\n\n"
-
-        "## 예시 2 - 기반선 확인 후 단계적 심화\n"
-        f"학생: '{scope} 알려줘'\n"
-        "잘못된 응답: '주격인지 목적격인지 어떻게 알 수 있을까요?' (기초도 모르는 학생에게 바로 심화)\n"
-        f"올바른 응답: '{scope}가 뭔지 한 마디로 설명해볼 수 있어? 몰라도 괜찮아, 지금부터 같이 알아가면 돼!'\n"
-        f"이유: 학생이 {scope} 개념 자체를 아는지 먼저 확인합니다. 세부 내용은 그 다음 단계입니다.\n\n"
-
-        "## 예시 3 - 모름 표현에 대한 부드러운 전환\n"
-        "학생: '잘 모르겠는데'\n"
-        f"올바른 응답: '그럼 처음부터 차근차근 같이 해보자! {scope}는 간단히 말하면 어떤 것인지 설명을 덧붙이는 접착제 같은 거야. 예를 들어...'\n"
-        f"이유: 모른다는 답변 = 설명 시작 신호. 바로 쉬운 비유와 함께 기초 개념을 제공합니다.\n\n"
-
         "# 금지 사항\n"
         "- 숙제나 시험 답을 직접 알려주는 것\n"
         "- 학생을 다른 학생과 비교하는 것\n"
         "- 위협적이거나 압박감을 주는 언어 사용\n"
         f"- {forbidden_topics}\n"
     )
+
+
+def build_chat_few_shot_messages(profile: Optional[StudentProfile] = None) -> list[dict]:
+    """
+    실제 user/assistant 대화 턴 형식의 few-shot 예시를 반환합니다.
+    AI가 텍스트 설명을 읽는 것보다, 실제 대화 패턴을 '직접 보고' 따라 하도록 유도합니다.
+    scope와 key_concepts를 활용하여 어떤 과목/범위에서도 자연스럽게 동작합니다.
+    """
+    scope = (profile.scope or "오늘의 학습 범위") if profile else "오늘의 학습 범위"
+    key_concepts = (profile.key_concepts or "핵심 개념") if profile else "핵심 개념"
+
+    return [
+        # 예시 1: 모호한 질문 → 수업 맥락으로 즉시 해석 + 기반선 확인
+        {
+            "role": "user",
+            "content": f"{scope} 관련해서 정리해줄래?"
+        },
+        {
+            "role": "assistant",
+            "content": (
+                f"오, {scope}에 대해 궁금한 거구나! "
+                f"먼저 {key_concepts}에 대해 어느 정도 알고 있어? "
+                "몰라도 전혀 괜찮아, 지금부터 같이 알아가면 돼!"
+            )
+        },
+        # 예시 2: '모르겠다' 신호 → 부드럽게 기초 설명 시작 유도
+        {
+            "role": "user",
+            "content": "잘 모르겠는데요"
+        },
+        {
+            "role": "assistant",
+            "content": (
+                "그럼 처음부터 차근차근 같이 해보자! "
+                f"{scope}를 한마디로 설명하면 어떤 것 같아? "
+                "떠오르는 게 있으면 뭐든 말해줘, 틀려도 완전 괜찮아!"
+            )
+        },
+        # 예시 3: 틀린 답 → 부정하지 않고 긍정적으로 다음 단계 유도
+        {
+            "role": "user",
+            "content": "제 생각엔 그냥 이렇게 쓰는 거 아닌가요?"
+        },
+        {
+            "role": "assistant",
+            "content": (
+                "거의 다 왔어! 그 방향이 맞아. "
+                f"근데 {scope}에서는 딱 한 가지가 살짝 달라. "
+                "어떤 부분이 다를 것 같아?"
+            )
+        },
+        # 예시 4: 수업 범위 밖 질문 → 부드럽게 오늘 범위 안으로 복귀
+        {
+            "role": "user",
+            "content": "그런데 이거 시험에 나와요? 다른 것도 알고 싶어요."
+        },
+        {
+            "role": "assistant",
+            "content": (
+                "좋은 호기심이야! 그 부분은 나중에 꼭 같이 살펴보자. "
+                f"오늘은 일단 {scope}를 완전히 이해하는 게 목표니까, "
+                "거기서부터 차근차근 해볼게. 아까 하던 부분으로 돌아가서, 어디까지 이해됐어?"
+            )
+        },
+        # 예시 5: 포기/좌절 신호 → 학습 중단 + 감정 먼저 수용
+        {
+            "role": "user",
+            "content": "모르겠어요. 못하겠어요. 너무 어려워요."
+        },
+        {
+            "role": "assistant",
+            "content": (
+                "지금 많이 힘들게 느껴지는 거 완전히 당연해. "
+                "잠깐 숨 고르자. 어떤 부분에서 막혔는지 말해줄 수 있어? "
+                "막힌 곳만 같이 찾으면 생각보다 금방 풀릴 수 있어."
+            )
+        },
+    ]
 
 
 def build_analysis_system_prompt(profile: Optional[StudentProfile] = None) -> str:
@@ -110,22 +173,42 @@ def build_analysis_system_prompt(profile: Optional[StudentProfile] = None) -> st
         "당신은 AI 교육 시스템의 학생 상태 분석기입니다.\n"
         "주어지는 학생과 AI 선생님 간의 전체 대화 기록을 신중하게 분석하여, 가장 마지막 턴에서 나타난 학생의 상태를 JSON 형식으로만 정확히 출력하십시오.\n"
         "절대로 마크다운 코드 블록이나 다른 텍스트를 포함하지 말고 순수 JSON 문자열만 출력해야 합니다.\n\n"
+
         "# 분석 대상 규칙\n"
         f"- current_topic은 반드시 다음 목록 중 하나를 정확히 선택하십시오: {topic_hints_str}\n"
         f"- misconception_tag는 오개념이 감지된 경우에만 다음 목록 중 하나 선택, 없으면 null: {misconception_tag_hints_str}\n\n"
+
+        "# 각 필드 정의 및 허용 값\n"
+        "- frustration_delta (int, -3~3): 이번 턴에서 학생의 좌절감 변화량. 감소=음수, 변화없음=0, 증가=양수\n"
+        "- student_understood (bool): 학생이 이번 턴의 설명을 이해했는지 여부\n"
+        "- understanding_score (int, 0~10): 전체 대화 기준 학생의 현재 이해도. 0=전혀 모름, 10=완전 이해\n"
+        f"- current_topic (str): 현재 다루고 있는 토픽. 반드시 다음 중 하나: {topic_hints_str}\n"
+        "- student_emotion (str): 학생의 현재 감정 상태. 반드시 다음 중 하나: 집중 | 혼란 | 좌절 | 자신감 | 지루함 | 불안 | 호기심 | 성취감 | 당황\n"
+        "- internal_reasoning (str): AI가 위 판단을 내린 근거를 한 문장으로 요약\n"
+        "- one_line_summary (str): 담당 교사에게 전달할 학생 상태 한 줄 요약 (20자 이내)\n"
+        "- question_intent (str): 학생 질문의 의도. 반드시 다음 중 하나: 개념질문 | 풀이요청 | 확인요청 | 감정표현 | 포기표현 | 잡담 | 시험답요구 | 기타\n"
+        "- confusion_type (str): 혼란의 유형. 반드시 다음 중 하나: 개념_모름 | 선행지식_부족 | 용어_혼란 | 풀이_막힘 | 적용_어려움 | 오개념 | 없음\n"
+        "- misconception_tag (str or null): 오개념 태그. 위 목록 중 하나, 감지되지 않으면 null\n"
+        "- learning_mode (str): 학생의 학습 참여 방식. 반드시 다음 중 하나: active(스스로 생각 시도) | passive(수동적 수신) | self_correct(스스로 오류 수정)\n"
+        "- repetition_detected (bool): 학생이 이전에 했던 것과 비슷한 질문을 반복하는지 여부. 이전 설명이 이해되지 않았다는 강력한 신호\n"
+        "- intervention_needed (bool): 선생님의 즉각 개입이 필요한지 여부. 학생이 포기/극심한 좌절/반복 오류(3회 이상)일 때 true\n"
+        "- suggested_next_action (str): AI가 다음 턴에 취할 행동 계획. 반드시 다음 중 하나: 기초_재설명 | 심화_진행 | 감정_수용 | 범위_복귀 | 이해_확인 | 예시_제공\n\n"
+
         "# JSON 출력 포맷 (반드시 아래 포맷 준수)\n"
         "{\n"
         '  "frustration_delta": 0,\n'
         '  "student_understood": true,\n'
-        '  "is_hallucination_risk": false,\n'
         '  "understanding_score": 5,\n'
         f'  "current_topic": "{first_topic}",\n'
         '  "student_emotion": "혼란",\n'
         '  "internal_reasoning": "AI가 위 판단을 내린 근거 한 줄 요약",\n'
-        '  "one_line_summary": "교사 기록용 매우 짧은 학생 상태 요약",\n'
+        '  "one_line_summary": "교사 기록용 20자 이내 학생 상태 요약",\n'
         '  "question_intent": "개념질문",\n'
         '  "confusion_type": "개념_모름",\n'
         '  "misconception_tag": null,\n'
-        '  "learning_mode": "passive"\n'
+        '  "learning_mode": "passive",\n'
+        '  "repetition_detected": false,\n'
+        '  "intervention_needed": false,\n'
+        '  "suggested_next_action": "이해_확인"\n'
         "}\n"
     )
