@@ -143,6 +143,7 @@ async def get_chat_messages(dialog_id: int) -> list[dict]:
 async def update_real_time_analysis(dialog_id: int, analysis_json: dict) -> None:
     """
     /analyze 요청 직후 생성된 실시간 분석 결과(JSON)를 dialogs 테이블에 업데이트합니다.
+    (단일 객체 덮어쓰기 — 하위 호환용, 신규 코드는 append_real_time_analysis 사용)
     """
     def _query():
         try:
@@ -152,6 +153,77 @@ async def update_real_time_analysis(dialog_id: int, analysis_json: dict) -> None
             print(f"[WARN] update_real_time_analysis 실패: {e}")
 
     await asyncio.to_thread(_query)
+
+
+async def append_real_time_analysis(dialog_id: int, analysis_json: dict) -> None:
+    """
+    매 턴마다 TeacherSummary 분석 결과를 JSON 배열로 누적 저장합니다.
+    기존 배열을 읽어 새 항목을 append한 뒤 전체를 다시 저장합니다.
+
+    저장 구조:
+        real_time_analysis: [
+            { ...1턴 TeacherSummary... },
+            { ...2턴 TeacherSummary... },
+            ...
+        ]
+    """
+    def _query():
+        try:
+            db = _get_db()
+            # 기존 배열 읽기
+            row = (
+                db.table("dialogs")
+                .select("real_time_analysis")
+                .eq("id", dialog_id)
+                .single()
+                .execute()
+            )
+            existing = row.data.get("real_time_analysis") if row.data else None
+
+            # 기존 값이 배열이면 그대로 사용, 단일 객체거나 None이면 빈 배열로 초기화
+            if isinstance(existing, list):
+                updated = existing + [analysis_json]
+            else:
+                updated = [analysis_json]
+
+            db.table("dialogs").update({"real_time_analysis": updated}).eq("id", dialog_id).execute()
+        except Exception as e:
+            print(f"[WARN] append_real_time_analysis 실패: {e}")
+
+    await asyncio.to_thread(_query)
+
+
+async def get_real_time_analyses(dialog_id: int) -> list[dict]:
+    """
+    dialog_id로 누적 저장된 전체 TeacherSummary 배열을 조회합니다.
+    /end-session에서 프론트가 summaries를 보내지 않아도 DB에서 직접 읽어올 때 사용합니다.
+
+    Returns:
+        [{ ...TeacherSummary 1턴... }, { ...2턴... }, ...] 또는 []
+    """
+    def _query():
+        try:
+            db = _get_db()
+            row = (
+                db.table("dialogs")
+                .select("real_time_analysis")
+                .eq("id", dialog_id)
+                .single()
+                .execute()
+            )
+            if not row.data:
+                return []
+            data = row.data.get("real_time_analysis")
+            if isinstance(data, list):
+                return data
+            # 구버전 단일 객체 방식으로 저장된 경우 배열로 래핑
+            if isinstance(data, dict):
+                return [data]
+            return []
+        except Exception:
+            return []
+
+    return await asyncio.to_thread(_query)
 
 async def mark_dialog_analyzed(dialog_id: int, real_time_analysis: dict = None) -> None:
     """
