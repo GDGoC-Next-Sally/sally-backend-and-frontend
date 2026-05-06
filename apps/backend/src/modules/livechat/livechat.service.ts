@@ -21,11 +21,11 @@ export class LivechatService {
       include: { sessions: true }
     });
 
-    if (!dialog) throw new NotFoundException('Dialog not found');
+    if (!dialog) throw new NotFoundException('대화를 찾을 수 없습니다.');
 
     // 권한 확인: 본인, 해당 클래스 선생님, 혹은 관리자
     if (role !== 'ADMIN' && dialog.student_id !== userId && dialog.sessions.teacher_id !== userId) {
-      throw new UnauthorizedException('Access denied');
+      throw new UnauthorizedException('권한이 없습니다.');
     }
 
     return this.prisma.chat_messages.findMany({
@@ -40,9 +40,9 @@ export class LivechatService {
       include: { sessions: true }
     });
 
-    if (!dialog) throw new NotFoundException('Dialog not found');
+    if (!dialog) throw new NotFoundException('대화를 찾을 수 없습니다.');
     if (dialog.sessions.teacher_id !== teacherId) {
-      throw new UnauthorizedException('Only the teacher can send an intervention');
+      throw new UnauthorizedException('권한이 없습니다.');
     }
 
     // 1. 선생님의 개입 메시지도 기록으로 남김
@@ -54,7 +54,7 @@ export class LivechatService {
       }
     });
 
-    // 2. 학생에게 소켓으로 전송 (프론트는 type이 AI_GUIDANCE일 때만 다음 메시지에 첨부)
+    // 2. 학생에게 소켓으로 전송
     this.eventsGateway.sendToUser(dialog.student_id, 'teacher_intervention', {
       ...interventionMessage,
       type: dto.type || 'ADVICE'
@@ -75,7 +75,7 @@ export class LivechatService {
     });
 
     if (!dialog || dialog.student_id !== studentId) {
-      throw new UnauthorizedException('You are not a participant in this dialog');
+      throw new UnauthorizedException('권한이 없습니다.');
     }
 
     // 1. 학생 메시지 저장

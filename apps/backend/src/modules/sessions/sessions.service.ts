@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../providers/prisma/prisma.service';
 import { EventsGateway } from '../../common/gateways/events.gateway';
 import { ReportsService } from '../reports/reports.service';
@@ -14,13 +14,16 @@ export class SessionsService {
   ) {}
 
   async create(teacherId: string, createSessionDto: CreateSessionDto) {
-    // TODO: Implement
     const classData = await this.prisma.classes.findUnique({
       where: { id: createSessionDto.class_id },
     });
 
     if (!classData) {
-      throw new Error('Class not found');
+      throw new NotFoundException('수업을 찾을 수 없습니다.');
+    }
+
+    if (classData.teacher_id !== teacherId) {
+      throw new UnauthorizedException('수업을 생성할 권한이 없습니다.');
     }
 
     const { scheduled_date, scheduled_start, scheduled_end, ...rest } = createSessionDto;
@@ -42,12 +45,11 @@ export class SessionsService {
   }
 
   async findAllByClassId(classId: number, userId: string) {
-    // TODO: Implement
     const classData = await this.prisma.classes.findFirst({
       where: { id: classId }
     });
     if (!classData) {
-      throw new NotFoundException('Class not found');
+      throw new NotFoundException('수업을 찾을 수 없습니다.');
     }
 
     const teacherId = classData.teacher_id;
@@ -56,7 +58,7 @@ export class SessionsService {
     });
 
     if (teacherId !== userId && !isEnrolled) {
-      throw new Error('User is not a member of this class');
+      throw new UnauthorizedException('수업에 참여할 권한이 없습니다.');
     }
 
     return this.prisma.sessions.findMany({
@@ -72,14 +74,14 @@ export class SessionsService {
       where: { id }
     });
 
-    if (!session) throw new NotFoundException(`Session #${id} not found`);
+    if (!session) throw new NotFoundException(`세션 #${id}를 찾을 수 없습니다.`);
 
     const isEnrolled = await this.prisma.takes.findFirst({
       where: { class_id: session.class_id, student_id: userId },
     });
 
     if (session.teacher_id !== userId && !isEnrolled) {
-      throw new UnauthorizedException('Access denied');
+      throw new UnauthorizedException('수업을 조회할 권한이 없습니다.');
     }
 
     return session;
@@ -87,10 +89,10 @@ export class SessionsService {
 
   async update(id: number, teacherId: string, updateSessionDto: UpdateSessionDto) {
     const session = await this.prisma.sessions.findUnique({ where: { id } });
-    if (!session) throw new NotFoundException(`Session #${id} not found`);
+    if (!session) throw new NotFoundException(`세션 #${id}를 찾을 수 없습니다.`);
     
     if (session.teacher_id !== teacherId) {
-      throw new UnauthorizedException('You are not the owner of this session');
+      throw new UnauthorizedException('수업을 수정할 권한이 없습니다.');
     }
 
     const { scheduled_date, scheduled_start, scheduled_end, ...rest } = updateSessionDto;
@@ -108,10 +110,10 @@ export class SessionsService {
 
   async remove(id: number, teacherId: string) {
     const session = await this.prisma.sessions.findUnique({ where: { id } });
-    if (!session) throw new NotFoundException(`Session #${id} not found`);
+    if (!session) throw new NotFoundException(`세션 #${id}를 찾을 수 없습니다.`);
     
     if (session.teacher_id !== teacherId) {
-      throw new UnauthorizedException('You are not the owner of this session');
+      throw new UnauthorizedException('수업을 삭제할 권한이 없습니다.');
     }
 
     return this.prisma.sessions.delete({ where: { id } });
@@ -119,8 +121,8 @@ export class SessionsService {
 
   async startSession(id: number, teacherId: string) {
     const session = await this.prisma.sessions.findUnique({ where: { id } });
-    if (!session) throw new NotFoundException(`Session #${id} not found`);
-    if (session.teacher_id !== teacherId) throw new UnauthorizedException('You are not the owner of this session');
+    if (!session) throw new NotFoundException(`세션 #${id}를 찾을 수 없습니다.`);
+    if (session.teacher_id !== teacherId) throw new UnauthorizedException('수업을 시작할 권한이 없습니다.');
 
     const updatedSession = await this.prisma.sessions.update({
       where: { id },
@@ -139,8 +141,8 @@ export class SessionsService {
       where: { id },
       include: { classes: true },
     });
-    if (!session) throw new NotFoundException(`Session #${id} not found`);
-    if (session.teacher_id !== teacherId) throw new UnauthorizedException('You are not the owner of this session');
+    if (!session) throw new NotFoundException(`세션 #${id}를 찾을 수 없습니다.`);
+    if (session.teacher_id !== teacherId) throw new UnauthorizedException('수업을 종료할 권한이 없습니다.');
 
     const updatedSession = await this.prisma.sessions.update({
       where: { id },
@@ -167,16 +169,16 @@ export class SessionsService {
 
   async joinSession(id: number, studentId: string) {
     const session = await this.prisma.sessions.findUnique({ where: { id } });
-    if (!session) throw new NotFoundException(`Session #${id} not found`);
+    if (!session) throw new NotFoundException(`세션 #${id}를 찾을 수 없습니다.`);
     
     if (session.status === 'FINISHED') {
-      throw new Error('This session has already finished.');
+      throw new BadRequestException('이미 종료된 수업 세션입니다.');
     }
 
     const isEnrolled = await this.prisma.takes.findFirst({
       where: { class_id: session.class_id, student_id: studentId },
     });
-    if (!isEnrolled) throw new UnauthorizedException('You are not a member of this class.');
+    if (!isEnrolled) throw new UnauthorizedException('수업에 참여할 권한이 없습니다.');
 
     // 다이얼로그(채팅방)가 없으면 생성
     let dialog = await this.prisma.dialogs.findUnique({
@@ -187,7 +189,8 @@ export class SessionsService {
       dialog = await this.prisma.dialogs.create({
         data: {
           session_id: id,
-          student_id: studentId
+          student_id: studentId,
+          real_time_analysis: []
         }
       });
     }
@@ -206,5 +209,38 @@ export class SessionsService {
       dialog,
       session_status: session.status
     };
+  }
+
+  /**
+   * 특정 세션의 출석 명단을 조회합니다.
+   */
+  async getAttendanceBySession(sessionId: number, userId: string, role: string) {
+    const session = await this.prisma.sessions.findUnique({
+      where: { id: sessionId },
+    });
+
+    if (!session) throw new NotFoundException(`세션 #${sessionId}를 찾을 수 없습니다.`);
+
+    // 권한 확인: 선생님(본인 수업) 또는 관리자
+    if (role !== 'ADMIN' && session.teacher_id !== userId) {
+      throw new UnauthorizedException('출석 명단을 조회할 권한이 없습니다.');
+    }
+
+    const attendance = await this.prisma.attends.findMany({
+      where: { session_id: sessionId },
+      include: {
+        users: {
+          select: { id: true, name: true, email: true }
+        }
+      },
+      orderBy: { created_at: 'asc' }
+    });
+
+    return attendance.map(a => ({
+      id: a.users.id,
+      name: a.users.name,
+      email: a.users.email,
+      attended_at: a.created_at
+    }));
   }
 }

@@ -104,7 +104,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { room: string },
   ) {
-    if (!data.room) return { error: 'Room name is required' };
+    if (!data.room) return { error: 'Room과 message는 필수입니다.' };
 
     client.leave(data.room);
     this.logger.log(`Client ${client.id} left room: ${data.room}`);
@@ -118,7 +118,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { room: string; message: string },
   ) {
-    if (!data.room || !data.message) return { error: 'Room and message are required' };
+    if (!data.room || !data.message) return { error: 'Room과 message는 필수입니다.' };
 
     // 해당 방에 있는 모두에게 메시지 브로드캐스트
     this.server.to(data.room).emit('chat_message', {

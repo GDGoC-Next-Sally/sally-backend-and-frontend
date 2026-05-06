@@ -55,7 +55,7 @@ export class ClassesService {
   async reissueInviteCode(userId: string, classId: number) {
     const classEntity = await this.prisma.classes.findFirst({ where: { id: classId, teacher_id: userId } });
     if (!classEntity) {
-      throw new NotFoundException(`Class #${classId} not found`);
+      throw new NotFoundException(`클래스 #${classId}를 찾을 수 없거나 해당 클래스의 선생님이 아닙니다.`);
     }
 
     const newInviteCode = await this.generateInviteCode();
@@ -70,7 +70,7 @@ export class ClassesService {
   async changeRegisterable(userId: string, classId: number) {
     const classEntity = await this.prisma.classes.findFirst({ where: { id: classId, teacher_id: userId } });
     if (!classEntity) {
-      throw new NotFoundException(`Class #${classId} not found`);
+      throw new NotFoundException(`클래스 #${classId}를 찾을 수 없거나 해당 클래스의 선생님이 아닙니다.`);
     }
 
     return this.prisma.classes.update({
@@ -93,7 +93,7 @@ export class ClassesService {
     });
 
     if (!classEntity) {
-      throw new NotFoundException('Invalid invite code');
+      throw new NotFoundException('잘못된 초대 코드입니다.');
     }
     return classEntity;
   }
@@ -110,7 +110,7 @@ export class ClassesService {
       where: { id: classId }
     });
     if (!classEntity) {
-      throw new NotFoundException(`Class #${classId} not found.`);
+      throw new NotFoundException(`클래스 #${classId}를 찾을 수 없습니다.`);
     }
 
     if (role === 'ADMIN') {
@@ -130,7 +130,7 @@ export class ClassesService {
       return classEntity;
     }
     else {
-      throw new UnauthorizedException(`You are not a member of class #${classId}.`);
+      throw new UnauthorizedException(`이 클래스의 구성원이 아닙니다.`);
     }
   }
 
@@ -148,7 +148,7 @@ async update(id: number, updateClassDto: UpdateClassDto, teacherId: string) {
   });
 
   if (!result) {
-    throw new NotFoundException(`Class #${id} not found or you are not a teacher of this class.`);
+    throw new NotFoundException(`클래스 #${id}를 찾을 수 없거나 해당 클래스의 선생님이 아닙니다.`);
   }
 
   this.eventsGateway.sendToRoom(`class:${id}`, 'class_updated', result);
@@ -161,7 +161,7 @@ async update(id: number, updateClassDto: UpdateClassDto, teacherId: string) {
       where: { id, teacher_id: teacherId }
     });
     if (!result) {
-      throw new NotFoundException(`Class #${id} not found or you are not a teacher of this class.`);
+      throw new NotFoundException(`클래스 #${id}를 찾을 수 없거나 해당 클래스의 선생님이 아닙니다.`);
     }
 
     this.eventsGateway.sendToRoom(`class:${id}`, 'class_deleted', { classId: id });
@@ -174,14 +174,25 @@ async update(id: number, updateClassDto: UpdateClassDto, teacherId: string) {
       where: { id: classId, teacher_id: teacherId }
     });
     if (!classEntity) {
-      throw new NotFoundException(`Class #${classId} not found or you are not a teacher of this class.`);
+      throw new NotFoundException(`클래스 #${classId}를 찾을 수 없거나 해당 클래스의 선생님이 아닙니다.`);
     }
-    const students = await this.prisma.takes.findMany({
+
+    const enrollments = await this.prisma.takes.findMany({
       where: { class_id: classId },
-      select: { users: { select: { id: true, name: true, email: true } } }
+      include: { 
+        users: { 
+          select: { id: true, name: true, email: true } 
+        } 
+      },
+      orderBy: { created_at: 'asc' }
     });
 
-    return students.map(s => ({ id: s.users.id, name: s.users.name, email: s.users.email }));
+    return enrollments.map(e => ({
+      id: e.users.id,
+      name: e.users.name,
+      email: e.users.email,
+      enrolled_at: e.created_at
+    }));
   }
 
   async joinClass(studentId: string, inviteCode: string) {
@@ -192,7 +203,7 @@ async update(id: number, updateClassDto: UpdateClassDto, teacherId: string) {
       }
     });
     if (!classEntity) {
-      throw new NotFoundException(`Class with invite_code ${inviteCode} not found or registerable is false.`);
+      throw new NotFoundException(`초대 코드에 맞는 클래스를 찾을 수 없거나 등록이 불가능합니다.`);
     }
 
     const classId = classEntity.id;
@@ -203,7 +214,7 @@ async update(id: number, updateClassDto: UpdateClassDto, teacherId: string) {
         student_id: studentId
       }
     })) {
-      throw new ConflictException(`Student ${studentId} is already a member of class #${classId}`);
+      throw new ConflictException(`이미 클래스의 구성원입니다.`);
     }
 
     await this.prisma.takes.create({
@@ -232,7 +243,7 @@ async update(id: number, updateClassDto: UpdateClassDto, teacherId: string) {
       }
     });
     if (!classEntity) {
-      throw new NotFoundException(`Class #${classId} not found or student is not a member of this class.`);
+      throw new NotFoundException(`클래스 #${classId}를 찾을 수 없거나 해당 학생이 구성원이 아닙니다.`);
     }
 
     this.eventsGateway.forceLeaveRoom(studentId, `class:${classId}`);
@@ -260,7 +271,7 @@ async update(id: number, updateClassDto: UpdateClassDto, teacherId: string) {
       }
     });
     if (!classEntity) {
-      throw new NotFoundException(`Class #${classId} not found.`);
+      throw new NotFoundException(`클래스 #${classId}를 찾을 수 없거나 해당 클래스의 선생님이 아닙니다.`);
     }
 
     const takesEntity = await this.prisma.takes.findFirst({
@@ -270,7 +281,7 @@ async update(id: number, updateClassDto: UpdateClassDto, teacherId: string) {
       }
     });
     if (!takesEntity) {
-      throw new NotFoundException(`Student #${studentId} is not a member of this class.`);
+      throw new NotFoundException(`학생 #${studentId}이 이 클래스의 구성원이 아닙니다.`);
     }
 
     this.eventsGateway.forceLeaveRoom(studentId, `class:${classId}`);

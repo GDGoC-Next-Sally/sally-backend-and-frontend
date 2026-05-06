@@ -68,4 +68,11 @@ export class SessionsController {
   joinSession(@Param('id') id: string, @Req() req: any) {
     return this.sessionsService.joinSession(+id, req.user.userId);
   }
+
+  @Get(':id/attendance')
+  @Roles(UserRole.TEACHER)
+  @ApiOperation({ summary: '특정 세션의 출석 명단 조회' })
+  getAttendance(@Param('id') id: string, @Req() req: any) {
+    return this.sessionsService.getAttendanceBySession(+id, req.user.userId, req.user.role);
+  }
 }

@@ -31,7 +31,7 @@ export class ReportsService {
       try {
         // real_time_analysis가 없는 학생(대화 없음)은 건너뜀
         if (!dialog.real_time_analysis) {
-          this.logger.warn(`Dialog for student ${dialog.student_id} has no analysis data. Skipping.`);
+          this.logger.warn(`학생 ${dialog.student_id}에 대한 분석 데이터가 없습니다. 건너뜁니다.`);
           return;
         }
 
@@ -52,17 +52,17 @@ export class ReportsService {
         );
 
         this.logger.log(
-          `Final report generated for student ${dialog.student_id} in session ${sessionId}. Status: ${response.data.status}`,
+          `세션 ${sessionId}에서 학생 ${dialog.student_id}의 최종 리포트가 생성되었습니다. 상태: ${response.data.status}`,
         );
       } catch (err) {
         // 한 학생 실패해도 나머지는 계속 처리
         this.logger.error(
-          `Failed to generate report for student ${dialog.student_id}: ${err.message}`,
+          `세션 ${sessionId}에서 학생 ${dialog.student_id}의 리포트를 생성하는 데 실패했습니다: ${err.message}`,
         );
       }
     });
 
     await Promise.allSettled(tasks);
-    this.logger.log(`All final report requests completed for session ${sessionId}.`);
+    this.logger.log(`세션 ${sessionId}에 대한 모든 최종 리포트 생성을 요청했습니다.`);
   }
 }
