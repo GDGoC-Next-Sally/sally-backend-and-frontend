@@ -1,0 +1,120 @@
+'use client';
+
+import React, { useState } from 'react';
+import { createSession, updateSession, type Session, type CreateSessionBody } from '@/actions/sessions';
+import styles from './SessionModal.module.css';
+
+interface Props {
+  classId: number;
+  session?: Session;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+export const SessionModal: React.FC<Props> = ({ classId, session, onClose, onSuccess }) => {
+  const isEdit = !!session;
+
+  const [name, setName] = useState(session?.session_name ?? '');
+  const [explanation, setExplanation] = useState(session?.explanation ?? '');
+  const [objective, setObjective] = useState(session?.objective ?? '');
+  const [scheduledDate, setScheduledDate] = useState(session?.scheduled_date?.slice(0, 10) ?? '');
+  const [scheduledStart, setScheduledStart] = useState(session?.scheduled_start?.slice(11, 16) ?? '');
+  const [scheduledEnd, setScheduledEnd] = useState(session?.scheduled_end?.slice(11, 16) ?? '');
+  const [period, setPeriod] = useState<string>(session?.period?.toString() ?? '');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) { setError('세션 이름을 입력해주세요.'); return; }
+    setError('');
+    setLoading(true);
+
+    const body: CreateSessionBody = {
+      class_id: classId,
+      session_name: name.trim(),
+      explanation: explanation.trim() || undefined,
+      objective: objective.trim() || undefined,
+      scheduled_date: scheduledDate || undefined,
+      scheduled_start: scheduledDate && scheduledStart ? `${scheduledDate}T${scheduledStart}:00` : undefined,
+      scheduled_end: scheduledDate && scheduledEnd ? `${scheduledDate}T${scheduledEnd}:00` : undefined,
+      period: period ? Number(period) : undefined,
+    };
+
+    try {
+      if (isEdit) {
+        await updateSession(session.id, body);
+      } else {
+        await createSession(body);
+      }
+      onSuccess();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <button className={styles.closeBtn} onClick={onClose} type="button">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
+        <h2 className={styles.title}>{isEdit ? '세션 수정' : '새 세션 만들기'}</h2>
+
+        <form onSubmit={handleSubmit}>
+          <div className={styles.field}>
+            <label className={styles.label}>세션 이름 *</label>
+            <input className={styles.input} value={name} onChange={(e) => setName(e.target.value)} placeholder="예) 5월 3일 영어 수업" />
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label}>설명</label>
+            <input className={styles.input} value={explanation} onChange={(e) => setExplanation(e.target.value)} placeholder="수업 설명을 입력하세요" />
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label}>학습 목표</label>
+            <input className={styles.input} value={objective} onChange={(e) => setObjective(e.target.value)} placeholder="이번 수업의 목표를 입력하세요" />
+          </div>
+
+          <div className={styles.row}>
+            <div className={styles.field}>
+              <label className={styles.label}>수업 날짜</label>
+              <input className={styles.input} type="date" value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>교시</label>
+              <input className={styles.input} type="number" min={1} max={9} value={period} onChange={(e) => setPeriod(e.target.value)} placeholder="예) 3" />
+            </div>
+          </div>
+
+          <div className={styles.row}>
+            <div className={styles.field}>
+              <label className={styles.label}>시작 시간</label>
+              <input className={styles.input} type="time" value={scheduledStart} onChange={(e) => setScheduledStart(e.target.value)} />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>종료 시간</label>
+              <input className={styles.input} type="time" value={scheduledEnd} onChange={(e) => setScheduledEnd(e.target.value)} />
+            </div>
+          </div>
+
+          {error && <p className={styles.error}>{error}</p>}
+
+          <div className={styles.footer}>
+            <button type="button" className={styles.cancelBtn} onClick={onClose} disabled={loading}>취소</button>
+            <button type="submit" className={styles.submitBtn} disabled={loading}>
+              {loading ? '처리 중...' : isEdit ? '수정 완료' : '세션 생성'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
