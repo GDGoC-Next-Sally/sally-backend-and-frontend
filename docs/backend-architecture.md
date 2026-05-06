@@ -523,10 +523,11 @@ curl -N -X POST http://localhost:3001/livechat/message ^
 - [x] 학생 실시간 분석 (`student_analysis_ready`)
 - [x] 세션 종료 시 최종 리포트 생성 파이프라인
 - [x] Socket.io 룸 기반 실시간 이벤트
+- [x] `monitoring` 모듈 (선생님 대시보드용 현황 조회 API)
+- [x] 세션 전체 공지 브로드캐스트 (`is_global` 활용)
+- [x] 종료된 세션 메시지 발송 차단 (403 Forbidden)
 
 ### 미구현 / TODO
-- [ ] `monitoring` 모듈 (선생님 대시보드용 모니터링 API)
 - [ ] 대화 내역 페이징(Pagination)
-- [ ] 세션 전체 공지 브로드캐스트 (`is_global` 활용)
 - [ ] `session_reports`, `class_reports` 조회 API
-- [ ] Admin 기능
+- [ ] Admin 기능 (사용자 관리, 전체 통계 등)

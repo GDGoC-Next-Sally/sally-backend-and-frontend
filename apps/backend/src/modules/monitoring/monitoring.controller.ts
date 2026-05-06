@@ -4,7 +4,7 @@ import { SendInterventionDto } from './dto/send-intervention.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
-import { user_role as UserRole } from '@prisma/client';
+import { user_role as UserRole } from '.prisma/client';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('monitoring')
