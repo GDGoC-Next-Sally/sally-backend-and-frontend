@@ -25,8 +25,88 @@
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 2rem;
+}
+
+.subtitle {
+  font-size: 0.85rem;
+  color: #6B6B6B;
+  margin: 4px 0 0;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.moreWrapper {
+  position: relative;
+}
+
+.moreBtn {
+  background: #f1f5f9;
+  color: #64748b;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.moreBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.moreBtnActive {
+  background: #f1f5f9;
+  color: #1a1a1a;
+}
+
+.moreBtnActive:hover {
+  background: #e2e8f0;
+}
+
+.dropdownMenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  background: #fff;
+  border: 1px solid #E0DED8;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  z-index: 20;
+  min-width: 140px;
+  overflow: hidden;
+}
+
+.menuItem {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  color: #1A1A1A;
+}
+
+.menuItem:hover {
+  background-color: #F5F4F0;
+}
+
+.menuItemDanger {
+  color: #E53E3E;
+}
+
+.menuItemDanger:hover {
+  background-color: #FFF5F5;
 }
 
 .title {
@@ -242,4 +322,67 @@
   text-align: center;
   color: #94a3b8;
   font-weight: 500;
+}
+
+.classInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.infoRow:last-child {
+  border-bottom: none;
+}
+
+.infoLabel {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.infoValue {
+  font-size: 0.875rem;
+  color: #1e293b;
+  font-weight: 500;
+  text-align: right;
+}
+
+.statusBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+}
+
+.statusACTIVE {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.statusPLANNING {
+  background-color: #fef9c3;
+  color: #ca8a04;
+}
+
+.statusCOMPLETED {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+.sidebarEmpty {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  padding: 2rem 0;
 }

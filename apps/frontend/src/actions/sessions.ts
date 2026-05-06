@@ -52,3 +52,25 @@ export async function updateSession(id: number | string, body: UpdateSessionBody
 export async function deleteSession(id: number | string): Promise<void> {
   return serverFetch(`/sessions/${id}`, { method: 'DELETE' });
 }
+
+export interface AttendanceStudent {
+  userId: string;
+  name: string;
+  joinedAt: string;
+}
+
+export async function startSession(sessionId: string): Promise<void> {
+  return serverFetch(`/sessions/${sessionId}/start`, { method: 'POST' });
+}
+
+export async function finishSession(sessionId: string): Promise<void> {
+  return serverFetch(`/sessions/${sessionId}/finish`, { method: 'POST' });
+}
+
+export async function joinSession(sessionId: string): Promise<void> {
+  return serverFetch(`/sessions/${sessionId}/join`, { method: 'POST' });
+}
+
+export async function getAttendance(sessionId: string): Promise<AttendanceStudent[]> {
+  return serverFetch(`/sessions/${sessionId}/attendance`);
+}

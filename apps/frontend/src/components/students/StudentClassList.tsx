@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getStudentClasses } from '@/actions/classes';
+import { getStudentClasses, leaveClass } from '@/actions/classes';
 import { JoinClassModal } from './JoinClassModal';
 import styles from './StudentClassList.module.css';
 
@@ -18,50 +18,89 @@ interface ClassItem {
   teacher?: string;
 }
 
-const MOCK_FALLBACK_CLASSES: ClassItem[] = [
-  { id: 1, subject: '영어 수업', grade: 3, homeroom: '2반', status: 'ACTIVE', explanation: null, theme: null, schedule: '월6, 목6', teacher: '박수빈 선생님' },
-  { id: 2, subject: '수학 수업', grade: 3, homeroom: '2반', status: 'PLANNING', explanation: null, theme: null, schedule: '월1, 화4, 수4, 금4', teacher: '김하린 선생님' },
-  { id: 3, subject: '국어 수업', grade: 3, homeroom: '2반', status: 'ACTIVE', explanation: null, theme: null, schedule: '월4, 수1, 금2', teacher: '김하린 선생님' },
-  { id: 4, subject: '한국사 수업', grade: 3, homeroom: '2반', status: 'COMPLETED', explanation: null, theme: null, schedule: '화2, 목2, 금1', teacher: '김하린 선생님' },
-  { id: 5, subject: '통합과학 수업', grade: 3, homeroom: '2반', status: 'PLANNING', explanation: null, theme: null, schedule: '수2, 목1', teacher: '김하린 선생님' },
-  { id: 6, subject: '통합사회 수업', grade: 3, homeroom: '2반', status: 'PLANNING', explanation: null, theme: null, schedule: '화3, 금6', teacher: '김하린 선생님' },
-];
-
 export const StudentClassList = () => {
   const router = useRouter();
   const [classes, setClasses] = useState<ClassItem[]>([]);
-  const [selectedId, setSelectedId] = useState<number>(1); // Default select the first one as per image
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [search, setSearch] = useState('');
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const fetchClasses = useCallback(() => {
     getStudentClasses()
       .then((data) => {
-        // If data from server doesn't have schedule/teacher, map mock data onto it
-        const enriched = (data.length > 0 ? data : MOCK_FALLBACK_CLASSES).map((c: any, i: number) => ({
-          ...c,
-          schedule: c.schedule || MOCK_FALLBACK_CLASSES[i]?.schedule || '미지정',
-          teacher: c.teacher || MOCK_FALLBACK_CLASSES[i]?.teacher || '김샐리 선생님'
-        }));
-        setClasses(enriched);
+        setClasses(data);
+        if (data.length > 0 && selectedId === null) {
+          setSelectedId(data[0].id);
+        }
       })
-      .catch(() => setClasses(MOCK_FALLBACK_CLASSES));
+      .catch(() => setClasses([]));
+  }, [selectedId]);
+
+  useEffect(() => { fetchClasses(); }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleLeave = async () => {
+    if (!selectedId || !confirm('이 클래스에서 나가시겠습니까?')) return;
+    try {
+      await leaveClass(selectedId);
+      setSelectedId(null);
+      fetchClasses();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : '클래스 나가기에 실패했습니다.');
+    }
+    setShowDropdown(false);
+  };
 
   const filtered = classes.filter((c) =>
     `${c.subject} ${c.grade ?? ''} ${c.homeroom ?? ''}`.toLowerCase().includes(search.toLowerCase())
   );
 
+  const selectedClass = classes.find((c) => c.id === selectedId) ?? null;
+
   return (
     <div className={styles.container}>
       <div className={styles.layout}>
-        {/* Left: class card area */}
         <div className={styles.leftPanel}>
           <div className={styles.header}>
-            <h2 className={styles.title}>과목 리스트</h2>
-            <button className={styles.newBtn} onClick={() => setIsJoinModalOpen(true)}>
-              새로운 과목
-            </button>
+            <div>
+              <h2 className={styles.title}>과목 리스트</h2>
+              <p className={styles.subtitle}>수강 중인 과목을 선택해주세요.</p>
+            </div>
+            <div className={styles.actionButtons}>
+              <button className={styles.newBtn} onClick={() => setIsJoinModalOpen(true)}>
+                새로운 과목
+              </button>
+              <div className={styles.moreWrapper} ref={dropdownRef}>
+                <button
+                  className={`${styles.moreBtn} ${selectedId ? styles.moreBtnActive : ''}`}
+                  onClick={() => selectedId && setShowDropdown((v) => !v)}
+                  disabled={!selectedId}
+                >
+                  더보기
+                </button>
+                {showDropdown && selectedClass && (
+                  <div className={styles.dropdownMenu}>
+                    <button
+                      className={`${styles.menuItem} ${styles.menuItemDanger}`}
+                      onClick={handleLeave}
+                    >
+                      클래스 나가기
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className={styles.filterBar}>
@@ -92,7 +131,7 @@ export const StudentClassList = () => {
                 <div
                   key={cls.id}
                   className={`${styles.card} ${isSelected ? styles.cardSelected : ''}`}
-                  onClick={() => setSelectedId(cls.id)}
+                  onClick={() => setSelectedId(isSelected ? null : cls.id)}
                 >
                   {isSelected && (
                     <div className={styles.starIcon}>
@@ -102,20 +141,20 @@ export const StudentClassList = () => {
                     </div>
                   )}
 
-                  <div className={styles.cardSchedule}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <polyline points="12 6 12 12 16 14" />
-                    </svg>
-                    {cls.schedule}
-                  </div>
+                  {cls.schedule && (
+                    <div className={styles.cardSchedule}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                      </svg>
+                      {cls.schedule}
+                    </div>
+                  )}
 
-                  <div className={styles.cardTitle}>
-                    {cls.subject}
-                  </div>
-                  <div className={styles.cardTeacher}>
-                    | {cls.teacher}
-                  </div>
+                  <div className={styles.cardTitle}>{cls.subject}</div>
+                  {cls.teacher && (
+                    <div className={styles.cardTeacher}>| {cls.teacher}</div>
+                  )}
 
                   <button
                     className={`${styles.moveBtn} ${isSelected ? styles.moveBtnSelected : ''}`}
@@ -131,27 +170,50 @@ export const StudentClassList = () => {
             })}
             {filtered.length === 0 && (
               <div className={styles.empty}>
-                {search ? '검색 결과가 없습니다.' : '수강 중인 클래스가 없습니다.'}
+                {search ? '검색 결과가 없습니다.' : '수강 중인 클래스가 없습니다.\n새로운 과목 버튼으로 참여해보세요.'}
               </div>
             )}
           </div>
         </div>
 
-        {/* Right: connected students sidebar */}
         <div className={styles.rightPanel}>
           <div className={styles.sidebarHeader}>
-            <span className={styles.sidebarTitle}>
-              접속 중인 학생 <span className={styles.sidebarCount}>34</span>
-            </span>
-            <button className={styles.refreshBtn}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 2v6h-6" /><path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
-                <path d="M3 22v-6h6" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
-              </svg>
-            </button>
+            <span className={styles.sidebarTitle}>클래스 정보</span>
           </div>
-          {/* Placeholder for student list if needed, or just a simple card look as per image */}
-          <div style={{ height: '400px' }}></div>
+          {selectedClass ? (
+            <div className={styles.classInfo}>
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>과목</span>
+                <span className={styles.infoValue}>{selectedClass.subject}</span>
+              </div>
+              {selectedClass.grade && (
+                <div className={styles.infoRow}>
+                  <span className={styles.infoLabel}>학년</span>
+                  <span className={styles.infoValue}>{selectedClass.grade}학년 {selectedClass.homeroom ?? ''}</span>
+                </div>
+              )}
+              {selectedClass.teacher && (
+                <div className={styles.infoRow}>
+                  <span className={styles.infoLabel}>선생님</span>
+                  <span className={styles.infoValue}>{selectedClass.teacher}</span>
+                </div>
+              )}
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>상태</span>
+                <span className={`${styles.statusBadge} ${styles[`status${selectedClass.status}`]}`}>
+                  {selectedClass.status === 'ACTIVE' ? '진행 중' : selectedClass.status === 'PLANNING' ? '준비 중' : '종료'}
+                </span>
+              </div>
+              {selectedClass.explanation && (
+                <div className={styles.infoRow}>
+                  <span className={styles.infoLabel}>설명</span>
+                  <span className={styles.infoValue}>{selectedClass.explanation}</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className={styles.sidebarEmpty}>클래스를 선택하면<br />정보가 표시됩니다.</p>
+          )}
         </div>
       </div>
 
@@ -160,7 +222,7 @@ export const StudentClassList = () => {
           onClose={() => setIsJoinModalOpen(false)}
           onSuccess={() => {
             setIsJoinModalOpen(false);
-            getStudentClasses().then(setClasses).catch(() => { });
+            fetchClasses();
           }}
         />
       )}

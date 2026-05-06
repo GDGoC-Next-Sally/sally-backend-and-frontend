@@ -1,8 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { SessionSidebar } from './SessionSidebar';
+import {
+  startSession,
+  finishSession,
+  getAttendance,
+  getSession,
+  type AttendanceStudent,
+} from '@/actions/sessions';
 import styles from './SessionWidget.module.css';
 
 type Phase = 'waiting' | 'active';
@@ -11,27 +18,98 @@ export const SessionWidget = () => {
   const router = useRouter();
   const params = useParams();
   const classId = params.id as string;
+  const sessionId = params.sessionId as string;
 
-  const [phase, setPhase] = useState<Phase>('waiting');
-  const [selectedStudentId, setSelectedStudentId] = useState<number>(1);
+  const [phase, setPhase] = useState<Phase | null>(null); // null = 초기화 전
+  const [selectedStudentId, setSelectedStudentId] = useState<string | undefined>();
+  const [students, setStudents] = useState<AttendanceStudent[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchAttendance = useCallback(async () => {
+    try {
+      const data = await getAttendance(sessionId);
+      setStudents(data);
+      if (data.length > 0 && !selectedStudentId) {
+        setSelectedStudentId(data[0].userId);
+      }
+    } catch {
+      // 출석 데이터 없으면 빈 목록 유지
+    }
+  }, [sessionId, selectedStudentId]);
+
+  // 진입 시 백엔드 세션 상태로 phase 초기화
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const session = await getSession(sessionId);
+        const initialPhase: Phase = session.status === 'ACTIVE' ? 'active' : 'waiting';
+        setPhase(initialPhase);
+        await fetchAttendance();
+      } catch {
+        setPhase('waiting');
+      }
+    };
+    init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId]);
+
+  const handleStart = async () => {
+    setLoading(true);
+    try {
+      await startSession(sessionId);
+      await fetchAttendance();
+      setPhase('active');
+    } catch (e) {
+      alert(e instanceof Error ? e.message : '세션 시작에 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFinish = async () => {
+    if (!confirm('세션을 종료하시겠습니까?')) return;
+    setLoading(true);
+    try {
+      await finishSession(sessionId);
+      router.push(`/t/classes/${classId}`);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : '세션 종료에 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const selectedStudent = students.find((s) => s.userId === selectedStudentId);
+
+  if (phase === null) {
+    return (
+      <div className={styles.layout}>
+        <div className={styles.initializing}>세션 정보를 불러오는 중...</div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.layout}>
       <SessionSidebar
         phase={phase}
+        students={students}
         selectedId={selectedStudentId}
         onSelect={setSelectedStudentId}
+        onRefresh={fetchAttendance}
       />
 
       {phase === 'waiting' ? (
         <WaitingView
-          onStart={() => setPhase('active')}
+          loading={loading}
+          onStart={handleStart}
           onBack={() => router.push(`/t/classes/${classId}`)}
         />
       ) : (
         <ActiveView
-          studentName="김고대"
-          onEnd={() => setPhase('waiting')}
+          loading={loading}
+          studentName={selectedStudent?.name ?? '학생'}
+          onEnd={handleFinish}
         />
       )}
     </div>
@@ -41,11 +119,12 @@ export const SessionWidget = () => {
 /* ── Waiting ────────────────────────────────────────────────────────────────── */
 
 interface WaitingProps {
+  loading: boolean;
   onStart: () => void;
   onBack: () => void;
 }
 
-const WaitingView: React.FC<WaitingProps> = ({ onStart, onBack }) => (
+const WaitingView: React.FC<WaitingProps> = ({ loading, onStart, onBack }) => (
   <div className={styles.mainContent}>
     <div className={styles.topBar}>
       <div className={styles.topBarLeft}>
@@ -58,7 +137,7 @@ const WaitingView: React.FC<WaitingProps> = ({ onStart, onBack }) => (
       <div className={styles.topBarRight}>
         <span className={styles.statusBadge}>시작 대기</span>
         <span className={styles.timeInfo}>시작 13:34 &nbsp;|&nbsp; 0분 경과</span>
-        <button className={styles.leaveBtn}>나가기</button>
+        <button className={styles.leaveBtn} onClick={onBack}>나가기</button>
       </div>
     </div>
 
@@ -81,7 +160,9 @@ const WaitingView: React.FC<WaitingProps> = ({ onStart, onBack }) => (
         학생들이 입장 중입니다.<br />
         준비를 마친 뒤 수업을 시작해 주세요.
       </p>
-      <button className={styles.startBtn} onClick={onStart}>세션 시작하기</button>
+      <button className={styles.startBtn} onClick={onStart} disabled={loading}>
+        {loading ? '시작 중...' : '세션 시작하기'}
+      </button>
       <div className={styles.statsRow}>
         <div className={styles.statItem}>
           <div className={styles.statLabel}>시작 예정</div>
@@ -105,11 +186,12 @@ const WaitingView: React.FC<WaitingProps> = ({ onStart, onBack }) => (
 /* ── Active ─────────────────────────────────────────────────────────────────── */
 
 interface ActiveProps {
+  loading: boolean;
   studentName: string;
   onEnd: () => void;
 }
 
-const ActiveView: React.FC<ActiveProps> = ({ studentName, onEnd }) => (
+const ActiveView: React.FC<ActiveProps> = ({ loading, studentName, onEnd }) => (
   <div className={styles.mainContent}>
     <div className={styles.topBar}>
       <div className={styles.topBarLeft}>
@@ -121,7 +203,9 @@ const ActiveView: React.FC<ActiveProps> = ({ studentName, onEnd }) => (
       <div className={styles.topBarRight}>
         <span className={`${styles.statusBadge} ${styles.statusBadgeActive}`}>진행 중</span>
         <span className={styles.timeInfo}>시작 13:34 &nbsp;|&nbsp; 12분 경과</span>
-        <button className={styles.leaveBtn} onClick={onEnd}>세션 종료</button>
+        <button className={styles.leaveBtn} onClick={onEnd} disabled={loading}>
+          {loading ? '종료 중...' : '세션 종료'}
+        </button>
       </div>
     </div>
 

@@ -66,3 +66,7 @@ export async function joinClass(inviteCode: string): Promise<void> {
     body: JSON.stringify({ invite_code: inviteCode }),
   });
 }
+
+export async function leaveClass(classId: number): Promise<void> {
+  return serverFetch(`/classes/student/${classId}/leave`, { method: 'POST' });
+}

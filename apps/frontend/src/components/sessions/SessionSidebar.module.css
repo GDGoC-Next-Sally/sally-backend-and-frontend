@@ -126,6 +126,13 @@
   display: flex;
 }
 
+.empty {
+  font-size: 13px;
+  color: #6B6B6B;
+  text-align: center;
+  padding: 24px 0;
+}
+
 .summary {
   background-color: #F5F4F0;
   border: 1px solid #EBEBEA;
