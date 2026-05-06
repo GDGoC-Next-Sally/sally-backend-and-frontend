@@ -10,8 +10,15 @@
       "Bash(git push *)",
       "Bash(git pull *)",
       "Bash(git stash *)",
+<<<<<<< Updated upstream
       "mcp__claude_ai_Figma__get_design_context",
       "Bash(python -c ' *)"
+=======
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(pnpm tsc *)",
+      "Bash(grep -v \"^--$\")"
+>>>>>>> Stashed changes
     ]
   }
 }

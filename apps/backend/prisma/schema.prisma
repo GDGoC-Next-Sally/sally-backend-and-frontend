@@ -27,6 +27,14 @@ model chat_messages {
   dialogs     dialogs     @relation(fields: [dialog_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
+model class_reports {
+  id         Int      @id @default(autoincrement())
+  class_id   Int      @unique
+  content    Json?
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  classes    classes  @relation(fields: [class_id], references: [id], onDelete: Cascade)
+}
+
 model classes {
   id            Int            @id @default(autoincrement())
   teacher_id    String         @db.Uuid
@@ -38,9 +46,9 @@ model classes {
   theme         String?        @db.VarChar(50)
   created_at    DateTime       @default(now()) @db.Timestamptz(6)
   completed_at  DateTime?      @db.Timestamptz(6)
-  schedule      Json?          @db.JsonB
   invite_code   String         @unique @db.VarChar(10)
   registerable  Boolean        @default(true)
+  schedule      Json?
   class_reports class_reports?
   users         users          @relation(fields: [teacher_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   sessions      sessions[]
@@ -62,6 +70,14 @@ model dialogs {
   @@unique([session_id, student_id])
 }
 
+model session_reports {
+  id         Int      @id @default(autoincrement())
+  session_id Int      @unique
+  content    Json?
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  sessions   sessions @relation(fields: [session_id], references: [id], onDelete: Cascade)
+}
+
 model sessions {
   id                 Int                  @id @default(autoincrement())
   class_id           Int
@@ -69,19 +85,20 @@ model sessions {
   session_name       String               @db.VarChar(255)
   status             session_status       @default(PLANNING)
   explanation        String?
-  objective          String?
-  session_prompt     String?
-  scheduled_date     DateTime?            @db.Date
-  scheduled_start    DateTime?            @db.Timestamptz(6)
-  scheduled_end      DateTime?            @db.Timestamptz(6)
-  period             Int?
   started_at         DateTime?            @db.Timestamptz(6)
   finished_at        DateTime?            @db.Timestamptz(6)
+  period             Int?
+  scheduled_end      DateTime?            @db.Timestamptz(6)
+  scheduled_start    DateTime?            @db.Timestamptz(6)
+  scheduled_date     DateTime?            @db.Date
+  objective          String?
+  session_prompt     String?
   attends            attends[]
   dialogs            dialogs[]
   session_reports    session_reports?
   classes            classes              @relation(fields: [class_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users              users                @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  student_reports    student_reports[]
   supplementary_data supplementary_data[]
   studentReports     student_reports[]
 }
@@ -96,22 +113,6 @@ model student_reports {
   dialogs    dialogs  @relation(fields: [dialog_id], references: [id], onDelete: Cascade)
   sessions   sessions @relation(fields: [session_id], references: [id], onDelete: Cascade)
   users      users    @relation(fields: [student_id], references: [id], onDelete: Cascade)
-}
-
-model session_reports {
-  id         Int      @id @default(autoincrement())
-  session_id Int      @unique
-  content    Json?
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  sessions   sessions @relation(fields: [session_id], references: [id], onDelete: Cascade)
-}
-
-model class_reports {
-  id         Int      @id @default(autoincrement())
-  class_id   Int      @unique
-  content    Json?
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  classes    classes  @relation(fields: [class_id], references: [id], onDelete: Cascade)
 }
 
 model supplementary_data {
