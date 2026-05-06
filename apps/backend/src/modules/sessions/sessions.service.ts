@@ -159,7 +159,7 @@ export class SessionsService {
       where: { session_id: id },
       select: { student_id: true, real_time_analysis: true },
     }).then(dialogs => {
-      this.reportsService.requestFinalReports(id, dialogs, session);
+      this.reportsService.requestFinalReports(id, teacherId, dialogs, session);
     }).catch(err => {
       console.error(`Failed to fetch dialogs for final report (session ${id}):`, err.message);
     });

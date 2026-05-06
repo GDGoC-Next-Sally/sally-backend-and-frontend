@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { EventsGateway } from '../../common/gateways/events.gateway';
 import axios from 'axios';
 
 const AI_SERVER_URL = process.env.AI_SERVER_URL || 'http://localhost:8000';
@@ -6,6 +7,8 @@ const AI_SERVER_URL = process.env.AI_SERVER_URL || 'http://localhost:8000';
 @Injectable()
 export class ReportsService {
   private readonly logger = new Logger(ReportsService.name);
+
+  constructor(private readonly eventsGateway: EventsGateway) {}
 
   /**
    * 세션 종료 시 AI 서버에 학생별 최종 리포트 생성을 요청합니다.
@@ -16,6 +19,7 @@ export class ReportsService {
    */
   async requestFinalReports(
     sessionId: number,
+    teacherId: string,
     dialogs: { student_id: string; real_time_analysis: any }[],
     sessionInfo: { session_name: string; objective?: string | null; explanation?: string | null; classes?: { subject: string } | null },
   ): Promise<void> {
@@ -48,16 +52,28 @@ export class ReportsService {
             summaries,
             student_profile,
           },
-          { timeout: 180000 }, // 리포트 생성은 최대 3분
+          { timeout: 180000 },
         );
 
+        // 실시간 알림 전송 (학생 & 선생님)
+        const reportData = {
+          session_id: sessionId,
+          student_id: dialog.student_id,
+          report: response.data.report,
+        };
+
+        // 1. 학생에게 알림
+        this.eventsGateway.sendToUser(dialog.student_id, 'final_report_ready', reportData);
+        // 2. 선생님에게 알림
+        this.eventsGateway.sendToUser(teacherId, 'final_report_ready', reportData);
+
         this.logger.log(
-          `세션 ${sessionId}에서 학생 ${dialog.student_id}의 최종 리포트가 생성되었습니다. 상태: ${response.data.status}`,
+          `세션 ${sessionId}에서 학생 ${dialog.student_id}의 최종 리포트가 생성되었습니다.`,
         );
       } catch (err) {
         // 한 학생 실패해도 나머지는 계속 처리
         this.logger.error(
-          `세션 ${sessionId}에서 학생 ${dialog.student_id}의 리포트를 생성하는 데 실패했습니다: ${err.message}`,
+          `세션 ${sessionId}에서 학생 ${dialog.student_id}의 리포트 생성 실패: ${err.message}`,
         );
       }
     });
