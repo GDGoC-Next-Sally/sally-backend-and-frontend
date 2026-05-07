@@ -14,7 +14,7 @@ import { Roles } from '../auth/roles.decorator';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('livechat')
 export class LivechatController {
-  constructor(private readonly livechatService: LivechatService) {}
+  constructor(private readonly livechatService: LivechatService) { }
 
   @Get('dialog/:dialogId')
   @ApiOperation({ summary: '대화방 메시지 내역 조회' })

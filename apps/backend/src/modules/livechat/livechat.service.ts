@@ -121,7 +121,14 @@ export class LivechatService {
             subscriber.complete();
 
             // 4. 답변 완료 후 백그라운드 분석 요청 (비동기)
-            this.requestAiAnalysis(conversation_history, student_profile, dialog.id, aiFullContent.trim());
+            // AI 서버 규격(session_id, student_id)에 맞춰 데이터 전송
+            this.requestAiAnalysis(
+              conversation_history, 
+              student_profile, 
+              dialog.session_id, 
+              studentId, 
+              aiFullContent.trim()
+            );
           });
 
           response.data.on('error', (err: Error) => {
@@ -139,18 +146,17 @@ export class LivechatService {
 
   /**
    * AI 서버에 분석 요청을 보내고 즉시 반환합니다 (Fire and Forget).
-   * 분석 완료 후 FastAPI가 /livechat/analytics-callback으로 직접 결과를 POST합니다.
+   * AI 서버는 session_id와 student_id를 기반으로 내부적으로 dialog를 찾아 처리합니다.
    */
-  private requestAiAnalysis(history: any[], profile: any, dialogId: number, aiResponse: string) {
+  private requestAiAnalysis(history: any[], profile: any, sessionId: number, studentId: string, aiResponse: string) {
     const updatedHistory = [...history, { role: 'model', text: aiResponse }];
-    const callbackUrl = `${process.env.BACKEND_URL || 'http://localhost:3001'}/livechat/analytics-callback`;
 
-    // 결과를 기다리지 않고 즉시 반환 (FastAPI가 완료 후 콜백으로 알려줌)
+    // AI 서버 규격에 맞춰 전송 (dialog_id, callback_url 대신 session_id, student_id 사용)
     axios.post(`${AI_SERVER_URL}/api/analyze`, {
       conversation_history: updatedHistory,
       student_profile: profile,
-      dialog_id: dialogId,
-      callback_url: callbackUrl
+      session_id: sessionId,
+      student_id: studentId
     }, { timeout: 60000 }).catch(err => {
       console.error('AI Analysis request failed:', err.message);
     });
