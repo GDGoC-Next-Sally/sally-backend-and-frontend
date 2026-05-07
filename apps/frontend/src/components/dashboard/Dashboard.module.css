@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   padding: 24px;
-  background-color: #F5F4F0;
+  background-color: var(--color-bg);
   min-height: calc(100vh - 56px);
   max-width: 1200px;
   margin: 0 auto;
@@ -17,7 +17,7 @@
 
 .topCard {
   flex: 1;
-  background-color: #FFFFFF;
+  background-color: var(--color-surface);
   border-radius: 12px;
   padding: 20px;
   display: flex;
@@ -36,13 +36,13 @@
   width: 48px;
   height: 48px;
   border-radius: 9999px;
-  background-color: #EBEBEA;
+  background-color: var(--color-border-light);
 }
 
 .cardTitle {
   font-size: 16px;
   font-weight: 600;
-  color: #1A1A1A;
+  color: var(--color-text-primary);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -50,24 +50,24 @@
 }
 
 .highlightCount {
-  color: #ff6f6f;
+  color: var(--color-red);
 }
 
 .cardSubtitle {
   font-size: 12px;
-  color: #6B6B6B;
+  color: var(--color-text-secondary);
   margin-top: 4px;
 }
 
 .cardDate {
   font-size: 12px;
-  color: #D0CEC8;
+  color: var(--color-done);
   margin-top: 4px;
 }
 
 .moreLink {
   font-size: 12px;
-  color: #6B6B6B;
+  color: var(--color-text-secondary);
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -86,7 +86,7 @@
 }
 
 .aiInsightCard {
-  background-color: #FFFFFF;
+  background-color: var(--color-surface);
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
@@ -102,22 +102,22 @@
 .sectionTitle {
   font-size: 18px;
   font-weight: 600;
-  color: #1A1A1A;
+  color: var(--color-text-primary);
   line-height: 1.4;
 }
 
 .sectionSubtitle {
   font-size: 12px;
-  color: #6B6B6B;
+  color: var(--color-text-secondary);
   margin-top: 4px;
 }
 
 .reportBtn {
   padding: 8px 16px;
-  border: 1px solid #E0DED8;
+  border: 1px solid var(--color-border);
   border-radius: 9999px;
   font-size: 12px;
-  color: #6B6B6B;
+  color: var(--color-text-secondary);
   background: none;
   cursor: pointer;
 }
@@ -136,7 +136,7 @@
 .chartTitle {
   font-size: 14px;
   font-weight: 600;
-  color: #1A1A1A;
+  color: var(--color-text-primary);
   margin-bottom: 24px;
 }
 
@@ -151,10 +151,10 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 16px solid #EBEBEA;
-  border-top-color: #22C55E;
-  border-right-color: #22C55E;
-  border-bottom-color: #22C55E;
+  border: 16px solid var(--color-border-light);
+  border-top-color: var(--color-live);
+  border-right-color: var(--color-live);
+  border-bottom-color: var(--color-live);
   transform: rotate(-45deg);
 }
 
@@ -165,7 +165,7 @@
   transform: translate(-50%, -50%);
   font-size: 32px;
   font-weight: 700;
-  color: #1A1A1A;
+  color: var(--color-text-primary);
 }
 
 .donutSmall {
@@ -175,7 +175,7 @@
 .chartFooter {
   margin-top: 24px;
   height: 60px;
-  background-color: #F5F4F0;
+  background-color: var(--color-bg);
   border-radius: 8px;
 }
 
@@ -184,14 +184,14 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  border-left: 1px solid #EBEBEA;
+  border-left: 1px solid var(--color-border-light);
   padding-left: 24px;
 }
 
 .listTitle {
   font-size: 14px;
   font-weight: 600;
-  color: #1A1A1A;
+  color: var(--color-text-primary);
   margin-bottom: 16px;
 }
 
@@ -205,18 +205,18 @@
 .listRank {
   width: 20px;
   font-weight: 700;
-  color: #22C55E;
+  color: var(--color-live);
 }
 
 .listName {
   flex: 1;
-  color: #6B6B6B;
+  color: var(--color-text-secondary);
 }
 
 .progressBar {
   width: 100px;
   height: 4px;
-  background-color: #EBEBEA;
+  background-color: var(--color-border-light);
   border-radius: 2px;
   margin-right: 12px;
   position: relative;
@@ -227,17 +227,17 @@
   top: 0;
   left: 0;
   height: 100%;
-  background-color: #22C55E;
+  background-color: var(--color-live);
   border-radius: 2px;
   width: 86%;
 }
 
 .progressText {
-  color: #6B6B6B;
+  color: var(--color-text-secondary);
 }
 
 .listReason {
-  color: #6B6B6B;
+  color: var(--color-text-secondary);
   flex: 2;
 }
 
@@ -246,12 +246,12 @@
   border-radius: 4px;
   font-size: 10px;
   font-weight: 600;
-  background-color: #feeeef;
-  color: #ff6f6f;
+  background-color: var(--color-red-bg);
+  color: var(--color-red);
 }
 
 .quickLinksCard {
-  background-color: #FFFFFF;
+  background-color: var(--color-surface);
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
@@ -273,7 +273,7 @@
   width: 40px;
   height: 40px;
   border-radius: 9999px;
-  background-color: #EBEBEA;
+  background-color: var(--color-border-light);
 }
 
 .quickLinkText {
@@ -284,12 +284,12 @@
 .quickLinkTitle {
   font-size: 14px;
   font-weight: 600;
-  color: #1A1A1A;
+  color: var(--color-text-primary);
 }
 
 .quickLinkSub {
   font-size: 12px;
-  color: #6B6B6B;
+  color: var(--color-text-secondary);
 }
 
 .rightColumn {
@@ -299,7 +299,7 @@
 }
 
 .classCard {
-  background-color: #FFFFFF;
+  background-color: var(--color-surface);
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
@@ -314,21 +314,21 @@
 
 .classDate {
   font-size: 12px;
-  color: #D0CEC8;
+  color: var(--color-done);
 }
 
 .activeClassBox {
-  background-color: #22C55E;
+  background-color: var(--color-live);
   border-radius: 12px;
   padding: 20px;
-  color: white;
+  color: var(--color-surface);
   margin-bottom: 16px;
 }
 
 .liveTag {
   display: inline-block;
-  background-color: white;
-  color: #22C55E;
+  background-color: var(--color-surface);
+  color: var(--color-live);
   font-size: 10px;
   font-weight: 700;
   padding: 2px 6px;
@@ -365,8 +365,8 @@
 .primaryBtn {
   width: 100%;
   padding: 12px;
-  background-color: white;
-  color: #22C55E;
+  background-color: var(--color-surface);
+  color: var(--color-live);
   border: none;
   border-radius: 8px;
   font-weight: 600;
@@ -379,20 +379,20 @@
 }
 
 .classNote {
-  background-color: #F5F4F0;
+  background-color: var(--color-bg);
   border-radius: 8px;
   padding: 16px;
   font-size: 13px;
-  color: #6B6B6B;
+  color: var(--color-text-secondary);
 }
 
 .noteHighlight {
-  color: #E8593C;
+  color: var(--color-primary);
   margin-right: 4px;
 }
 
 .emptyClassCard {
-  background-color: #FFFFFF;
+  background-color: var(--color-surface);
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);

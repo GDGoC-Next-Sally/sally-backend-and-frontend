@@ -9,7 +9,7 @@
 }
 
 .modal {
-  background: white;
+  background: var(--color-surface);
   border-radius: 16px;
   width: 100%;
   max-width: 400px;
@@ -25,13 +25,13 @@
   right: 18px;
   background: none;
   border: none;
-  color: #6B6B6B;
+  color: var(--color-text-secondary);
   cursor: pointer;
   padding: 4px;
   line-height: 0;
 }
 
-.closeBtn:hover { color: #1A1A1A; }
+.closeBtn:hover { color: var(--color-text-primary); }
 
 .iconWrap {
   display: flex;
@@ -42,7 +42,7 @@
 .title {
   font-size: 18px;
   font-weight: 700;
-  color: #1A1A1A;
+  color: var(--color-text-primary);
   margin: 0 0 20px;
   line-height: 1.4;
 }
@@ -51,7 +51,7 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  background: #FDF0ED;
+  background: var(--color-primary-light);
   border-radius: 8px;
   padding: 12px 16px;
   text-align: left;
@@ -60,7 +60,7 @@
 
 .warningText {
   font-size: 13px;
-  color: #E8593C;
+  color: var(--color-primary);
   line-height: 1.6;
   margin: 0;
 }
@@ -82,17 +82,17 @@
 }
 
 .cancelBtn {
-  background: white;
-  border: 1px solid #dee2e6;
-  color: #495057;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
 }
 
-.cancelBtn:hover { background: #F5F4F0; }
+.cancelBtn:hover { background: var(--color-bg); }
 
 .leaveBtn {
-  background: #22C55E;
+  background: var(--color-live);
   border: none;
-  color: white;
+  color: var(--color-surface);
 }
 
-.leaveBtn:hover { background: #16A34A; }
+.leaveBtn:hover { background: var(--color-live-hover); }

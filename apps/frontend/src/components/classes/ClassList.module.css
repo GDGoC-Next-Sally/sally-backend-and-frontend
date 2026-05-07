@@ -1,5 +1,5 @@
 .container {
-  background-color: #F5F4F0;
+  background-color: var(--color-bg);
   min-height: calc(100vh - 56px);
   padding: 24px;
 }
@@ -10,7 +10,7 @@
   display: grid;
   grid-template-columns: 1fr 340px; /* Wider sidebar to match design */
   gap: 0;
-  background: white;
+  background: var(--color-surface);
   border-radius: 16px;
   padding: 32px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
@@ -33,13 +33,13 @@
 .title {
   font-size: 20px;
   font-weight: 700;
-  color: #1A1A1A;
+  color: var(--color-text-primary);
   margin: 0 0 4px 0;
 }
 
 .subtitle {
   font-size: 13px;
-  color: #6B6B6B;
+  color: var(--color-text-secondary);
   margin: 0;
 }
 
@@ -55,7 +55,7 @@
 
 .btnCreate {
   background: #4B4B4B; /* Dark gray as per image */
-  color: white;
+  color: var(--color-surface);
   border: none;
   border-radius: 10px;
   padding: 12px 24px;
@@ -66,14 +66,14 @@
   transition: all 0.2s;
 }
 
-.btnCreate:hover { 
-  background: #1A1A1A;
+.btnCreate:hover {
+  background: var(--color-text-primary);
   transform: translateY(-1px);
 }
 
 .btnMore {
-  background: #22cb84;
-  color: white;
+  background: var(--color-live);
+  color: var(--color-surface);
   border: none;
   border-radius: 10px;
   padding: 12px 24px;
@@ -90,7 +90,7 @@
 }
 
 .btnMoreActive:hover {
-  background: #1ab574;
+  background: var(--color-live-hover);
 }
 
 /* Filter bar */
@@ -110,31 +110,31 @@
 .searchIcon {
   position: absolute;
   left: 14px;
-  color: #6B6B6B;
+  color: var(--color-text-secondary);
 }
 
 .searchInput {
   width: 100%;
   padding: 12px 14px 12px 42px;
-  border: 1.5px solid #E0DED8;
+  border: 1.5px solid var(--color-border);
   border-radius: 10px;
   font-size: 14px;
-  color: #1A1A1A;
-  background: white;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
   outline: none;
 }
 
 .searchInput:focus {
-  border-color: #10b981;
+  border-color: var(--color-live);
 }
 
 .sortSelect {
   padding: 12px 36px 12px 14px;
-  border: 1.5px solid #E0DED8;
+  border: 1.5px solid var(--color-border);
   border-radius: 10px;
   font-size: 14px;
-  color: #6B6B6B;
-  background: white;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
   cursor: pointer;
   outline: none;
   appearance: none;
@@ -152,29 +152,29 @@
 }
 
 .card {
-  background: white;
+  background: var(--color-surface);
   border-radius: 14px;
-  border: 1.5px solid #E0DED8;
+  border: 1.5px solid var(--color-border);
   padding: 20px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .card:hover {
-  border-color: #E8593C;
+  border-color: var(--color-primary);
   transform: translateY(-2px);
 }
 
 .cardSelected {
-  background: #10b981;
-  border-color: #10b981;
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+  background: var(--color-live);
+  border-color: var(--color-live);
+  box-shadow: 0 8px 20px rgba(34, 203, 132, 0.25);
 }
 
 .cardSchedule {
   font-size: 11px;
   font-weight: 700;
-  color: #94a3b8;
+  color: var(--color-text-placeholder);
   display: flex;
   align-items: center;
   margin-bottom: 10px;
@@ -187,16 +187,16 @@
 .cardTitle {
   font-size: 20px;
   font-weight: 800;
-  color: #1A1A1A;
+  color: var(--color-text-primary);
   margin-bottom: 6px;
 }
 
-.cardTitleSelected { color: white; }
+.cardTitleSelected { color: var(--color-surface); }
 
 .cardSubject {
   font-size: 13px;
   font-weight: 600;
-  color: #6B6B6B;
+  color: var(--color-text-secondary);
   margin-bottom: 20px;
 }
 
@@ -204,11 +204,11 @@
 
 .moveBtn {
   width: 100%;
-  background: #ecfdf5;
+  background: var(--color-live-light);
   border: none;
   padding: 10px 14px;
   border-radius: 8px;
-  color: #10b981;
+  color: var(--color-live);
   font-weight: 700;
   font-size: 12px;
   display: flex;
@@ -219,12 +219,12 @@
 
 .moveBtnSelected {
   background: rgba(255, 255, 255, 0.2);
-  color: white;
+  color: var(--color-surface);
 }
 
 /* Sidebar */
 .rightPanel {
-  border-left: 1px solid #EBEBEA;
+  border-left: 1px solid var(--color-border-light);
   padding-left: 28px;
   min-height: 600px;
 }
@@ -239,17 +239,17 @@
 .sidebarTitle {
   font-size: 18px;
   font-weight: 800;
-  color: #1A1A1A;
+  color: var(--color-text-primary);
 }
 
 .sidebarCount {
-  color: #ff6f6f;
+  color: var(--color-red);
 }
 
 .refreshBtn {
   background: none;
   border: none;
-  color: #6B6B6B;
+  color: var(--color-text-secondary);
   cursor: pointer;
 }
 
@@ -274,22 +274,22 @@
 .studentAvatar {
   width: 32px;
   height: 32px;
-  background: #EBEBEA;
+  background: var(--color-border-light);
   border-radius: 50%;
 }
 
 .studentName {
   font-size: 15px;
   font-weight: 700;
-  color: #1A1A1A;
+  color: var(--color-text-primary);
   flex: 1;
 }
 
 .progressBadge {
-  color: #22C55E;
+  color: var(--color-live);
   font-size: 11px;
   font-weight: 700;
-  background: #F0FBF4;
+  background: var(--color-live-light);
   padding: 4px 10px;
   border-radius: 20px;
 }
@@ -297,23 +297,23 @@
 .studentMenuBtn {
   background: none;
   border: none;
-  color: #6B6B6B;
+  color: var(--color-text-secondary);
   cursor: pointer;
 }
 
 .studentSummary {
-  background: white;
-  border: 1.5px solid #F1F5F9;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border-light);
   border-radius: 10px;
   padding: 12px;
   font-size: 11px;
-  color: #6B6B6B;
+  color: var(--color-text-secondary);
   line-height: 1.6;
 }
 
 .sidebarEmpty {
   text-align: center;
-  color: #6B6B6B;
+  color: var(--color-text-secondary);
   font-size: 14px;
   padding: 60px 0;
   line-height: 1.8;
@@ -323,8 +323,8 @@
   position: absolute;
   right: 0;
   top: calc(100% + 8px);
-  background: white;
-  border: 1px solid #E0DED8;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   padding: 8px 0;
@@ -340,9 +340,9 @@
   border: none;
   text-align: left;
   font-size: 14px;
-  color: #1A1A1A;
+  color: var(--color-text-primary);
   cursor: pointer;
 }
 
-.menuItem:hover { background: #F5F4F0; }
-.menuItemDanger { color: #E8593C; }
+.menuItem:hover { background: var(--color-bg); }
+.menuItemDanger { color: var(--color-primary); }

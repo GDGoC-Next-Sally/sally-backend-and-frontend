@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { signupWithEmail } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import styles from './Signup.module.css';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -34,62 +35,58 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-950 px-4">
-      <div className="w-full max-w-md space-y-8 rounded-2xl border border-gray-800 bg-gray-900/50 p-10 shadow-2xl backdrop-blur-xl">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-white">시작하기</h1>
-          <p className="mt-2 text-sm text-gray-400">Sally AI Coach와 함께 성장을 시작하세요.</p>
-        </div>
+    <div className={styles.container}>
+      <div className={styles.card}>
+        <h1 className={styles.heading}>시작하기</h1>
+        <p className={styles.subheading}>Sally AI Coach와 함께 성장을 시작하세요.</p>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-gray-300">이메일 주소</label>
-              <input
-                type="email"
-                required
-                className="mt-1 block w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white focus:border-blue-500"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-300">비밀번호</label>
-              <input
-                type="password"
-                required
-                className="mt-1 block w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white focus:border-blue-500"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-300">비밀번호 확인</label>
-              <input
-                type="password"
-                required
-                className="mt-1 block w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white focus:border-blue-500"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-            </div>
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={styles.inputGroup}>
+            <label className={styles.label}>이메일 주소</label>
+            <input
+              type="email"
+              required
+              className={styles.input}
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className={styles.inputGroup}>
+            <label className={styles.label}>비밀번호</label>
+            <input
+              type="password"
+              required
+              className={styles.input}
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <div className={styles.inputGroup}>
+            <label className={styles.label}>비밀번호 확인</label>
+            <input
+              type="password"
+              required
+              className={styles.input}
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="flex w-full justify-center rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition-all cursor-pointer"
+            className={styles.submitBtn}
           >
             {loading ? '처리 중...' : '계정 생성'}
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-400">
+        <p className={styles.footer}>
           이미 계정이 있으신가요?{' '}
-          <Link href="/login" className="font-semibold text-blue-400 hover:text-blue-300">
+          <Link href="/login" className={styles.link}>
             로그인
           </Link>
         </p>

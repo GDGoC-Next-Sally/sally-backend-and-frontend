@@ -1,25 +1,44 @@
 @import "tailwindcss";
 @import "../../public/fonts/pretendardvariable.css";
 
-/* ─── Sally Design System Tokens ─────────────────────────────────────────── */
+/* ─── Design Tokens ──────────────────────────────────────────────────────── */
 :root {
-  /* Colors */
+  /* Primitive tokens */
+  --green50: #22CB84;
+  --green40: #40d294;
+  --green20: #E5F9F0;
+  --gray80:  #262B29;
+  --gray60:  #797c7c;
+  --gray50:  #626664;
+  --gray40:  #A9AFAD;
+  --gray20:  #E5EAE8;
+  --gray10:  #c2c2c2;
+  --border:  #eeeff2;
+  --red:     #ff6f6f;
+  --red-bg:  #feeeef;
+
+  /* Semantic tokens */
   --color-primary:          #E8593C;
   --color-primary-hover:    #CF4E35;
   --color-primary-light:    #FDF0ED;
   --color-secondary:        #D4C9F0;
-  --color-surface:          #FFFFFF;
-  --color-bg:               #F5F4F0;
-  --color-text-primary:     #1A1A1A;
-  --color-text-secondary:   #6B6B6B;
-  --color-live:             #22C55E;
-  --color-live-light:       #F0FBF4;
+  --color-surface:          #ffffff;
+  --color-bg:               #f5f6f8;
+  --color-text-primary:     var(--gray80);
+  --color-text-secondary:   var(--gray60);
+  --color-text-tertiary:    var(--gray50);
+  --color-text-placeholder: var(--gray40);
+  --color-live:             var(--green50);
+  --color-live-hover:       var(--green40);
+  --color-live-light:       var(--green20);
   --color-planning:         #F59E0B;
   --color-planning-light:   #FFF8EC;
-  --color-done:             #D0CEC8;
-  --color-done-light:       #F5F4F2;
-  --color-border:           #E0DED8;
-  --color-border-light:     #EBEBEA;
+  --color-done:             var(--gray10);
+  --color-done-light:       #f5f6f8;
+  --color-border:           var(--gray20);
+  --color-border-light:     var(--border);
+  --color-red:              var(--red);
+  --color-red-bg:           var(--red-bg);
 
   /* Border Radius */
   --radius-badge:   4px;
@@ -29,8 +48,8 @@
   --radius-pill:    9999px;
 
   /* Legacy overrides */
-  --background: #F5F4F0;
-  --foreground: #1A1A1A;
+  --background: #f5f6f8;
+  --foreground: #262B29;
 }
 
 @theme inline {

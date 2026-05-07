@@ -12,7 +12,7 @@
 }
 
 .modal {
-  background-color: #ffffff;
+  background-color: var(--color-surface);
   border-radius: 14px;
   width: 100%;
   max-width: 460px;
@@ -27,28 +27,28 @@
   right: 18px;
   background: none;
   border: none;
-  color: #adb5bd;
+  color: var(--color-text-placeholder);
   cursor: pointer;
   padding: 4px;
   line-height: 0;
 }
 
 .closeBtn:hover {
-  color: #495057;
+  color: var(--color-text-secondary);
 }
 
 .title {
   text-align: center;
   font-size: 18px;
   font-weight: 700;
-  color: #212529;
+  color: var(--color-text-primary);
   margin: 0 0 28px 0;
 }
 
 /* Code section */
 .codeSection {
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 20px;
   margin-bottom: 24px;
@@ -64,7 +64,7 @@
 .codeLabel {
   font-size: 14px;
   font-weight: 700;
-  color: #343a40;
+  color: var(--color-text-primary);
 }
 
 .codeActions {
@@ -74,27 +74,27 @@
 
 .actionBtn {
   padding: 6px 12px;
-  border: 1px solid #dee2e6;
-  background-color: white;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
-  color: #495057;
+  color: var(--color-text-secondary);
   cursor: pointer;
 }
 
 .actionBtn:hover {
-  background-color: #f1f3f5;
+  background-color: var(--color-bg);
 }
 
 .actionBtnGreen {
-  color: #20c997;
-  border-color: #b2f2bb;
-  background-color: #f0fdf9;
+  color: var(--color-live);
+  border-color: var(--color-live-light);
+  background-color: var(--color-live-light);
 }
 
 .actionBtnGreen:hover {
-  background-color: #e6fcf5;
+  filter: brightness(0.96);
 }
 
 /* Individual digit boxes */
@@ -107,15 +107,15 @@
 .digitBox {
   width: 44px;
   height: 44px;
-  background-color: #ffffff;
-  border: 1.5px solid #dee2e6;
+  background-color: var(--color-surface);
+  border: 1.5px solid var(--color-border);
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
   font-weight: 700;
-  color: #212529;
+  color: var(--color-text-primary);
 }
 
 /* Setting row */
@@ -136,19 +136,19 @@
 .settingTitle {
   font-size: 15px;
   font-weight: 700;
-  color: #212529;
+  color: var(--color-text-primary);
 }
 
 .settingDesc {
   font-size: 12px;
-  color: #868e96;
+  color: var(--color-text-secondary);
 }
 
 /* Toggle */
 .toggle {
   width: 46px;
   height: 26px;
-  background-color: #ced4da;
+  background-color: var(--color-done);
   border-radius: 13px;
   position: relative;
   cursor: pointer;
@@ -157,7 +157,7 @@
 }
 
 .toggleOn {
-  background-color: #20c997;
+  background-color: var(--color-live);
 }
 
 .toggleDisabled {
@@ -168,7 +168,7 @@
 .toggleKnob {
   width: 20px;
   height: 20px;
-  background-color: white;
+  background-color: var(--color-surface);
   border-radius: 50%;
   position: absolute;
   top: 3px;
@@ -189,7 +189,7 @@
 .usageTitle {
   font-size: 15px;
   font-weight: 700;
-  color: #212529;
+  color: var(--color-text-primary);
   margin-bottom: 14px;
 }
 
@@ -201,27 +201,27 @@
 
 .countLabel {
   font-size: 11px;
-  color: #868e96;
+  color: var(--color-text-secondary);
   margin-bottom: 2px;
 }
 
 .countValue {
   font-size: 22px;
   font-weight: 700;
-  color: #212529;
+  color: var(--color-text-primary);
 }
 
 .progressBar {
   width: 100%;
   height: 7px;
-  background-color: #e9ecef;
+  background-color: var(--color-border);
   border-radius: 4px;
   overflow: hidden;
 }
 
 .progressFill {
   height: 100%;
-  background-color: #20c997;
+  background-color: var(--color-live);
   border-radius: 4px;
 }
 
@@ -243,21 +243,21 @@
 }
 
 .cancelBtn {
-  background-color: white;
-  border: 1px solid #dee2e6;
-  color: #495057;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
 }
 
 .cancelBtn:hover {
-  background-color: #f8f9fa;
+  background-color: var(--color-bg);
 }
 
 .confirmBtn {
-  background-color: #20c997;
+  background-color: var(--color-live);
   border: none;
-  color: white;
+  color: var(--color-surface);
 }
 
 .confirmBtn:hover {
-  background-color: #1aab82;
+  background-color: var(--color-live-hover);
 }

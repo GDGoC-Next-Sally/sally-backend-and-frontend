@@ -7,7 +7,7 @@ export default function SessionPrepPage() {
       display: 'flex',
       gap: '20px',
       padding: '24px',
-      backgroundColor: '#f8f9fa',
+      backgroundColor: 'var(--color-bg)',
       minHeight: 'calc(100vh - 60px)',
       maxWidth: '1400px',
       margin: '0 auto',
