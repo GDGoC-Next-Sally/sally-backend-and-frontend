@@ -1,10 +1,10 @@
-import { Controller, Get, Param, UseGuards, Req, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, Req, ParseIntPipe, Query } from '@nestjs/common';
 import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { user_role as UserRole } from '.prisma/client';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('reports')
 @ApiBearerAuth()
@@ -29,9 +29,16 @@ export class ReportsController {
 
   @Get('student/sessions')
   @Roles(UserRole.STUDENT)
-  @ApiOperation({ summary: '(학생용) 내가 참여한 세션 목록 조회' })
-  getStudentSessionList(@Req() req: any) {
-    return this.reportsService.getStudentSessionList(req.user.userId);
+  @ApiOperation({ summary: '(학생용) 내가 참여한 지난 세션 목록 조회' })
+  @ApiQuery({ name: 'classId', required: false, description: '특정 클래스의 세션만 필터링하고 싶을 때 전달' })
+  getStudentSessionList(
+    @Req() req: any,
+    @Query('classId') classId?: string
+  ) {
+    return this.reportsService.getStudentSessionList(
+      req.user.userId, 
+      classId ? parseInt(classId, 10) : undefined
+    );
   }
 
   @Get('session/:sessionId/summary')

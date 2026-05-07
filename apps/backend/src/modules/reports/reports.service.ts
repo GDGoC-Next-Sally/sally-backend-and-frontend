@@ -12,7 +12,7 @@ export class ReportsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventsGateway: EventsGateway,
-  ) {}
+  ) { }
 
   /**
    * 특정 세션의 모든 학생 리포트를 조회합니다 (선생님용).
@@ -47,9 +47,16 @@ export class ReportsService {
     return report;
   }
 
-  async getStudentSessionList(studentId: string) {
+  // 특정 학생이 참여한 지난 세션 목록 조회 (classId 필터 선택 가능)
+  async getStudentSessionList(studentId: string, classId?: number) {
     const attends = await this.prisma.attends.findMany({
-      where: { student_id: studentId },
+      where: {
+        student_id: studentId,
+        sessions: {
+          finished_at: { not: null }, // finished_at이 null이 아닌 데이터만 조회
+          ...(classId && { class_id: classId }) // classId가 있으면 해당 클래스만 필터링
+        }
+      },
       select: {
         session_id: true,
         sessions: {
@@ -63,7 +70,7 @@ export class ReportsService {
       },
       orderBy: { sessions: { finished_at: 'desc' } } // 최신 종료순 정렬
     });
-  
+
     // 프론트엔드가 쓰기 편하게 평탄화(Flattening)
     return attends.map(item => ({
       sessionId: item.session_id,
