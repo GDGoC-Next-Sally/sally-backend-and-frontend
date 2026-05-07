@@ -43,11 +43,17 @@ async def notify_backend_analytics_callback(
         "dialog_id": dialog_id,
         "analysis": analysis,
     }
+    
+    # 보안 강화를 위한 내부 통신용 시크릿 키
+    internal_secret = os.getenv("INTERNAL_SECRET_KEY", "default-secret-key-change-it")
+    headers = {
+        "x-internal-secret": internal_secret
+    }
 
     try:
         # timeout=10s: 네트워크 지연 등 대비 (백엔드가 응답이 느려도 AI 서버가 블록되지 않도록)
         async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.post(url, json=payload)
+            response = await client.post(url, json=payload, headers=headers)
             response.raise_for_status()
             print(f"[INFO] 백엔드 콜백 전송 성공 (dialog_id={dialog_id}, status={response.status_code})")
             return True
