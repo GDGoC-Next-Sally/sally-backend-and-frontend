@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { createClass, updateClass } from '@/actions/classes';
 import styles from './CreateClassModal.module.css';
+import type { CreateClassBody } from '@/actions/classes';
 
 interface ClassFormData {
   subject: string;
@@ -18,7 +18,7 @@ interface CreateClassModalProps {
   mode?: 'create' | 'edit';
   initialData?: Partial<ClassFormData>;
   classId?: number;
-  onSuccess?: () => void;
+  onSubmit: (body: CreateClassBody) => void;
 }
 
 const SEMESTERS = ['2025년 1학기', '2025년 2학기', '2026년 1학기', '2026년 2학기'];
@@ -36,7 +36,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   mode = 'create',
   initialData,
   classId,
-  onSuccess,
+  onSubmit,
 }) => {
   const [subject,   setSubject]   = useState(initialData?.subject   ?? '');
   const [semester,  setSemester]  = useState(initialData?.semester  ?? SEMESTERS[0]);
@@ -44,20 +44,18 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   const [homeroom,  setHomeroom]  = useState(initialData?.homeroom  ?? '');
   const [theme,     setTheme]     = useState(initialData?.theme     ?? 0);
   const [classType, setClassType] = useState(initialData?.classType ?? '정규 수업');
-  const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState('');
 
   const isEdit = mode === 'edit';
 
-  const handleConfirm = async () => {
+  const handleConfirm = () => {
     if (!subject.trim()) {
       setError('과목 명을 입력해주세요.');
       return;
     }
     setError('');
-    setLoading(true);
 
-    const body = {
+    const body: CreateClassBody = {
       subject: subject.trim(),
       grade: gradeNumberFromLabel(grade),
       homeroom: homeroom.trim() || undefined,
@@ -65,20 +63,8 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
       theme: THEME_NAMES[theme],
     };
 
-    try {
-      if (isEdit && classId) {
-        await updateClass(classId, body);
-      } else {
-        await createClass(body);
-      }
-      onSuccess?.();
-      onClose();
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : '오류가 발생했습니다.';
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
+    onSubmit(body);
+    onClose();
   };
 
   return (
@@ -162,9 +148,9 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         {error && <p className={styles.errorMsg}>{error}</p>}
 
         <div className={styles.footer}>
-          <button className={styles.cancelBtn} onClick={onClose} disabled={loading}>취소</button>
-          <button className={styles.nextBtn} onClick={handleConfirm} disabled={loading}>
-            {loading ? '처리 중...' : isEdit ? '수정 완료' : '생성 완료'}
+          <button className={styles.cancelBtn} onClick={onClose}>취소</button>
+          <button className={styles.nextBtn} onClick={handleConfirm}>
+            {isEdit ? '수정 완료' : '생성 완료'}
           </button>
         </div>
       </div>

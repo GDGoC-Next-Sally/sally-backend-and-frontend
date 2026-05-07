@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { createSession, updateSession, type Session, type CreateSessionBody } from '@/actions/sessions';
+import { type Session, type CreateSessionBody } from '@/actions/sessions';
 import styles from './SessionModal.module.css';
 import dayjs from 'dayjs';
 
@@ -9,10 +9,10 @@ interface Props {
   classId: number;
   session?: Session;
   onClose: () => void;
-  onSuccess: () => void;
+  onSubmit: (body: CreateSessionBody) => void;
 }
 
-export const SessionModal: React.FC<Props> = ({ classId, session, onClose, onSuccess }) => {
+export const SessionModal: React.FC<Props> = ({ classId, session, onClose, onSubmit }) => {
   const isEdit = !!session;
 
   const [name, setName] = useState(session?.session_name ?? '');
@@ -22,14 +22,12 @@ export const SessionModal: React.FC<Props> = ({ classId, session, onClose, onSuc
   const [scheduledStart, setScheduledStart] = useState(dayjs(session?.scheduled_start).format('HH:mm') ?? '');
   const [scheduledEnd, setScheduledEnd] = useState(dayjs(session?.scheduled_end).format('HH:mm') ?? '');
   const [period, setPeriod] = useState<string>(session?.period?.toString() ?? '');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) { setError('세션 이름을 입력해주세요.'); return; }
     setError('');
-    setLoading(true);
 
     const body: CreateSessionBody = {
       class_id: classId,
@@ -42,19 +40,8 @@ export const SessionModal: React.FC<Props> = ({ classId, session, onClose, onSuc
       period: period ? Number(period) : undefined,
     };
 
-    try {
-      if (isEdit) {
-        await updateSession(session.id, body);
-      } else {
-        await createSession(body);
-      }
-      onSuccess();
-      onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
-    } finally {
-      setLoading(false);
-    }
+    onSubmit(body);
+    onClose();
   };
 
   return (
@@ -109,9 +96,9 @@ export const SessionModal: React.FC<Props> = ({ classId, session, onClose, onSuc
           {error && <p className={styles.error}>{error}</p>}
 
           <div className={styles.footer}>
-            <button type="button" className={styles.cancelBtn} onClick={onClose} disabled={loading}>취소</button>
-            <button type="submit" className={styles.submitBtn} disabled={loading}>
-              {loading ? '처리 중...' : isEdit ? '수정 완료' : '세션 생성'}
+            <button type="button" className={styles.cancelBtn} onClick={onClose}>취소</button>
+            <button type="submit" className={styles.submitBtn}>
+              {isEdit ? '수정 완료' : '세션 생성'}
             </button>
           </div>
         </form>

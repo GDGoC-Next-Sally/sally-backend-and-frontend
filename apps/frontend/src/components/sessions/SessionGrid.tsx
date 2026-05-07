@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { getSessionsByClass, deleteSession, type Session } from '@/actions/sessions';
-import { getClass, type ClassItem } from '@/actions/classes';
+import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { type Session } from '@/actions/sessions';
+import { type ClassItem } from '@/actions/classes';
 import { SessionModal } from './SessionModal';
 import styles from './SessionGrid.module.css';
+import type { CreateSessionBody } from '@/actions/sessions';
 
 const STATUS_CONFIG = {
   ACTIVE:   { label: '진행중',   className: 'badgeActive' },
@@ -20,38 +21,32 @@ function formatDate(dateStr?: string | null) {
 
 type Tab = '전체보기' | '세션 목록' | '과제 & 자료';
 
-export const SessionGrid = () => {
-  const router = useRouter();
-  const params = useParams();
-  const classId = Number(params.id);
+interface SessionGridProps {
+  classId: number;
+  classInfo: ClassItem | null;
+  sessions: Session[];
+  onDeleteSession: (id: number) => void;
+  onCreateSession: (body: CreateSessionBody) => void;
+  onUpdateSession: (sessionId: number, body: CreateSessionBody) => void;
+  onRefresh: () => void;
+}
 
-  const [classInfo, setClassInfo] = useState<ClassItem | null>(null);
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [loading, setLoading] = useState(true);
+export const SessionGrid: React.FC<SessionGridProps> = ({
+  classId,
+  classInfo,
+  sessions,
+  onDeleteSession,
+  onCreateSession,
+  onUpdateSession,
+  onRefresh,
+}) => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>('세션 목록');
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [search, setSearch] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Session | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [cls, ses] = await Promise.all([
-        getClass(classId),
-        getSessionsByClass(classId),
-      ]);
-      setClassInfo(cls);
-      setSessions(ses);
-    } catch {
-      setSessions([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [classId]);
-
-  useEffect(() => { load(); }, [load]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -63,14 +58,9 @@ export const SessionGrid = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = (id: number) => {
     if (!confirm('세션을 삭제하시겠습니까?')) return;
-    try {
-      await deleteSession(id);
-      setSessions((prev) => prev.filter((s) => s.id !== id));
-    } catch {
-      alert('삭제에 실패했습니다.');
-    }
+    onDeleteSession(id);
     setOpenMenuId(null);
   };
 
@@ -131,15 +121,12 @@ export const SessionGrid = () => {
       </div>
 
       <div className={styles.sessionList} ref={menuRef}>
-        {loading && (
-          <div className={styles.empty}>불러오는 중...</div>
-        )}
-        {!loading && filtered.length === 0 && (
+        {filtered.length === 0 && (
           <div className={styles.empty}>
             {search ? '검색 결과가 없습니다.' : '등록된 세션이 없습니다.'}
           </div>
         )}
-        {!loading && filtered.map((session) => {
+        {filtered.map((session) => {
           const cfg = STATUS_CONFIG[session.status] ?? STATUS_CONFIG.PLANNING;
           return (
             <div
@@ -201,7 +188,7 @@ export const SessionGrid = () => {
         <SessionModal
           classId={classId}
           onClose={() => setIsCreateOpen(false)}
-          onSuccess={load}
+          onSubmit={(body) => { onCreateSession(body); onRefresh(); }}
         />
       )}
       {editTarget && (
@@ -209,7 +196,7 @@ export const SessionGrid = () => {
           classId={classId}
           session={editTarget}
           onClose={() => setEditTarget(null)}
-          onSuccess={load}
+          onSubmit={(body) => { if (editTarget) onUpdateSession(editTarget.id, body); onRefresh(); }}
         />
       )}
     </div>

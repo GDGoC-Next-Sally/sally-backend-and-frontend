@@ -2,18 +2,25 @@
 
 import React, { useRef, useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { HomeIcon } from '../icons/HomeIcon';
 import { BookIcon } from '../icons/BookIcon';
 import { GridIcon } from '../icons/GridIcon';
 import styles from './TopNav.module.css';
-import { useUser } from '@/utils/useUser';
-import { signOut } from '@/lib/supabase';
 
-export const TopNav = () => {
+interface TopNavUser {
+  name: string;
+  email: string;
+  role: 'teacher' | 'student' | 'admin';
+}
+
+interface TopNavProps {
+  user: TopNavUser | null;
+  onSignOut?: () => void;
+}
+
+export const TopNav: React.FC<TopNavProps> = ({ user, onSignOut }) => {
   const pathname = usePathname();
-  const router = useRouter();
-  const user = useUser();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -37,9 +44,8 @@ export const TopNav = () => {
 
   const isClassesPage = pathname?.includes('/classes');
 
-  const handleSignOut = async () => {
-    await signOut();
-    router.push('/login');
+  const handleSignOut = () => {
+    onSignOut?.();
   };
 
   return (

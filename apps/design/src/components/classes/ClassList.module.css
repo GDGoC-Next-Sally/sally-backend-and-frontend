@@ -1,0 +1,313 @@
+.container {
+  background-color: #F5F4F0;
+  min-height: calc(100vh - 56px);
+  padding: 24px;
+}
+
+.layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 0;
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  align-items: start;
+}
+
+.leftPanel {
+  min-width: 0;
+  padding-right: 32px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1A1A1A;
+  margin: 0 0 4px 0;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #6B6B6B;
+  margin: 0;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.moreWrapper { position: relative; }
+
+.btnCreate {
+  background: #4B4B4B;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.btnCreate:hover { background: #1A1A1A; transform: translateY(-1px); }
+
+.btnMore {
+  background: #22cb84;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: not-allowed;
+  white-space: nowrap;
+  opacity: 0.45;
+}
+.btnMoreActive { cursor: pointer; opacity: 1; }
+.btnMoreActive:hover { background: #1ab574; }
+
+/* Filter bar */
+.filterBar { display: flex; gap: 12px; margin-bottom: 24px; }
+
+.searchBox {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  color: #6B6B6B;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px 14px 12px 42px;
+  border: 1.5px solid #E0DED8;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #1A1A1A;
+  background: white;
+  outline: none;
+}
+.searchInput:focus { border-color: #10b981; }
+
+.sortSelect {
+  padding: 12px 36px 12px 14px;
+  border: 1.5px solid #E0DED8;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #6B6B6B;
+  background: white;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B6B6B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 1rem;
+}
+
+/* Card grid */
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: white;
+  border-radius: 14px;
+  border: 1.5px solid #E0DED8;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.card:hover { border-color: #E8593C; transform: translateY(-2px); }
+
+.cardSelected {
+  background: #10b981;
+  border-color: #10b981;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+}
+
+.cardSchedule {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.cardSelected .cardSchedule { color: rgba(255,255,255,0.8); }
+
+.cardTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1A1A1A;
+  margin-bottom: 6px;
+}
+.cardTitleSelected { color: white; }
+
+.cardSubject {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6B6B6B;
+  margin-bottom: 20px;
+}
+.cardSubjectSelected { color: rgba(255,255,255,0.9); }
+
+.moveBtn {
+  width: 100%;
+  background: #ecfdf5;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #10b981;
+  font-weight: 700;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  text-decoration: none;
+}
+.moveBtnSelected {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+
+.empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #6B6B6B;
+  padding: 48px 0;
+  font-size: 14px;
+}
+
+/* Sidebar */
+.rightPanel {
+  border-left: 1px solid #EBEBEA;
+  padding-left: 28px;
+  min-height: 600px;
+}
+
+.sidebarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.sidebarTitle {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1A1A1A;
+}
+
+.sidebarCount { color: #ff6f6f; }
+
+.refreshBtn {
+  background: none;
+  border: none;
+  color: #6B6B6B;
+  cursor: pointer;
+}
+
+.studentList { display: flex; flex-direction: column; gap: 20px; }
+
+.studentCard { display: flex; flex-direction: column; gap: 12px; }
+
+.studentTopRow { display: flex; align-items: center; gap: 12px; }
+
+.studentAvatar {
+  width: 32px; height: 32px;
+  background: #EBEBEA;
+  border-radius: 50%;
+}
+
+.studentName { font-size: 15px; font-weight: 700; color: #1A1A1A; flex: 1; }
+
+.progressBadge {
+  color: #22C55E;
+  font-size: 11px;
+  font-weight: 700;
+  background: #F0FBF4;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.studentMenuBtn {
+  background: none;
+  border: none;
+  color: #6B6B6B;
+  cursor: pointer;
+}
+
+.studentSummary {
+  background: white;
+  border: 1.5px solid #F1F5F9;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 11px;
+  color: #6B6B6B;
+  line-height: 1.6;
+}
+
+.sidebarEmpty {
+  text-align: center;
+  color: #6B6B6B;
+  font-size: 14px;
+  padding: 60px 0;
+  line-height: 1.8;
+}
+
+/* Dropdown */
+.dropdownMenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  background: white;
+  border: 1px solid #E0DED8;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  padding: 8px 0;
+  min-width: 180px;
+  z-index: 100;
+}
+
+.menuItem {
+  display: block;
+  width: 100%;
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 14px;
+  color: #1A1A1A;
+  cursor: pointer;
+}
+.menuItem:hover { background: #F5F4F0; }
+.menuItemDisabled { opacity: 0.4; cursor: not-allowed; }
+.menuItemDanger { color: #E8593C; }
+
+/* Status dots */
+.dotActive   { background: #22C55E; }
+.dotPlanning { background: #F59E0B; }
+.dotDone     { background: #D0CEC8; }

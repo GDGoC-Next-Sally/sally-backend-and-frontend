@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { TopNav } from "@/components/layout/TopNav";
+import { TopNavWrapper } from "@/components/layout/TopNavWrapper";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-[#f8f9fa]">
-        <TopNav />
+        <TopNavWrapper />
         {children}
       </body>
     </html>

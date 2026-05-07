@@ -1,63 +1,44 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { SessionSidebar } from './SessionSidebar';
-import {
-  startSession,
-  finishSession,
-  getAttendance,
-  getSession,
-  type AttendanceStudent,
-} from '@/actions/sessions';
+import { type AttendanceStudent } from '@/actions/sessions';
 import styles from './SessionWidget.module.css';
 
 type Phase = 'waiting' | 'active';
 
-export const SessionWidget = () => {
+interface SessionWidgetProps {
+  classId: string;
+  sessionId: string;
+  initialPhase: Phase;
+  students: AttendanceStudent[];
+  onStart: () => Promise<void>;
+  onFinish: () => Promise<void>;
+  onRefreshStudents: () => Promise<void>;
+}
+
+export const SessionWidget: React.FC<SessionWidgetProps> = ({
+  classId,
+  sessionId,
+  initialPhase,
+  students,
+  onStart,
+  onFinish,
+  onRefreshStudents,
+}) => {
   const router = useRouter();
-  const params = useParams();
-  const classId = params.id as string;
-  const sessionId = params.sessionId as string;
-
-  const [phase, setPhase] = useState<Phase | null>(null); // null = 초기화 전
-  const [selectedStudentId, setSelectedStudentId] = useState<string | undefined>();
-  const [students, setStudents] = useState<AttendanceStudent[]>([]);
+  const [phase, setPhase] = useState<Phase>(initialPhase);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | undefined>(
+    students.length > 0 ? students[0].userId : undefined
+  );
   const [loading, setLoading] = useState(false);
-
-  const fetchAttendance = useCallback(async () => {
-    try {
-      const data = await getAttendance(sessionId);
-      setStudents(data);
-      if (data.length > 0 && !selectedStudentId) {
-        setSelectedStudentId(data[0].userId);
-      }
-    } catch {
-      // 출석 데이터 없으면 빈 목록 유지
-    }
-  }, [sessionId, selectedStudentId]);
-
-  // 진입 시 백엔드 세션 상태로 phase 초기화
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const session = await getSession(sessionId);
-        const initialPhase: Phase = session.status === 'ACTIVE' ? 'active' : 'waiting';
-        setPhase(initialPhase);
-        await fetchAttendance();
-      } catch {
-        setPhase('waiting');
-      }
-    };
-    init();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId]);
 
   const handleStart = async () => {
     setLoading(true);
     try {
-      await startSession(sessionId);
-      await fetchAttendance();
+      await onStart();
+      await onRefreshStudents();
       setPhase('active');
     } catch (e) {
       alert(e instanceof Error ? e.message : '세션 시작에 실패했습니다.');
@@ -70,7 +51,7 @@ export const SessionWidget = () => {
     if (!confirm('세션을 종료하시겠습니까?')) return;
     setLoading(true);
     try {
-      await finishSession(sessionId);
+      await onFinish();
       router.push(`/t/classes/${classId}`);
     } catch (e) {
       alert(e instanceof Error ? e.message : '세션 종료에 실패했습니다.');
@@ -81,14 +62,6 @@ export const SessionWidget = () => {
 
   const selectedStudent = students.find((s) => s.userId === selectedStudentId);
 
-  if (phase === null) {
-    return (
-      <div className={styles.layout}>
-        <div className={styles.initializing}>세션 정보를 불러오는 중...</div>
-      </div>
-    );
-  }
-
   return (
     <div className={styles.layout}>
       <SessionSidebar
@@ -96,7 +69,7 @@ export const SessionWidget = () => {
         students={students}
         selectedId={selectedStudentId}
         onSelect={setSelectedStudentId}
-        onRefresh={fetchAttendance}
+        onRefresh={onRefreshStudents}
       />
 
       {phase === 'waiting' ? (

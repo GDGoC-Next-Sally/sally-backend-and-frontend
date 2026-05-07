@@ -1,14 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import styles from './LoginForm.module.css';
-import { signinWithEmail, signupWithEmail } from '@/lib/supabase';
-import { getProfile } from '@/actions/auth';
 
 type Tab = 'student' | 'teacher';
 
-export const LoginForm = () => {
+interface LoginFormProps {
+  onSignin: (email: string, password: string, role: 'student' | 'teacher') => Promise<void>;
+  onSignup: (email: string, password: string, nickname: string, role: string) => Promise<void>;
+}
+
+export const LoginForm: React.FC<LoginFormProps> = ({ onSignin, onSignup }) => {
   const [activeTab, setActiveTab] = useState<Tab>('student');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,59 +18,28 @@ export const LoginForm = () => {
   const [isSignup, setIsSignup] = useState(false);
   const [signupRole, setSignupRole] = useState<Tab>('student');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       if (isSignup) {
-        // 회원가입 처리
         if (!nickname.trim()) {
           alert('닉네임을 입력해주세요.');
           setLoading(false);
           return;
         }
-        const { data, error } = await signupWithEmail(email, password, nickname, signupRole.toUpperCase());
-        if (error) {
-          console.error('Supabase signup error:', error);
-          alert(`회원가입 실패: ${error.message}`);
-        } else {
-          alert('회원가입이 완료되었습니다! 로그인해주세요.');
-          setIsSignup(false); // 다시 로그인 화면으로
-          setPassword('');
-        }
+        await onSignup(email, password, nickname, signupRole.toUpperCase());
+        alert('회원가입이 완료되었습니다! 로그인해주세요.');
+        setIsSignup(false);
+        setPassword('');
       } else {
-        // 로그인 처리
-        const { data, error } = await signinWithEmail(email, password);
-        if (error || !data.session) {
-          console.warn('Supabase login failed:', error);
-          alert('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
-        } else {
-          // 백엔드 연동: /auth/profile 호출하여 실제 권한 받아오기
-          try {
-            const profile = await getProfile();
-
-            const serverRole = profile?.role;
-            const serverName = profile?.name;
-            const finalRole = serverRole === 'TEACHER' ? 'teacher' : (serverRole === 'ADMIN' ? activeTab : 'student');
-
-            if (serverRole === 'ADMIN') {
-              router.push(activeTab === 'teacher' ? '/t/home' : '/s/home');
-            } else if (serverRole === 'TEACHER') {
-              router.push('/t/home');
-            } else {
-              router.push('/s/home');
-            }
-          } catch (apiErr) {
-            console.error('백엔드 연동 테스트 실패:', apiErr);
-            alert('사용자 정보를 불러오는데 실패했습니다.');
-          }
-        }
+        await onSignin(email, password, activeTab);
       }
     } catch (err) {
-      console.error('Supabase error:', err);
-      alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      console.error('Auth error:', err);
+      alert(err instanceof Error ? err.message : '오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     }
 
     setLoading(false);

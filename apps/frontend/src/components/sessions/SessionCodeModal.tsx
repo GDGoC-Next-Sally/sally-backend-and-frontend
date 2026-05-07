@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { refreshInviteCode, toggleRegisterable } from '@/actions/classes';
 import styles from './SessionCodeModal.module.css';
 
 interface SessionCodeModalProps {
@@ -9,7 +8,8 @@ interface SessionCodeModalProps {
   classId: number;
   inviteCode?: string;
   registerable?: boolean;
-  onUpdate?: () => void;
+  onRefreshCode: () => void;
+  onToggleRegisterable: () => void;
 }
 
 export const SessionCodeModal: React.FC<SessionCodeModalProps> = ({
@@ -17,13 +17,12 @@ export const SessionCodeModal: React.FC<SessionCodeModalProps> = ({
   classId,
   inviteCode,
   registerable = false,
-  onUpdate,
+  onRefreshCode,
+  onToggleRegisterable,
 }) => {
   const [code, setCode] = useState(inviteCode ?? '--------');
   const [blockNew, setBlockNew] = useState(!registerable);
   const [copied, setCopied] = useState(false);
-  const [reissuing, setReissuing] = useState(false);
-  const [toggling, setToggling] = useState(false);
 
   const codeChars = code.replace(/\s/g, '').split('');
 
@@ -34,31 +33,14 @@ export const SessionCodeModal: React.FC<SessionCodeModalProps> = ({
     }).catch(() => {});
   };
 
-  const handleReissue = async () => {
+  const handleReissue = () => {
     if (!confirm('입장 코드를 재발급하시겠습니까? 기존 코드는 더 이상 사용할 수 없습니다.')) return;
-    setReissuing(true);
-    try {
-      const data = await refreshInviteCode(classId);
-      setCode(data.invite_code);
-      onUpdate?.();
-    } catch {
-      alert('재발급에 실패했습니다.');
-    } finally {
-      setReissuing(false);
-    }
+    onRefreshCode();
   };
 
-  const handleToggle = async () => {
-    setToggling(true);
-    try {
-      await toggleRegisterable(classId);
-      setBlockNew((v) => !v);
-      onUpdate?.();
-    } catch {
-      alert('설정 변경에 실패했습니다.');
-    } finally {
-      setToggling(false);
-    }
+  const handleToggle = () => {
+    setBlockNew((v) => !v);
+    onToggleRegisterable();
   };
 
   return (
@@ -83,9 +65,8 @@ export const SessionCodeModal: React.FC<SessionCodeModalProps> = ({
               <button
                 className={`${styles.actionBtn} ${styles.actionBtnGreen}`}
                 onClick={handleReissue}
-                disabled={reissuing}
               >
-                {reissuing ? '처리 중...' : '재발급'}
+                재발급
               </button>
             </div>
           </div>
@@ -102,8 +83,8 @@ export const SessionCodeModal: React.FC<SessionCodeModalProps> = ({
             <span className={styles.settingDesc}>코드를 알고 있어도 새로운 학생의 진입을 차단합니다.</span>
           </div>
           <div
-            className={`${styles.toggle} ${blockNew ? styles.toggleOn : ''} ${toggling ? styles.toggleDisabled : ''}`}
-            onClick={toggling ? undefined : handleToggle}
+            className={`${styles.toggle} ${blockNew ? styles.toggleOn : ''}`}
+            onClick={handleToggle}
           >
             <div className={styles.toggleKnob} />
           </div>

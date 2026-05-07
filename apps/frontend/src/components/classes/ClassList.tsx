@@ -1,24 +1,28 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CreateClassModal } from './CreateClassModal';
 import { SessionCodeModal } from '../sessions/SessionCodeModal';
-import { getTeacherClasses, deleteClass } from '@/actions/classes';
 import styles from './ClassList.module.css';
+import type { CreateClassBody, ClassItem } from '@/actions/classes';
 
-interface ClassItem {
+interface Student {
   id: number;
-  invite_code: string;
-  registerable: boolean;
-  status: 'PLANNING' | 'ACTIVE' | 'COMPLETED';
-  grade: number | null;
-  homeroom: string | null;
-  subject: string;
-  explanation: string | null;
-  theme: string | null;
-  created_at: string;
-  schedule?: string; // Add schedule for matching design
+  name: string;
+  progress: number;
+  active: boolean;
+  summary: string;
+}
+
+interface ClassListProps {
+  classes: ClassItem[];
+  students: Student[];
+  onCreateClass: (data: CreateClassBody) => void;
+  onUpdateClass: (id: number, data: Partial<CreateClassBody>) => void;
+  onDeleteClass: (id: number) => void;
+  onRefreshCode: (classId: number) => void;
+  onToggleRegisterable: (classId: number) => void;
 }
 
 const STATUS_DOT: Record<string, string> = {
@@ -27,16 +31,16 @@ const STATUS_DOT: Record<string, string> = {
   COMPLETED: styles.dotDone,
 };
 
-const MOCK_STUDENTS = [
-  { id: 1, name: '김학생', progress: 40, active: true, summary: '학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약' },
-  { id: 2, name: '김학생', progress: 40, active: true, summary: '학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약' },
-  { id: 3, name: '김학생', progress: 40, active: true, summary: '학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약' },
-  { id: 4, name: '김학생', progress: 40, active: true, summary: '학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약 학생별 개별 성취도 요약' },
-];
-
-export const ClassList = () => {
+export const ClassList: React.FC<ClassListProps> = ({
+  classes,
+  students,
+  onCreateClass,
+  onUpdateClass,
+  onDeleteClass,
+  onRefreshCode,
+  onToggleRegisterable,
+}) => {
   const router = useRouter();
-  const [classes, setClasses] = useState<ClassItem[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -44,20 +48,6 @@ export const ClassList = () => {
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const fetchClasses = () => {
-    getTeacherClasses()
-      .then((data) => {
-        const enriched = data.map((c) => ({
-          ...c,
-          schedule: c.schedule || '월1, 화4, 수4, 금4',
-        }));
-        setClasses(enriched as any);
-      })
-      .catch(() => setClasses([]));
-  };
-
-  useEffect(() => { fetchClasses(); }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -71,24 +61,24 @@ export const ClassList = () => {
 
   const selectedClass = classes.find((c) => c.id === selectedId) ?? null;
 
-  const filtered = classes.filter((c) => {
+  const enriched = classes.map((c) => ({
+    ...c,
+    schedule: c.schedule || '월1, 화4, 수4, 금4',
+  }));
+
+  const filtered = enriched.filter((c) => {
     const label = `${c.grade ?? ''}학년 ${c.homeroom ?? ''} ${c.subject}`;
     return label.includes(search);
   });
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!selectedId || !confirm('클래스를 삭제하시겠습니까?')) return;
-    try {
-      await deleteClass(selectedId);
-      setClasses((prev) => prev.filter((c) => c.id !== selectedId));
-      setSelectedId(null);
-    } catch {
-      alert('삭제에 실패했습니다.');
-    }
+    onDeleteClass(selectedId);
+    setSelectedId(null);
     setShowDropdown(false);
   };
 
-  const activeCount = MOCK_STUDENTS.filter((s) => s.active).length;
+  const activeCount = students.filter((s) => s.active).length;
 
   return (
     <div className={styles.container}>
@@ -227,7 +217,7 @@ export const ClassList = () => {
             </p>
           ) : (
             <div className={styles.studentList}>
-              {MOCK_STUDENTS.map((student) => (
+              {students.map((student) => (
                 <div key={student.id} className={styles.studentCard}>
                   <div className={styles.studentTopRow}>
                     <div className={styles.studentAvatar} />
@@ -255,7 +245,10 @@ export const ClassList = () => {
         <CreateClassModal
           mode="create"
           onClose={() => setIsCreateModalOpen(false)}
-          onSuccess={fetchClasses}
+          onSubmit={(body) => {
+            onCreateClass(body);
+            setIsCreateModalOpen(false);
+          }}
         />
       )}
       {isEditModalOpen && selectedClass && (
@@ -264,7 +257,10 @@ export const ClassList = () => {
           classId={selectedClass.id}
           initialData={{ subject: selectedClass.subject, theme: 0 }}
           onClose={() => setIsEditModalOpen(false)}
-          onSuccess={fetchClasses}
+          onSubmit={(body) => {
+            if (selectedClass) onUpdateClass(selectedClass.id, body);
+            setIsEditModalOpen(false);
+          }}
         />
       )}
       {isCodeModalOpen && selectedClass && (
@@ -273,7 +269,8 @@ export const ClassList = () => {
           classId={selectedClass.id}
           inviteCode={selectedClass.invite_code}
           registerable={selectedClass.registerable}
-          onUpdate={fetchClasses}
+          onRefreshCode={() => onRefreshCode(selectedClass.id)}
+          onToggleRegisterable={() => onToggleRegisterable(selectedClass.id)}
         />
       )}
     </div>

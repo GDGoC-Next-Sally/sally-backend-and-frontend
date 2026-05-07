@@ -1,9 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/utils/useUser';
-import { getStudentClasses } from '@/actions/classes';
 import styles from './StudentDashboard.module.css';
 
 interface ClassItem {
@@ -14,22 +12,19 @@ interface ClassItem {
   status: 'PLANNING' | 'ACTIVE' | 'COMPLETED';
 }
 
+interface StudentDashboardProps {
+  user: { name: string } | null;
+  classes: ClassItem[];
+}
+
 const RECENT_SESSIONS = [
   { title: '3학년 2반 수학', teacher: '김하린 선생님 | 2교시', status: '종료', type: 'done' },
   { title: '3학년 2반 영어', teacher: '박수빈 선생님 | 3교시', status: '진행 중', type: 'live' },
   { title: '3학년 2반 영어', teacher: '박수빈 선생님 | 3교시', status: '대기 중', type: 'wait' },
 ];
 
-export const StudentDashboard = () => {
+export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classes }) => {
   const router = useRouter();
-  const user = useUser();
-  const [classes, setClasses] = useState<ClassItem[]>([]);
-
-  useEffect(() => {
-    getStudentClasses()
-      .then(setClasses)
-      .catch(() => setClasses([]));
-  }, []);
 
   return (
     <div className={styles.container}>

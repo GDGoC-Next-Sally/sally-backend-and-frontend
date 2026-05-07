@@ -1,15 +1,14 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { joinClass } from '@/actions/classes';
 import styles from './JoinClassModal.module.css';
 
 interface Props {
   onClose: () => void;
-  onSuccess?: () => void;
+  onJoin: (inviteCode: string) => Promise<void>;
 }
 
-export const JoinClassModal: React.FC<Props> = ({ onClose, onSuccess }) => {
+export const JoinClassModal: React.FC<Props> = ({ onClose, onJoin }) => {
   const [digits, setDigits] = useState<string[]>(Array(8).fill(''));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -47,8 +46,7 @@ export const JoinClassModal: React.FC<Props> = ({ onClose, onSuccess }) => {
     setLoading(true);
     setError('');
     try {
-      await joinClass(inviteCode);
-      onSuccess?.();
+      await onJoin(inviteCode);
       onClose();
     } catch (err: any) {
       setError(err.message || '유효하지 않은 코드이거나 참여에 실패했습니다.');

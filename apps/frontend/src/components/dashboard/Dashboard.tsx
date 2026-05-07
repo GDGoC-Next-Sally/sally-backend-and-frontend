@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { getTeacherClasses } from '@/actions/classes';
 import styles from './Dashboard.module.css';
 
 interface ClassItem {
@@ -12,15 +11,11 @@ interface ClassItem {
   homeroom: string | null;
 }
 
-export const Dashboard = () => {
-  const [classes, setClasses] = useState<ClassItem[]>([]);
+interface DashboardProps {
+  classes: ClassItem[];
+}
 
-  useEffect(() => {
-    getTeacherClasses()
-      .then((data) => setClasses(data || []))
-      .catch(() => setClasses([]));
-  }, []);
-
+export const Dashboard: React.FC<DashboardProps> = ({ classes }) => {
   return (
     <div className={styles.container}>
       <div className={styles.topSection}>
@@ -151,7 +146,7 @@ export const Dashboard = () => {
                   </div>
                 </Link>
               ))}
-              
+
               {/* Default "Manage My Classes" if empty or for the remaining slots */}
               {(classes.length === 0 || classes.length < 4) && (
                 <Link href="/t/classes" style={{ textDecoration: 'none' }}>

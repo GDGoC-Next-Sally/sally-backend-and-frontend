@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getClass } from '@/actions/classes';
-import { getSessionsByClass, joinSession, type Session } from '@/actions/sessions';
+import { type Session } from '@/actions/sessions';
 import styles from './StudentSessionList.module.css';
 
 interface ClassInfo {
@@ -29,13 +28,20 @@ const STATUS_CLASS: Record<string, string> = {
 
 interface Props {
   classId: string;
+  classInfo: ClassInfo | null;
+  sessions: Session[];
+  onJoinSession: (sessionId: number) => Promise<void>;
   initialTab?: string;
 }
 
-export const StudentSessionList: React.FC<Props> = ({ classId, initialTab }) => {
+export const StudentSessionList: React.FC<Props> = ({
+  classId,
+  classInfo,
+  sessions,
+  onJoinSession,
+  initialTab,
+}) => {
   const router = useRouter();
-  const [classInfo, setClassInfo] = useState<ClassInfo | null>(null);
-  const [sessions, setSessions] = useState<Session[]>([]);
   const [joining, setJoining] = useState<number | null>(null);
   const [tab, setTab] = useState<Tab>(() => {
     if (initialTab === 'sessions') return 'sessions';
@@ -46,34 +52,10 @@ export const StudentSessionList: React.FC<Props> = ({ classId, initialTab }) => 
   const [search, setSearch] = useState('');
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const fetchData = useCallback(async () => {
-    const [cls, sessionList] = await Promise.allSettled([
-      getClass(classId),
-      getSessionsByClass(classId),
-    ]);
-    if (cls.status === 'fulfilled') setClassInfo(cls.value);
-    if (sessionList.status === 'fulfilled') setSessions(sessionList.value);
-  }, [classId]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpenMenuId(null);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
-
   const handleJoin = async (sessionId: number) => {
     setJoining(sessionId);
     try {
-      await joinSession(String(sessionId));
-      router.push(`/s/classes/${classId}/sessions/${sessionId}`);
+      await onJoinSession(sessionId);
     } catch (e) {
       alert(e instanceof Error ? e.message : '세션 참여에 실패했습니다.');
       setJoining(null);

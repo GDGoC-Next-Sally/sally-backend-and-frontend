@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getStudentClasses, leaveClass } from '@/actions/classes';
 import { JoinClassModal } from './JoinClassModal';
 import styles from './StudentClassList.module.css';
 
@@ -18,27 +17,23 @@ interface ClassItem {
   teacher?: string;
 }
 
-export const StudentClassList = () => {
+interface StudentClassListProps {
+  classes: ClassItem[];
+  onLeaveClass: (classId: number) => void;
+  onRefresh: () => void;
+}
+
+export const StudentClassList: React.FC<StudentClassListProps> = ({
+  classes,
+  onLeaveClass,
+  onRefresh,
+}) => {
   const router = useRouter();
-  const [classes, setClasses] = useState<ClassItem[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [search, setSearch] = useState('');
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const fetchClasses = useCallback(() => {
-    getStudentClasses()
-      .then((data) => {
-        setClasses(data);
-        if (data.length > 0 && selectedId === null) {
-          setSelectedId(data[0].id);
-        }
-      })
-      .catch(() => setClasses([]));
-  }, [selectedId]);
-
-  useEffect(() => { fetchClasses(); }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -50,15 +45,11 @@ export const StudentClassList = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLeave = async () => {
+  const handleLeave = () => {
     if (!selectedId || !confirm('이 클래스에서 나가시겠습니까?')) return;
-    try {
-      await leaveClass(selectedId);
-      setSelectedId(null);
-      fetchClasses();
-    } catch (e) {
-      alert(e instanceof Error ? e.message : '클래스 나가기에 실패했습니다.');
-    }
+    onLeaveClass(selectedId);
+    setSelectedId(null);
+    onRefresh();
     setShowDropdown(false);
   };
 
@@ -220,9 +211,11 @@ export const StudentClassList = () => {
       {isJoinModalOpen && (
         <JoinClassModal
           onClose={() => setIsJoinModalOpen(false)}
-          onSuccess={() => {
+          onJoin={async (inviteCode) => {
+            const { joinClass } = await import('@/actions/classes');
+            await joinClass(inviteCode);
             setIsJoinModalOpen(false);
-            fetchClasses();
+            onRefresh();
           }}
         />
       )}
