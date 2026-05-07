@@ -18,6 +18,7 @@ const meta: Meta<typeof SessionWidget> = {
 export default meta;
 type Story = StoryObj<typeof SessionWidget>;
 
+/** 학생 입장 대기 중인 상태 */
 export const WaitingPhase: Story = {
   args: {
     classId: '1',
@@ -30,6 +31,7 @@ export const WaitingPhase: Story = {
   },
 };
 
+/** 세션이 진행 중인 상태 */
 export const ActivePhase: Story = {
   args: {
     classId: '1',
@@ -42,6 +44,7 @@ export const ActivePhase: Story = {
   },
 };
 
+/** 아직 입장한 학생이 없는 상태 */
 export const NoStudents: Story = {
   args: {
     classId: '1',
@@ -51,5 +54,31 @@ export const NoStudents: Story = {
     onStart: async () => { console.log('start session'); },
     onFinish: async () => { console.log('finish session'); },
     onRefreshStudents: async () => { console.log('refresh students'); },
+  },
+};
+
+/** 세션 시작 버튼을 눌러 로딩 중인 상태 */
+export const Loading: Story = {
+  args: {
+    classId: '1',
+    sessionId: '1',
+    initialPhase: 'waiting',
+    students: MOCK_STUDENTS,
+    onStart: () => new Promise(() => {}), // 영원히 pending → 로딩 UI 유지
+    onFinish: async () => {},
+    onRefreshStudents: async () => {},
+  },
+};
+
+/** 세션 시작 실패 (에러) 상태 — alert 발생 후 UI 확인용 */
+export const ErrorOnStart: Story = {
+  args: {
+    classId: '1',
+    sessionId: '1',
+    initialPhase: 'waiting',
+    students: MOCK_STUDENTS,
+    onStart: async () => { throw new Error('서버 연결에 실패했습니다.'); },
+    onFinish: async () => {},
+    onRefreshStudents: async () => {},
   },
 };

@@ -117,15 +117,15 @@ const WaitingView: React.FC<WaitingProps> = ({ loading, onStart, onBack }) => (
     <div className={styles.waitCard}>
       <div className={styles.illustration}>
         <svg width="100" height="80" viewBox="0 0 100 80" fill="none">
-          <circle cx="50" cy="28" r="24" fill="#e6fcf5" />
-          <circle cx="50" cy="22" r="8" fill="#20c997" opacity="0.7" />
-          <rect x="30" y="44" width="40" height="20" rx="4" fill="#20c997" opacity="0.5" />
-          <circle cx="32" cy="56" r="6" fill="#20c997" opacity="0.8" />
-          <circle cx="50" cy="56" r="6" fill="#20c997" opacity="0.8" />
-          <circle cx="68" cy="56" r="6" fill="#20c997" opacity="0.8" />
-          <circle cx="58" cy="8" r="4" fill="#20c997" opacity="0.4" />
-          <circle cx="72" cy="18" r="3" fill="#20c997" opacity="0.3" />
-          <circle cx="26" cy="16" r="3" fill="#20c997" opacity="0.3" />
+          <circle cx="50" cy="28" r="24" fill="#E5F9F0" />
+          <circle cx="50" cy="22" r="8" fill="#22CB84" opacity="0.7" />
+          <rect x="30" y="44" width="40" height="20" rx="4" fill="#22CB84" opacity="0.5" />
+          <circle cx="32" cy="56" r="6" fill="#22CB84" opacity="0.8" />
+          <circle cx="50" cy="56" r="6" fill="#22CB84" opacity="0.8" />
+          <circle cx="68" cy="56" r="6" fill="#22CB84" opacity="0.8" />
+          <circle cx="58" cy="8" r="4" fill="#22CB84" opacity="0.4" />
+          <circle cx="72" cy="18" r="3" fill="#22CB84" opacity="0.3" />
+          <circle cx="26" cy="16" r="3" fill="#22CB84" opacity="0.3" />
         </svg>
       </div>
       <h2 className={styles.waitTitle}>곧 수업이 시작됩니다!</h2>
