@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "pnpm -r --parallel dev",
+    "dev": "concurrently \"pnpm -r --parallel dev\" \"pnpm --filter frontend storybook\"",
     "docker": "docker-compose up -d"
   },
   "keywords": [],
@@ -14,6 +14,7 @@
   "packageManager": "pnpm@10.33.2",
   "devDependencies": {
     "@types/multer": "^2.1.0",
-    "@types/uuid": "^11.0.0"
+    "@types/uuid": "^11.0.0",
+    "concurrently": "^9.2.1"
   }
 }
