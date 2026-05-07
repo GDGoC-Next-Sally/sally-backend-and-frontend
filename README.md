@@ -1,6 +1,9 @@
 # 🤖 Sally AI Coach
 
 AI를 활용한 실시간 코칭 및 학습 관리 플랫폼, **Sally AI Coach**의 전체 소스코드입니다.  
+본 프로젝트는 학생의 대화를 실시간으로 분석하여 선생님에게 통찰을 제공하고, 수업 종료 시 자동으로 개별 학습 리포트를 생성합니다.
+
+---
 
 ## 🏗️ Architecture & Tech Stack
 
@@ -9,20 +12,23 @@ AI를 활용한 실시간 코칭 및 학습 관리 플랫폼, **Sally AI Coach**
 
 ### 💻 Technology Stack
 - **Frontend**: Next.js (App Router), Tailwind CSS v4, Zustand, Supabase Auth
-- **Backend (API)**: NestJS, Prisma ORM, Passport (JWT/ES256), Supabase (PostgreSQL, Storage)
-- **AI Server**: Python, FastAPI, OpenAI/OpenRouter API, Pydantic
+- **Backend (API)**: NestJS, Prisma ORM, Socket.io (실시간 알림), SSE (AI 답변 스트리밍), Supabase (PostgreSQL, Storage)
+- **AI Server**: Python FastAPI, NVIDIA NIM API (Gemma-4-31B), Supabase SDK, Pydantic
 - **Infra/Database**: Supabase (PostgreSQL, Auth, Storage)
 
-## 📂 Project Structure
+### 📂 Project Structure    
 ```text
 sally-ai-coach/
 ├── apps/
-│   ├── frontend/     # Next.js 클라이언트 애플리케이션 (사용자/관리자 인터페이스)
-│   ├── backend/      # NestJS 메인 API 서버 (비즈니스 로직, DB 제어)
-│   └── ai_server/    # FastAPI AI 서버 (LLM 연동 및 AI 코칭 로직 전담)
-├── package.json      # 워크스페이스 의존성 및 통합 스크립트 관리 (Node.js)
+│   ├── frontend/     # Next.js 클라이언트 애플리케이션
+│   ├── backend/      # NestJS 메인 API 서버
+│   └── ai_server/    # FastAPI AI 서버 (LLM 코칭 로직 전담)
+├── run-ai-server.ps1 # AI 서버 자동 환경 구축 및 실행 스크립트 (Windows)
+├── package.json      # 워크스페이스 의존성 및 통합 스크립트 관리
 └── pnpm-workspace.yaml
 ```
+
+---
 
 ## 🚀 Getting Started
 
@@ -43,40 +49,87 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 3. 환경 변수 설정 (Environment Variables)
-각 서비스 폴더에 `.env` 파일을 설정해야 합니다.
+### 3. 서버 실행 (Development)
 
-**Frontend (`apps/frontend/.env.local`)**
-- `NEXT_PUBLIC_SUPABASE_URL`: Supabase 프로젝트 URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase 익명 키
-
-**Backend (`apps/backend/.env`)**
-- `SUPABASE_URL`: Supabase 프로젝트 URL
-- `SUPABASE_ANON_KEY`: Supabase 익명 키
-- `SERVICE_ROLE_KEY`: Supabase 서비스 롤 키 (백엔드 전용)
-- `DATABASE_URL`: PostgreSQL 연결 주소
-
-**AI Server (`apps/ai_server/.env`)**
-- `OPENROUTER_API_KEY`: OpenRouter API 키 (또는 OpenAI 등 사용할 LLM의 API 키)
-
-### 4. 서버 실행 (Development)
+**Step 1: Frontend & Backend 실행**
 ```bash
-# 프론트엔드와 백엔드 동시 실행 (루트 폴더)
+# 루트 폴더에서 실행
 pnpm run dev
-
-# AI 서버 실행 (apps/ai_server 폴더 내에서 가상환경 활성화 후 실행)
-uvicorn main:app --reload --port 8000
 ```
+
+**Step 2: AI 서버 실행**
+- **Windows**: 아래 명령어를 실행하면 자동으로 가상환경을 설정하고 실행해줍니다.
+  ```powershell
+  .\run-ai-server.ps1
+  ```
+- **Mac/Linux**: `apps/ai_server` 폴더에서 가상환경 활성화 후 아래 명령어를 실행하세요.
+  ```bash
+  uvicorn main:app --reload --port 8000
+  ```
+
+---
+
+### 4. 환경 변수 설정 (Environment Variables)
+
+각 서비스 폴더에 `.env` 파일을 설정해야 합니다. (각 폴더의 `.env.example` 참고)
+
+#### **Frontend (`apps/frontend/.env.local`)**
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=""
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=""
+
+# Backend API
+NEXT_PUBLIC_BACKEND_URL="http://localhost:3001"
+```
+
+#### **Backend (`apps/backend/.env`)**
+```env
+# Supabase
+SUPABASE_URL=""
+SUPABASE_ANON_KEY=""
+SUPABASE_SERVICE_ROLE_KEY=""
+
+# Database
+DATABASE_URL=""
+
+# AI Server
+AI_SERVER_URL="http://localhost:8000"
+
+# Security
+INTERNAL_SECRET_KEY="" # AI 서버와 통신용 시크릿 키
+```
+
+#### **AI Server (`apps/ai_server/.env`)**
+```env
+# LLM API
+OPENROUTER_API_KEY="" # OpenRouter API 키
+NVIDIA_API_KEY=""      # NVIDIA NIM API 키
+NVIDIA_MODEL="google/gemma-4-31b-it"
+
+# Supabase 연결
+SUPABASE_URL=""
+SUPABASE_SERVICE_ROLE_KEY=""
+DATABASE_URL=""
+
+# Supabase Storage 버킷 이름
+SUPABASE_REPORT_BUCKET="sally-storage"
+
+# 백엔드 callback api 호출 헤더
+INTERNAL_SECRET_KEY="" # 백엔드와 일치 필수
+```
+
+---
 
 ## 🛠️ Key Features (Current Implementation)
 
-### 🔐 Authentication & Security
-- **JWT & RBAC**: Supabase Auth와 연동된 JWT 검증 시스템 구축. `@Roles` 데코레이터를 이용한 역할 기반 접근 제어(TEACHER, STUDENT, ADMIN) 구현을 통해 API 접근 완벽 통제
+### 🔐 실시간 대화 분석 & 피드백
+- **SSE Streaming**: 학생이 질문하면 AI 서버가 즉시 스트리밍 방식으로 답변을 생성합니다.
+- **Real-time Monitoring**: AI 서버가 백그라운드에서 학생의 이해도를 분석하여 선생님 대시보드에 소켓 이벤트를 전송합니다.
 
-### 🏫 Class Management
-- **Teacher/Student 분리**: 선생님용 클래스 관리(생성/수정/초대코드 재발급) 및 학생용 수강 정보(Takes) 조회 API 분리 구현
-- **Prisma 최적화**: 모노레포에서의 경로 충돌 방지를 위해 `.prisma/client` 로컬 경로 및 `@prisma/adapter-pg` 도입
+### 📊 자동 학습 리포트
+- **Auto Generation**: 수업 종료 시 해당 세션의 모든 대화 내역과 분석 데이터를 종합하여 AI가 최종 리포트를 생성합니다.
+- **Report Dashboard**: 생성된 리포트를 학생용(본인 이력)과 선생님용(클래스 통계)으로 나뉘어 조회할 수 있습니다.
 
-### 🧠 AI & Storage System
-- **AI Proxy Server**: FastAPI 기반의 독립된 AI 서버(`ai_server`)를 구성하여 유연하고 확장성 높은 LLM 연동 아키텍처 마련
-- **Supabase Storage**: 전역(Global) `StorageService`를 구현하여 파일 업로드(UUID명 중복 방지), 삭제 및 Public URL 반환 등 에셋 관리 기반 기능 제공
+### 🛡️ 내부 보안 시스템
+- **Internal Security**: 백엔드와 AI 서버 간의 통신은 `@Internal()` 데코레이터와 `INTERNAL_SECRET_KEY`를 통해 검증됩니다.
