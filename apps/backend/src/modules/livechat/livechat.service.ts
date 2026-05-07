@@ -139,23 +139,22 @@ export class LivechatService {
   }
 
   /**
-   * AI 서버에 분석 요청을 보내고 결과를 처리합니다.
+   * AI 서버에 분석 요청을 보내고 즉시 반환합니다 (Fire and Forget).
+   * 분석 완료 후 FastAPI가 /livechat/analytics-callback으로 직접 결과를 POST합니다.
    */
-  private async requestAiAnalysis(history: any[], profile: any, dialogId: number, aiResponse: string) {
-    try {
-      // AI 답변까지 포함된 최신 히스토리 구성
-      const updatedHistory = [...history, { role: 'model', text: aiResponse }];
-      
-      const analysisResponse = await axios.post(`${AI_SERVER_URL}/api/analyze`, {
-        conversation_history: updatedHistory,
-        student_profile: profile
-      }, { timeout: 60000}); // 60초
+  private requestAiAnalysis(history: any[], profile: any, dialogId: number, aiResponse: string) {
+    const updatedHistory = [...history, { role: 'model', text: aiResponse }];
+    const callbackUrl = `${process.env.BACKEND_URL || 'http://localhost:3001'}/livechat/analytics-callback`;
 
-      // 분석 결과 처리 (기존에 만든 콜백 함수 활용)
-      await this.handleAnalytics(dialogId, analysisResponse.data);
-    } catch (err) {
-      console.error('AI Analysis failed:', err.message);
-    }
+    // 결과를 기다리지 않고 즉시 반환 (FastAPI가 완료 후 콜백으로 알려줌)
+    axios.post(`${AI_SERVER_URL}/api/analyze`, {
+      conversation_history: updatedHistory,
+      student_profile: profile,
+      dialog_id: dialogId,
+      callback_url: callbackUrl
+    }, { timeout: 60000 }).catch(err => {
+      console.error('AI Analysis request failed:', err.message);
+    });
   }
 
   async saveAiMessage(dialogId: number, content: string, teacherId: string) {

@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Req, Sse } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Req, Sse, Headers, UnauthorizedException } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { LivechatService } from './livechat.service';
 import { SendChatMessageDto } from './dto/send-chat-message.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Public } from '../auth/public.decorator';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { user_role as UserRole } from '.prisma/client';
 import { RolesGuard } from '../auth/roles.guard';
@@ -29,9 +30,17 @@ export class LivechatController {
     return this.livechatService.getAiResponseStream(req.user.userId, dto);
   }
 
-  // @Post('analytics-callback')
-  // @ApiOperation({ summary: '(AI 서버 전용) 학생 대화 분석 콜백 웹훅' })
-  // async analyticsCallback(@Body() body: { dialog_id: number; analysis: any }) {
-  //   return this.livechatService.handleAnalytics(body.dialog_id, body.analysis);
-  // }
+  // FastAPI 전용 콜백 엔드포인트 (JWT 가드 제외 - 내부 서버 간 통신)
+  @Public()  // JWT 가드 우회
+  @Post('analytics-callback')
+  @ApiOperation({ summary: '(AI 서버 전용) 학생 대화 분석 완료 콜백 웹훅' })
+  async analyticsCallback(
+    @Headers('x-internal-secret') secret: string,
+    @Body() body: { dialog_id: number; analysis: any }
+  ) {
+    if (secret !== process.env.INTERNAL_SECRET_KEY) {
+      throw new UnauthorizedException('내부 요청이 아닙니다.');
+    }
+    return this.livechatService.handleAnalytics(body.dialog_id, body.analysis);
+  }
 }
