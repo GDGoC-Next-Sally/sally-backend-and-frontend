@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SessionSidebar } from './SessionSidebar';
+import { ConfirmModal } from '../common/ConfirmModal';
 import { type AttendanceStudent } from '@/actions/sessions';
 import styles from './SessionWidget.module.css';
 
@@ -33,6 +34,7 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
     students.length > 0 ? students[0].userId : undefined
   );
   const [loading, setLoading] = useState(false);
+  const [isEndConfirmOpen, setIsEndConfirmOpen] = useState(false);
 
   const handleStart = async () => {
     setLoading(true);
@@ -47,8 +49,12 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
     }
   };
 
-  const handleFinish = async () => {
-    if (!confirm('세션을 종료하시겠습니까?')) return;
+  const handleFinish = () => {
+    setIsEndConfirmOpen(true);
+  };
+
+  const handleFinishConfirm = async () => {
+    setIsEndConfirmOpen(false);
     setLoading(true);
     try {
       await onFinish();
@@ -63,6 +69,7 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
   const selectedStudent = students.find((s) => s.userId === selectedStudentId);
 
   return (
+    <>
     <div className={styles.layout}>
       <SessionSidebar
         phase={phase}
@@ -86,6 +93,16 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
         />
       )}
     </div>
+    {isEndConfirmOpen && (
+      <ConfirmModal
+        title="세션을 종료하시겠습니까?"
+        description="세션을 종료하면 학생들이 더 이상 참여할 수 없습니다."
+        confirmLabel="종료"
+        onClose={() => setIsEndConfirmOpen(false)}
+        onConfirm={handleFinishConfirm}
+      />
+    )}
+    </>
   );
 };
 

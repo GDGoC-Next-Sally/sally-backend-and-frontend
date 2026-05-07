@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CreateClassModal } from './CreateClassModal';
 import { SessionCodeModal } from '../sessions/SessionCodeModal';
+import { ConfirmModal } from '../common/ConfirmModal';
 import styles from './ClassList.module.css';
 import type { CreateClassBody, ClassItem } from '@/actions/classes';
 
@@ -46,6 +47,7 @@ export const ClassList: React.FC<ClassListProps> = ({
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [search, setSearch] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -72,10 +74,16 @@ export const ClassList: React.FC<ClassListProps> = ({
   });
 
   const handleDelete = () => {
-    if (!selectedId || !confirm('클래스를 삭제하시겠습니까?')) return;
+    if (!selectedId) return;
+    setShowDropdown(false);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!selectedId) return;
     onDeleteClass(selectedId);
     setSelectedId(null);
-    setShowDropdown(false);
+    setIsDeleteConfirmOpen(false);
   };
 
   const activeCount = students.filter((s) => s.active).length;
@@ -271,6 +279,15 @@ export const ClassList: React.FC<ClassListProps> = ({
           registerable={selectedClass.registerable}
           onRefreshCode={() => onRefreshCode(selectedClass.id)}
           onToggleRegisterable={() => onToggleRegisterable(selectedClass.id)}
+        />
+      )}
+      {isDeleteConfirmOpen && (
+        <ConfirmModal
+          title="클래스를 삭제하시겠습니까?"
+          description="삭제된 클래스는 복구할 수 없습니다."
+          confirmLabel="삭제"
+          onClose={() => setIsDeleteConfirmOpen(false)}
+          onConfirm={handleDeleteConfirm}
         />
       )}
     </div>

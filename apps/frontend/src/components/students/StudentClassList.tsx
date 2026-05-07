@@ -3,6 +3,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { JoinClassModal } from './JoinClassModal';
+import { ConfirmModal } from '../common/ConfirmModal';
 import styles from './StudentClassList.module.css';
 
 interface ClassItem {
@@ -33,6 +34,7 @@ export const StudentClassList: React.FC<StudentClassListProps> = ({
   const [search, setSearch] = useState('');
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -46,11 +48,17 @@ export const StudentClassList: React.FC<StudentClassListProps> = ({
   }, []);
 
   const handleLeave = () => {
-    if (!selectedId || !confirm('이 클래스에서 나가시겠습니까?')) return;
+    if (!selectedId) return;
+    setShowDropdown(false);
+    setIsLeaveConfirmOpen(true);
+  };
+
+  const handleLeaveConfirm = () => {
+    if (!selectedId) return;
     onLeaveClass(selectedId);
     setSelectedId(null);
+    setIsLeaveConfirmOpen(false);
     onRefresh();
-    setShowDropdown(false);
   };
 
   const filtered = classes.filter((c) =>
@@ -217,6 +225,16 @@ export const StudentClassList: React.FC<StudentClassListProps> = ({
             setIsJoinModalOpen(false);
             onRefresh();
           }}
+        />
+      )}
+      {isLeaveConfirmOpen && (
+        <ConfirmModal
+          title="이 클래스에서 나가시겠습니까?"
+          description="나가면 해당 클래스의 수업에 참여할 수 없습니다."
+          cancelLabel="취소"
+          confirmLabel="나가기"
+          onClose={() => setIsLeaveConfirmOpen(false)}
+          onConfirm={handleLeaveConfirm}
         />
       )}
     </div>

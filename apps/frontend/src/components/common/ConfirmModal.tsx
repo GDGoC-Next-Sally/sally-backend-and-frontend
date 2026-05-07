@@ -1,0 +1,68 @@
+'use client';
+
+import React from 'react';
+import styles from './ConfirmModal.module.css';
+
+interface ConfirmModalProps {
+  /** 모달 제목 */
+  title: string;
+  /** 모달 설명 텍스트 (선택) */
+  description?: string;
+  /** 취소 버튼 라벨 (기본값: '취소') */
+  cancelLabel?: string;
+  /** 확인 버튼 라벨 (기본값: '확인') */
+  confirmLabel?: string;
+  /** 확인 버튼 비활성화 여부 */
+  confirmDisabled?: boolean;
+  /** 취소 버튼 클릭 / 오버레이 클릭 / X 버튼 클릭 시 호출 */
+  onClose: () => void;
+  /** 확인 버튼 클릭 시 호출 */
+  onConfirm: () => void;
+}
+
+export const ConfirmModal: React.FC<ConfirmModalProps> = ({
+  title,
+  description,
+  cancelLabel = '취소',
+  confirmLabel = '확인',
+  confirmDisabled = false,
+  onClose,
+  onConfirm,
+}) => {
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        {/* 닫기 버튼 */}
+        <button className={styles.closeBtn} onClick={onClose} aria-label="닫기">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
+        {/* 본문 */}
+        <div className={styles.body}>
+          <h2 className={styles.title}>{title}</h2>
+          <hr className={styles.divider} />
+          {description && (
+            <p className={styles.description}>{description}</p>
+          )}
+        </div>
+
+        {/* 버튼 영역 */}
+        <div className={styles.footer}>
+          <button className={styles.cancelBtn} onClick={onClose}>
+            {cancelLabel}
+          </button>
+          <button
+            className={styles.confirmBtn}
+            onClick={onConfirm}
+            disabled={confirmDisabled}
+          >
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};

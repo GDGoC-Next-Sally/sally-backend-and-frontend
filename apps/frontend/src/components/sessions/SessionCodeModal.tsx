@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { ConfirmModal } from '../common/ConfirmModal';
 import styles from './SessionCodeModal.module.css';
 
 interface SessionCodeModalProps {
@@ -23,6 +24,7 @@ export const SessionCodeModal: React.FC<SessionCodeModalProps> = ({
   const [code, setCode] = useState(inviteCode ?? '--------');
   const [blockNew, setBlockNew] = useState(!registerable);
   const [copied, setCopied] = useState(false);
+  const [isReissueConfirmOpen, setIsReissueConfirmOpen] = useState(false);
 
   const codeChars = code.replace(/\s/g, '').split('');
 
@@ -34,7 +36,11 @@ export const SessionCodeModal: React.FC<SessionCodeModalProps> = ({
   };
 
   const handleReissue = () => {
-    if (!confirm('입장 코드를 재발급하시겠습니까? 기존 코드는 더 이상 사용할 수 없습니다.')) return;
+    setIsReissueConfirmOpen(true);
+  };
+
+  const handleReissueConfirm = () => {
+    setIsReissueConfirmOpen(false);
     onRefreshCode();
   };
 
@@ -44,6 +50,7 @@ export const SessionCodeModal: React.FC<SessionCodeModalProps> = ({
   };
 
   return (
+    <>
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <button className={styles.closeBtn} onClick={onClose}>
@@ -113,5 +120,15 @@ export const SessionCodeModal: React.FC<SessionCodeModalProps> = ({
         </div>
       </div>
     </div>
+    {isReissueConfirmOpen && (
+      <ConfirmModal
+        title="입장 코드를 재발급하시겠습니까?"
+        description="기존 코드는 더 이상 사용할 수 없습니다."
+        confirmLabel="재발급"
+        onClose={() => setIsReissueConfirmOpen(false)}
+        onConfirm={handleReissueConfirm}
+      />
+    )}
+    </>
   );
 };

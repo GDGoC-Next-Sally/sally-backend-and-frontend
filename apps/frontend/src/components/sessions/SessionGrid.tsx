@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { type Session } from '@/actions/sessions';
 import { type ClassItem } from '@/actions/classes';
 import { SessionModal } from './SessionModal';
+import { ConfirmModal } from '../common/ConfirmModal';
 import styles from './SessionGrid.module.css';
 import type { CreateSessionBody } from '@/actions/sessions';
 
@@ -46,6 +47,7 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
   const [search, setSearch] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Session | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -59,9 +61,14 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
   }, []);
 
   const handleDelete = (id: number) => {
-    if (!confirm('세션을 삭제하시겠습니까?')) return;
-    onDeleteSession(id);
     setOpenMenuId(null);
+    setDeleteTargetId(id);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteTargetId === null) return;
+    onDeleteSession(deleteTargetId);
+    setDeleteTargetId(null);
   };
 
   const filtered = sessions.filter((s) =>
@@ -197,6 +204,15 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
           session={editTarget}
           onClose={() => setEditTarget(null)}
           onSubmit={(body) => { if (editTarget) onUpdateSession(editTarget.id, body); onRefresh(); }}
+        />
+      )}
+      {deleteTargetId !== null && (
+        <ConfirmModal
+          title="세션을 삭제하시겠습니까?"
+          description="삭제된 세션은 복구할 수 없습니다."
+          confirmLabel="삭제"
+          onClose={() => setDeleteTargetId(null)}
+          onConfirm={handleDeleteConfirm}
         />
       )}
     </div>
