@@ -1,12 +1,19 @@
 import { CanActivate, Injectable, ExecutionContext } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { user_role } from ".prisma/client";
+import { IS_INTERNAL_KEY } from "./internal.decorator";
 
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) { }
 
   canActivate(context: ExecutionContext): boolean {
+    const isInternal = this.reflector.getAllAndOverride<boolean>(IS_INTERNAL_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isInternal) return true;
+
     const requiredRoles = this.reflector.getAllAndOverride<user_role[]>('roles', [
       context.getHandler(),
       context.getClass(),

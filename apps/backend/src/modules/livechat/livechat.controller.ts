@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { LivechatService } from './livechat.service';
 import { SendChatMessageDto } from './dto/send-chat-message.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { Public } from '../auth/public.decorator';
+import { Internal } from '../auth/internal.decorator';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { user_role as UserRole } from '.prisma/client';
 import { RolesGuard } from '../auth/roles.guard';
@@ -31,7 +31,7 @@ export class LivechatController {
   }
 
   // FastAPI 전용 콜백 엔드포인트 (JWT 가드 제외 - 내부 서버 간 통신)
-  @Public()  // JWT 가드 우회
+  @Internal()  // 가드 우회
   @Post('analytics-callback')
   @ApiOperation({ summary: '(AI 서버 전용) 학생 대화 분석 완료 콜백 웹훅' })
   async analyticsCallback(
