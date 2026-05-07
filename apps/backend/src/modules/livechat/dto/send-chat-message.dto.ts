@@ -10,9 +10,4 @@ export class SendChatMessageDto {
   @IsString()
   @IsNotEmpty()
   content: string;
-
-  @ApiProperty({ description: '선생님 개입 메시지 (있을 경우 함께 전송)', required: false })
-  @IsString()
-  @IsOptional()
-  intervention?: string;
 }

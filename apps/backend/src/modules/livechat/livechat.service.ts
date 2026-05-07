@@ -67,13 +67,12 @@ export class LivechatService {
     return {
       userMessage,
       dialog,
-      intervention: dto.intervention
     };
   }
 
   getAiResponseStream(studentId: string, dto: SendChatMessageDto): Observable<any> {
     return new Observable((subscriber) => {
-      this.sendMessage(studentId, dto).then(async ({ userMessage, dialog, intervention }) => {
+      this.sendMessage(studentId, dto).then(async ({ userMessage, dialog}) => {
         try {
           // 1. 과거 대화 내역 조회 (AI 서버용 conversation_history 구성)
           const pastMessages = await this.prisma.chat_messages.findMany({
