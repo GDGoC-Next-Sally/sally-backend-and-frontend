@@ -134,8 +134,6 @@ export class ClassesService {
     }
   }
 
-  // apps/backend/src/modules/classes/classes.service.ts
-
 async update(id: number, updateClassDto: UpdateClassDto, teacherId: string) {
   const { schedule, ...rest } = updateClassDto;
 

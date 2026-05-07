@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { EventsGateway } from '../../common/gateways/events.gateway';
+import { PrismaService } from '../../providers/prisma/prisma.service';
 import axios from 'axios';
 
 const AI_SERVER_URL = process.env.AI_SERVER_URL || 'http://localhost:8000';
@@ -8,7 +9,88 @@ const AI_SERVER_URL = process.env.AI_SERVER_URL || 'http://localhost:8000';
 export class ReportsService {
   private readonly logger = new Logger(ReportsService.name);
 
-  constructor(private readonly eventsGateway: EventsGateway) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventsGateway: EventsGateway,
+  ) {}
+
+  /**
+   * 특정 세션의 모든 학생 리포트를 조회합니다 (선생님용).
+   */
+  async getStudentReportsBySession(sessionId: number) {
+    return this.prisma.student_reports.findMany({
+      where: { session_id: sessionId },
+      include: {
+        users: {
+          select: { id: true, name: true, email: true }
+        }
+      },
+      orderBy: { created_at: 'desc' }
+    });
+  }
+
+  /**
+   * 특정 학생의 특정 세션 리포트를 조회합니다 (학생 본인용).
+   */
+  async getStudentSessionReport(sessionId: number, studentId: string) {
+    const report = await this.prisma.student_reports.findFirst({
+      where: {
+        session_id: sessionId,
+        student_id: studentId
+      }
+    });
+
+    if (!report) {
+      throw new NotFoundException('리포트를 찾을 수 없습니다.');
+    }
+
+    return report;
+  }
+
+  async getStudentSessionList(studentId: string) {
+    const attends = await this.prisma.attends.findMany({
+      where: { student_id: studentId },
+      select: {
+        session_id: true,
+        sessions: {
+          select: {
+            session_name: true,
+            finished_at: true,
+            users: { select: { name: true } }, // 선생님
+            classes: { select: { subject: true } } // 과목
+          }
+        },
+      },
+      orderBy: { sessions: { finished_at: 'desc' } } // 최신 종료순 정렬
+    });
+  
+    // 프론트엔드가 쓰기 편하게 평탄화(Flattening)
+    return attends.map(item => ({
+      sessionId: item.session_id,
+      sessionName: item.sessions.session_name,
+      finishedAt: item.sessions.finished_at,
+      teacherName: item.sessions.users.name,
+      subject: item.sessions.classes.subject,
+    }));
+  }
+
+  /**
+   * 특정 세션의 전체 요약 리포트를 조회합니다.
+   */
+  async getSessionReport(sessionId: number) {
+    return this.prisma.session_reports.findUnique({
+      where: { session_id: sessionId }
+    });
+  }
+
+  /**
+   * 특정 클래스의 전체 통계 리포트를 조회합니다.
+   */
+  async getClassReport(classId: number) {
+    return this.prisma.class_reports.findUnique({
+      where: { class_id: classId }
+    });
+  }
 
   /**
    * 세션 종료 시 AI 서버에 학생별 최종 리포트 생성을 요청합니다.

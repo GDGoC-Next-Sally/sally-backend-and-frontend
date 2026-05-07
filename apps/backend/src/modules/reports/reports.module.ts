@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ReportsService } from './reports.service';
-import { GatewaysModule } from '../../common/gateways/gateways.module';
+import { ReportsController } from './reports.controller';
 
 @Module({
-  imports: [GatewaysModule],
+  controllers: [ReportsController],
   providers: [ReportsService],
   exports: [ReportsService],
 })
