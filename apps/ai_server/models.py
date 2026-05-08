@@ -34,22 +34,18 @@ class ChatRequest(BaseModel):
     student_id: Optional[str] = None    # 학생 UUID (dialogs 테이블 조회용)
 
 
-# ── TEACHER_SUMMARY 파싱 결과 (LLM이 매 턴 생성하는 원천 데이터 12개) ────────
+# ── TEACHER_SUMMARY 파싱 결과 (LLM이 매 턴 생성하는 원천 데이터 10개) ────────
 class TeacherSummary(BaseModel):
     frustration_delta: Optional[int] = 0          # 이번 턴 좌절 증감분 (-30~+30)
-    student_understood: Optional[bool] = True     # 이번 턴 개념 이해 여부
-    understanding_score: Optional[int] = 5        # 현재 이해 수준 (0~10)
+    understanding_score: Optional[int] = 5        # 현재 이해 수준 (1~10)
     current_topic: Optional[str] = None           # 이번 턴 세부 개념 (topicHints 중 선택)
-    student_emotion: Optional[str] = None         # 감정: 집중|혼란|좌절|자신감|지루함|불안|호기심|성취감|당황
-    internal_reasoning: Optional[str] = None      # AI 판단 근거 한 줄
-    one_line_summary: Optional[str] = None        # 교사 기록용 한 줄 요약 (20자 이내)
-    question_intent: Optional[str] = None         # 발화 의도: 개념질문|확인요청|풀이요청|감정표현|포기표현|잡담|시험답요구|기타
-    confusion_type: Optional[str] = None          # 혼란 유형: 개념_모름|선행지식_부족|용어_혼란|풀이_막힘|적용_어려움|오개념|없음
-    misconception_tag: Optional[str] = None       # 오개념 태그 (없으면 null)
-    learning_mode: Optional[str] = None           # 학습 태도: active|passive|self_correct
-    repetition_detected: Optional[bool] = False   # 학생이 이전 질문을 반복하는지 여부 (설명 미이해 신호)
-    intervention_needed: Optional[bool] = False   # 선생님 즉각 개입 필요 여부 (좌절/포기 등)
-    suggested_next_action: Optional[str] = None   # AI 다음 행동: 기초_재설명|심화_진행|감정_수용|범위_복귀|이해_확인|예시_제공
+    student_emotion: Optional[str] = None         # 감정: 집중|혼란|좌절|흥미|무반응|불안
+    question_intent: Optional[str] = None         # 발화 의도: 개념질문|풀이요청|확인요청|포기표현|잡담|시험답요구
+    confusion_type: Optional[str] = None          # 혼란 유형: 개념_모름|적용_실패|오개념|풀이_막힘|없음
+    knowledge_gap: Optional[str] = None           # 학생이 정확히 무엇을 모르는지 구체적 요약
+    misconception_tag: Optional[str] = None       # 오개념 태그 (misconceptionTagHints 중 선택, 없으면 null)
+    engagement_level: Optional[str] = None        # 학습 참여도: 낮음|보통|높음|이탈위험
+    one_line_summary: Optional[str] = None        # 교사용 최신 학생 상태 한 줄 요약
 
 
 # ── /update-realtime API 요청 바디 ────────────────────────────────────────────
