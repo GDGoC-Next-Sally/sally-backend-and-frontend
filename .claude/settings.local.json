@@ -10,15 +10,13 @@
       "Bash(git push *)",
       "Bash(git pull *)",
       "Bash(git stash *)",
-<<<<<<< Updated upstream
-      "mcp__claude_ai_Figma__get_design_context",
-      "Bash(python -c ' *)"
-=======
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(pnpm tsc *)",
-      "Bash(grep -v \"^--$\")"
->>>>>>> Stashed changes
+      "Bash(grep -v \"^--$\")",
+      "Bash(python -c ' *)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\leech\\\\Desktop\\\\EVERYTHINGH\\\\Activity and Project\\\\202605_NEXT\\\\sally-backend-and-frontend-main\\\\apps\\\\backend\\\\src\\\\modules\" -Directory)",
+      "mcp__claude_ai_Figma__get_design_context"
     ]
   }
 }
