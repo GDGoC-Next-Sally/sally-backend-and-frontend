@@ -13,11 +13,6 @@ import {
 } from '@/actions/classes';
 import { ClassList } from '@/components/classes/ClassList';
 
-const MOCK_STUDENTS = [
-  { id: 1, name: '김학생', progress: 40, active: true, summary: '학생별 개별 성취도 요약' },
-  { id: 2, name: '이학생', progress: 65, active: true, summary: '학생별 개별 성취도 요약' },
-];
-
 export default function TeacherClassesPage() {
   const [classes, setClasses] = useState<ClassItem[]>([]);
 
@@ -77,7 +72,6 @@ export default function TeacherClassesPage() {
   return (
     <ClassList
       classes={classes}
-      students={MOCK_STUDENTS}
       onCreateClass={handleCreateClass}
       onUpdateClass={handleUpdateClass}
       onDeleteClass={handleDeleteClass}
