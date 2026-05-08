@@ -68,18 +68,32 @@ async def analyze(request: ChatRequest):
     if not request.conversation_history:
         raise HTTPException(status_code=400, detail="conversation_history가 비어있습니다.")
 
+    session_id = getattr(request, "session_id", None)
+    student_id = getattr(request, "student_id", None)
+
+    # ── 직전 분석 결과 조회 (frustration_delta 등 상대적 변화량 계산 정확도 향상) ────
+    previous_summary = None
+    if session_id and student_id:
+        try:
+            dialog = await get_dialog(session_id=session_id, student_id=student_id)
+            if dialog:
+                raw_list = await get_real_time_analyses(dialog["id"])
+                if raw_list:
+                    previous_summary = TeacherSummary(**raw_list[-1])
+        except Exception as e:
+            print(f"[WARN] 직전 분석 결과 조회 실패 (session_id={session_id}): {e}")
+
     try:
         summary = await analyze_student(
             conversation_history=request.conversation_history,
             student_profile=request.student_profile,
+            previous_summary=previous_summary,
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"LLM 학생 분석 실패: {str(e)}")
 
     # ── 분석 완료 후 NestJS 백엔드 콜백 (Fire-and-Forget) ────────────────────
     # session_id와 student_id가 모두 있을 때만 dialog를 조회하여 콜백 전송
-    session_id = getattr(request, "session_id", None)
-    student_id = getattr(request, "student_id", None)
 
     if session_id and student_id:
         async def _send_callback():

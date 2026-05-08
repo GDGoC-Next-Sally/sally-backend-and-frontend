@@ -106,53 +106,14 @@ def build_chat_few_shot_messages(profile: Optional[StudentProfile] = None) -> li
         # 예시 2: '모르겠다' 신호 → 부드럽게 기초 설명 시작 유도
         {
             "role": "user",
-            "content": "잘 모르겠는데요"
+            "content": "잘 모르겠어요..."
         },
         {
             "role": "assistant",
             "content": (
-                "그럼 처음부터 차근차근 같이 해보자! "
-                f"{scope}를 한마디로 설명하면 어떤 것 같아? "
-                "떠오르는 게 있으면 뭐든 말해줘, 틀려도 완전 괜찮아!"
-            )
-        },
-        # 예시 3: 틀린 답 → 부정하지 않고 긍정적으로 다음 단계 유도
-        {
-            "role": "user",
-            "content": "제 생각엔 그냥 이렇게 쓰는 거 아닌가요?"
-        },
-        {
-            "role": "assistant",
-            "content": (
-                "거의 다 왔어! 그 방향이 맞아. "
-                f"근데 {scope}에서는 딱 한 가지가 살짝 달라. "
-                "어떤 부분이 다를 것 같아?"
-            )
-        },
-        # 예시 4: 수업 범위 밖 질문 → 부드럽게 오늘 범위 안으로 복귀
-        {
-            "role": "user",
-            "content": "그런데 이거 시험에 나와요? 다른 것도 알고 싶어요."
-        },
-        {
-            "role": "assistant",
-            "content": (
-                "좋은 호기심이야! 그 부분은 나중에 꼭 같이 살펴보자. "
-                f"오늘은 일단 {scope}를 완전히 이해하는 게 목표니까, "
-                "거기서부터 차근차근 해볼게. 아까 하던 부분으로 돌아가서, 어디까지 이해됐어?"
-            )
-        },
-        # 예시 5: 포기/좌절 신호 → 학습 중단 + 감정 먼저 수용
-        {
-            "role": "user",
-            "content": "모르겠어요. 못하겠어요. 너무 어려워요."
-        },
-        {
-            "role": "assistant",
-            "content": (
-                "지금 많이 힘들게 느껴지는 거 완전히 당연해. "
-                "잠깐 숨 고르자. 어떤 부분에서 막혔는지 말해줄 수 있어? "
-                "막힌 곳만 같이 찾으면 생각보다 금방 풀릴 수 있어."
+                f"괜찮아! 모르는 게 당연한 거야. "
+                f"{key_concepts}에서 가장 기초가 되는 부분부터 같이 살펴볼까? "
+                "어디서부터 막히는지 알면, 금방 이해할 수 있어!"
             )
         },
     ]
@@ -174,41 +135,66 @@ def build_analysis_system_prompt(profile: Optional[StudentProfile] = None) -> st
         "주어지는 학생과 AI 선생님 간의 전체 대화 기록을 신중하게 분석하여, 가장 마지막 턴에서 나타난 학생의 상태를 JSON 형식으로만 정확히 출력하십시오.\n"
         "절대로 마크다운 코드 블록이나 다른 텍스트를 포함하지 말고 순수 JSON 문자열만 출력해야 합니다.\n\n"
 
+        "# 분석 절차 (반드시 이 순서대로 내부 판단 후 JSON 출력)\n"
+        "STEP 1 — 학생의 마지막 발화에서 감정 신호 키워드를 추출하라. (예: '모르겠어요', '아 알겠다!', '그냥 답 알려줘요' 등)\n"
+        "STEP 2 — 전체 대화 흐름에서 이해도 변화 궤적을 파악하고 understanding_score를 결정하라.\n"
+        "STEP 3 — 이번 턴에서 좌절감이 변했는지, 구체적 언어 증거를 바탕으로 frustration_delta를 결정하라.\n"
+        "STEP 4 — STEP 1~3의 결과를 종합해 나머지 필드를 채워라. 단, 필드 간 논리적 일관성을 반드시 검토하라.\n"
+        "STEP 5 — 최종 JSON을 출력하라.\n\n"
+
         "# 분석 대상 규칙\n"
         f"- current_topic은 반드시 다음 목록 중 하나를 정확히 선택하십시오: {topic_hints_str}\n"
         f"- misconception_tag는 오개념이 감지된 경우에만 다음 목록 중 하나 선택, 없으면 null: {misconception_tag_hints_str}\n\n"
 
-        "# 각 필드 정의 및 허용 값\n"
-        "- frustration_delta (int, -3~3): 이번 턴에서 학생의 좌절감 변화량. 감소=음수, 변화없음=0, 증가=양수\n"
-        "- student_understood (bool): 학생이 이번 턴의 설명을 이해했는지 여부\n"
-        "- understanding_score (int, 0~10): 전체 대화 기준 학생의 현재 이해도. 0=전혀 모름, 10=완전 이해\n"
+        "# 스케일 앵커 (점수 기준)\n\n"
+
+        "## understanding_score (1~10)\n"
+        "- 1~2: 기초 용어 자체를 모름. 예: '이게 뭔지 모르겠어요'\n"
+        "- 3~4: 개념은 들어봤지만 적용 불가. 예: '배웠는데 왜 쓰는지 모르겠어요'\n"
+        "- 5~6: 부분적 이해. 단순 문제는 풀지만 응용 실패\n"
+        "- 7~8: 핵심 개념 이해 완료, 일부 엣지케이스나 세부사항에서 혼란\n"
+        "- 9~10: 스스로 설명하거나 응용 문제를 성공적으로 풀어냄\n\n"
+
+        "## frustration_delta (-30~+30)\n"
+        "- -21~-30: 명시적 돌파구 표현. 예: '완전히 이해했어요!', 연속 정답\n"
+        "- -10~-20: '아 알겠다!', 자신감 회복, 흐름을 타기 시작\n"
+        "- 0: 이번 턴에서 감정 변화 없음\n"
+        "- +10~+20: 반복 질문, '모르겠어요', 한숨·포기 표현\n"
+        "- +21~+30: 명시적 포기 선언 또는 강한 감정적 좌절. 예: '이거 못 하겠어요', '그냥 답 알려줘요'\n\n"
+
+        "# 필드 간 일관성 규칙 (위반 시 반드시 재판단)\n"
+        "- student_emotion이 '흥미' 또는 '집중'이면 engagement_level은 '이탈위험'이 될 수 없다.\n"
+        "- confusion_type이 '없음'이면 knowledge_gap은 반드시 null이어야 한다.\n"
+        "- understanding_score가 8 이상이면 frustration_delta는 양수(+)가 되기 매우 어렵다. (예외적 상황 아니면 0 이하)\n"
+        "- misconception_tag가 null이 아니면 confusion_type은 반드시 '오개념'이어야 한다.\n\n"
+
+        "# 각 필드 정의 및 허용 값 (총 10개)\n"
+        "- frustration_delta (int, -30~+30): 이번 턴에서 학생의 좌절감 변화량. 감소=음수, 변화없음=0, 증가=양수\n"
+        "- understanding_score (int, 1~10): 전체 대화 기준 학생의 현재 이해도. 위 스케일 앵커 기준 적용\n"
         f"- current_topic (str): 현재 다루고 있는 토픽. 반드시 다음 중 하나: {topic_hints_str}\n"
-        "- student_emotion (str): 학생의 현재 감정 상태. 반드시 다음 중 하나: 집중 | 혼란 | 좌절 | 자신감 | 지루함 | 불안 | 호기심 | 성취감 | 당황\n"
-        "- internal_reasoning (str): AI가 위 판단을 내린 근거를 한 문장으로 요약\n"
-        "- one_line_summary (str): 담당 교사에게 전달할 학생 상태 한 줄 요약 (20자 이내)\n"
-        "- question_intent (str): 학생 질문의 의도. 반드시 다음 중 하나: 개념질문 | 풀이요청 | 확인요청 | 감정표현 | 포기표현 | 잡담 | 시험답요구 | 기타\n"
-        "- confusion_type (str): 혼란의 유형. 반드시 다음 중 하나: 개념_모름 | 선행지식_부족 | 용어_혼란 | 풀이_막힘 | 적용_어려움 | 오개념 | 없음\n"
-        "- misconception_tag (str or null): 오개념 태그. 위 목록 중 하나, 감지되지 않으면 null\n"
-        "- learning_mode (str): 학생의 학습 참여 방식. 반드시 다음 중 하나: active(스스로 생각 시도) | passive(수동적 수신) | self_correct(스스로 오류 수정)\n"
-        "- repetition_detected (bool): 학생이 이전에 했던 것과 비슷한 질문을 반복하는지 여부. 이전 설명이 이해되지 않았다는 강력한 신호\n"
-        "- intervention_needed (bool): 선생님의 즉각 개입이 필요한지 여부. 학생이 포기/극심한 좌절/반복 오류(3회 이상)일 때 true\n"
-        "- suggested_next_action (str): AI가 다음 턴에 취할 행동 계획. 반드시 다음 중 하나: 기초_재설명 | 심화_진행 | 감정_수용 | 범위_복귀 | 이해_확인 | 예시_제공\n\n"
+        "- student_emotion (str): 학생의 현재 감정 상태. 반드시 다음 중 하나: 집중 | 혼란 | 좌절 | 흥미 | 무반응 | 불안\n"
+        "- question_intent (str): 학생 질문의 의도. 반드시 다음 중 하나: 개념질문 | 풀이요청 | 확인요청 | 포기표현 | 잡담 | 시험답요구\n"
+        "- confusion_type (str): 혼란의 유형. 반드시 다음 중 하나: 개념_모름 | 적용_실패 | 오개념 | 풀이_막힘 | 없음\n"
+        "- knowledge_gap (str or null): 학생이 '무엇을' 모르는지 반드시 명사구로 기술. 혼란이 없으면 null.\n"
+        "  나쁜 예: '잘 이해 못함' / 좋은 예: '함수의 반환값과 출력의 차이를 구분하지 못함'\n"
+        f"- misconception_tag (str or null): 오개념 태그. 오개념이 감지된 경우에만 다음 목록 중 하나 선택, 없으면 null: {misconception_tag_hints_str}\n"
+        "- engagement_level (str): 학습 참여도. 반드시 다음 중 하나: 낮음 | 보통 | 높음 | 이탈위험\n"
+        "- one_line_summary (str): 담당 교사에게 전달할 학생 상태 한 줄 요약."
+        " '[감정] + [현재 상태] + [권장 개입]' 형식으로 작성."
+        " 교사가 즉시 개입 여부를 판단할 수 있는 내용 포함. 20자 이내.\n"
+        "  예: '혼란 지속, 오개념 있음, 기초 재설명 필요' / '이해도 상승, 심화 문제 제시 권장'\n\n"
 
         "# JSON 출력 포맷 (반드시 아래 포맷 준수)\n"
         "{\n"
         '  "frustration_delta": 0,\n'
-        '  "student_understood": true,\n'
         '  "understanding_score": 5,\n'
         f'  "current_topic": "{first_topic}",\n'
         '  "student_emotion": "혼란",\n'
-        '  "internal_reasoning": "AI가 위 판단을 내린 근거 한 줄 요약",\n'
-        '  "one_line_summary": "교사 기록용 20자 이내 학생 상태 요약",\n'
         '  "question_intent": "개념질문",\n'
         '  "confusion_type": "개념_모름",\n'
+        '  "knowledge_gap": null,\n'
         '  "misconception_tag": null,\n'
-        '  "learning_mode": "passive",\n'
-        '  "repetition_detected": false,\n'
-        '  "intervention_needed": false,\n'
-        '  "suggested_next_action": "이해_확인"\n'
+        '  "engagement_level": "보통",\n'
+        '  "one_line_summary": "혼란 지속, 기초 재설명 필요"\n'
         "}\n"
     )
