@@ -45,16 +45,14 @@ export default function StudentHomePage() {
             if (s.status === 'ACTIVE' && !foundActive) {
               foundActive = { id: s.id, classId: cls.id, subject: cls.subject, period: s.period };
             }
-            if (s.status === 'ACTIVE' || s.status === 'FINISHED') {
-              visited.push({
-                id: s.id,
-                classId: cls.id,
-                subject: cls.subject,
-                sessionName: s.session_name,
-                period: s.period,
-                status: s.status,
-              });
-            }
+            visited.push({
+              id: s.id,
+              classId: cls.id,
+              subject: cls.subject,
+              sessionName: s.session_name,
+              period: s.period,
+              status: s.status,
+            });
           }
         }
 

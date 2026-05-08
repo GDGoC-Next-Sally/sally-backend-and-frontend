@@ -221,8 +221,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classe
             </div>
             <div className={styles.recentList}>
               {recentSessions.length > 0 ? recentSessions.map((item) => {
-                const badgeType = item.status === 'ACTIVE' ? 'live' : 'done';
-                const badgeLabel = item.status === 'ACTIVE' ? '진행 중' : '종료';
+                const badgeType = item.status === 'ACTIVE' ? 'live' : item.status === 'PLANNING' ? 'wait' : 'done';
+                const badgeLabel = item.status === 'ACTIVE' ? '진행 중' : item.status === 'PLANNING' ? '대기 중' : '종료';
                 return (
                   <div
                     key={item.id}
