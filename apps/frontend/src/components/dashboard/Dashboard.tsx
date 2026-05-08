@@ -227,11 +227,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass }) => 
             <h3 className={styles.listTitle}>바로가기</h3>
             <div className={styles.quickLinksGrid}>
               {/* Actual connected classes */}
-              {classes.slice(0, 4).map((cls) => (
+              {classes.slice(0, 5).map((cls) => (
                 <Link href={`/t/classes/${cls.id}`} key={cls.id} style={{ textDecoration: 'none' }}>
                   <div className={styles.quickLinkItem}>
                     <div className={styles.quickLinkIcon}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
                         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
                       </svg>
                     </div>
@@ -245,12 +245,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass }) => 
                 </Link>
               ))}
 
-              {/* Default "Manage My Classes" if empty or for the remaining slots */}
-              {(classes.length === 0 || classes.length < 4) && (
+              {classes.length === 0 && (
                 <Link href="/t/classes" style={{ textDecoration: 'none' }}>
                   <div className={styles.quickLinkItem}>
                     <div className={styles.quickLinkIcon}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2">
                         <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
                       </svg>
                     </div>
