@@ -54,6 +54,17 @@ export async function toggleRegisterable(classId: number): Promise<void> {
   return serverFetch(`/classes/${classId}/registerable`, { method: 'PATCH' });
 }
 
+export interface ClassStudent {
+  id: string;
+  name: string;
+  email: string;
+  enrolled_at: string;
+}
+
+export async function getClassStudents(classId: number): Promise<ClassStudent[]> {
+  return serverFetch(`/classes/${classId}/students`);
+}
+
 // ── Student ───────────────────────────────────────────────────────────────────
 
 export async function getStudentClasses(): Promise<ClassItem[]> {

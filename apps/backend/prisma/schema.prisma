@@ -100,7 +100,6 @@ model sessions {
   users              users                @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   student_reports    student_reports[]
   supplementary_data supplementary_data[]
-  studentReports     student_reports[]
 }
 
 model student_reports {

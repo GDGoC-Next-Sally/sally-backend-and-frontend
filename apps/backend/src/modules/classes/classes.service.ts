@@ -182,7 +182,7 @@ async update(id: number, updateClassDto: UpdateClassDto, teacherId: string) {
           select: { id: true, name: true, email: true } 
         } 
       },
-      orderBy: { created_at: 'asc' }
+      orderBy: { student_id: 'asc' }
     });
 
     return enrollments.map(e => ({
