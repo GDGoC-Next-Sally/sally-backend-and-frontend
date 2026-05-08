@@ -27,6 +27,24 @@ interface DashboardProps {
   todayClass?: TodayClass;
 }
 
+/* ── 상태별 설정 맵 ──────────────────────────────────────── */
+const STATUS_CONFIG: Record<
+  TodayClassStatus,
+  { tag: string; getLabel: (period: number) => string; btnText: string }
+> = {
+  upcoming:  { tag: '예정',  getLabel: (p) => `${p}교시 수업 예정`, btnText: '수업 준비하기' },
+  live:      { tag: 'LIVE', getLabel: ()  => '진행중',              btnText: '실시간 관찰 및 코칭' },
+  completed: { tag: '완료',  getLabel: ()  => '오늘 수업 완료',      btnText: '수업 리포트 보기' },
+};
+
+/* ── 화살표 아이콘 ────────────────────────────────────────── */
+const ChevronRight = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+);
+
+/* ── 통합 카드 컴포넌트 ───────────────────────────────────── */
 function TodayClassContent({ todayClass }: { todayClass?: TodayClass }) {
   if (!todayClass) {
     return (
@@ -43,73 +61,54 @@ function TodayClassContent({ todayClass }: { todayClass?: TodayClass }) {
     );
   }
 
-  if (todayClass.status === 'upcoming') {
-    return (
-      <div className={styles.upcomingClassBox}>
-        <div>
-          <span className={styles.upcomingTag}>예정</span>
-          <span className={styles.liveText}>{todayClass.period}교시 수업 예정</span>
-        </div>
-        <h3 className={styles.className}>{todayClass.className}</h3>
-        <div className={styles.classStats}>
-          <div className={styles.statItem}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
-            <span>{todayClass.subject}</span>
-          </div>
-        </div>
-        <button className={styles.outlineBtn}>수업 준비하기 &gt;</button>
-      </div>
-    );
-  }
-
-  if (todayClass.status === 'live') {
-    return (
-      <>
-        <div className={styles.activeClassBox}>
-          <div>
-            <span className={styles.liveTag}>LIVE</span>
-            <span className={styles.liveText}>진행 중인 수업</span>
-          </div>
-          <h3 className={styles.className}>{todayClass.className}</h3>
-          <div className={styles.classStats}>
-            <div className={styles.statItem}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span>{todayClass.period}교시</span>
-            </div>
-            {todayClass.studentCount !== undefined && (
-              <div className={styles.statItem}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <span>{todayClass.studentCount}</span>
-              </div>
-            )}
-          </div>
-          <button className={styles.primaryBtn}>실시간 관찰 및 코칭 &gt;</button>
-        </div>
-        {todayClass.aiNote && (
-          <div className={styles.classNote}>
-            <span className={styles.noteHighlight}>✦</span>
-            <span>{todayClass.aiNote}</span>
-          </div>
-        )}
-      </>
-    );
-  }
+  const cfg = STATUS_CONFIG[todayClass.status];
 
   return (
-    <div className={styles.completedClassBox}>
-      <div>
-        <span className={styles.completedTag}>완료</span>
-        <span className={styles.liveText}>오늘 수업 완료</span>
-      </div>
-      <h3 className={styles.className}>{todayClass.className}</h3>
-      <div className={styles.classStats}>
-        <div className={styles.statItem}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span>{todayClass.period}교시 · {todayClass.subject}</span>
+    <>
+      <div className={styles.todayClassBox} data-status={todayClass.status}>
+        {/* 상태 태그 행 */}
+        <div className={styles.statusRow}>
+          <span className={styles.statusTag}>{cfg.tag}</span>
+          <span className={styles.statusLabel}>{cfg.getLabel(todayClass.period)}</span>
         </div>
+
+        {/* 클래스명 (반 + 과목) */}
+        <h3 className={styles.className}>
+          {todayClass.className} {todayClass.subject}
+        </h3>
+
+        {/* 교시 + 인원수 */}
+        <div className={styles.classStats}>
+          <div className={styles.statItem}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span>{todayClass.period}교시</span>
+          </div>
+          <div className={styles.statItem}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+            <span>{todayClass.studentCount ?? '—'}</span>
+          </div>
+        </div>
+
+        {/* 동작 버튼 */}
+        <button className={styles.cardActionBtn}>
+          <span style={{ width: 18 }} />
+          <span>{cfg.btnText}</span>
+          <ChevronRight />
+        </button>
       </div>
-      <button className={styles.outlineBtn}>수업 리포트 보기 &gt;</button>
-    </div>
+
+      {/* live 전용 AI 메모 */}
+      {todayClass.status === 'live' && todayClass.aiNote && (
+        <div className={styles.classNote}>
+          <span className={styles.noteHighlight}>✦</span>
+          <span>{todayClass.aiNote}</span>
+        </div>
+      )}
+    </>
   );
 }
 

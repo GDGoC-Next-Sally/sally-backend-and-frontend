@@ -32,6 +32,7 @@ export const Upcoming: Story = {
       className: '3학년 2반',
       subject: '영어',
       period: 5,
+      studentCount: 28,
     },
   },
 };
@@ -56,6 +57,7 @@ export const Completed: Story = {
       className: '3학년 2반',
       subject: '영어',
       period: 5,
+      studentCount: 28,
     },
   },
 };

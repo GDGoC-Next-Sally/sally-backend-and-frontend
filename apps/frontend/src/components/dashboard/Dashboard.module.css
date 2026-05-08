@@ -317,67 +317,145 @@
   color: var(--color-done);
 }
 
-.activeClassBox {
-  background-color: var(--color-live);
-  border-radius: 12px;
-  padding: 20px;
-  color: var(--color-surface);
+/* ─── 오늘의 클래스 공통 카드 박스 ─────────────────────── */
+
+.todayClassBox {
+  border-radius: 8px;
+  padding: 21px 20px 17px;
   margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.liveTag {
-  display: inline-block;
+/* upcoming — 피그마 기준 */
+.todayClassBox[data-status='upcoming'] {
+  background-color: #ebfef4;
+  border: 2px solid #22cb84;
+}
+
+/* live */
+.todayClassBox[data-status='live'] {
+  background-color: var(--color-live);
+  border: none;
+}
+
+/* completed */
+.todayClassBox[data-status='completed'] {
+  background-color: var(--color-border-light);
+  border: none;
+  opacity: 0.85;
+}
+
+/* ─── 상태 태그 행 ──────────────────────────────────────── */
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.statusTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.todayClassBox[data-status='upcoming'] .statusTag {
+  background-color: rgba(34, 203, 132, 0.1);
+  color: #3eb476;
+}
+
+.todayClassBox[data-status='live'] .statusTag {
   background-color: var(--color-surface);
   color: var(--color-live);
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-right: 8px;
-  margin-bottom: 12px;
 }
 
-.liveText {
-  font-size: 12px;
-  font-weight: 500;
+.todayClassBox[data-status='completed'] .statusTag {
+  background-color: var(--color-surface);
+  color: var(--color-done);
+  border: 1px solid var(--color-border);
 }
 
+.statusLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(52, 52, 52, 0.7);
+  white-space: nowrap;
+}
+
+.todayClassBox[data-status='live'] .statusLabel {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ─── 클래스명 ───────────────────────────────────────────── */
 .className {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
-  margin-bottom: 12px;
-  line-height: 1.4;
+  color: #000;
+  line-height: 1.5;
+  margin: 0;
 }
 
+.todayClassBox[data-status='live'] .className {
+  color: var(--color-surface);
+}
+
+.todayClassBox[data-status='completed'] .className {
+  color: var(--color-text-secondary);
+}
+
+/* ─── 교시 / 인원 stats ─────────────────────────────────── */
 .classStats {
   display: flex;
-  gap: 16px;
-  font-size: 13px;
-  margin-bottom: 20px;
+  gap: 8px;
+  align-items: center;
 }
 
 .statItem {
   display: flex;
   align-items: center;
   gap: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(52, 52, 52, 0.7);
 }
 
-.primaryBtn {
+.todayClassBox[data-status='live'] .statItem {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ─── 동작 버튼 ─────────────────────────────────────────── */
+.cardActionBtn {
   width: 100%;
-  padding: 12px;
+  height: 40px;
   background-color: var(--color-surface);
-  color: var(--color-live);
   border: none;
   border-radius: 8px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
+  padding: 0 8px;
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 700;
+  color: #3eb476;
+  cursor: pointer;
+  transition: filter 0.15s;
 }
 
+.cardActionBtn:hover {
+  filter: brightness(0.97);
+}
+
+.todayClassBox[data-status='completed'] .cardActionBtn {
+  color: var(--color-text-secondary);
+}
+
+/* ─── AI 메모 ────────────────────────────────────────────── */
 .classNote {
   background-color: var(--color-bg);
   border-radius: 8px;
@@ -391,6 +469,7 @@
   margin-right: 4px;
 }
 
+/* ─── 빈 상태 ────────────────────────────────────────────── */
 .emptyBody {
   display: flex;
   flex-direction: column;
@@ -417,65 +496,6 @@
   font-size: 12px;
   color: var(--color-text-secondary);
   margin-bottom: 12px;
-}
-
-.upcomingClassBox {
-  background-color: var(--color-border-light);
-  border-radius: 12px;
-  padding: 20px;
-  color: var(--color-text-primary);
-  margin-bottom: 16px;
-}
-
-.upcomingTag {
-  display: inline-block;
-  background-color: var(--color-surface);
-  color: var(--color-text-secondary);
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-right: 8px;
-  margin-bottom: 12px;
-  border: 1px solid var(--color-border);
-}
-
-.completedClassBox {
-  background-color: var(--color-border-light);
-  border-radius: 12px;
-  padding: 20px;
-  color: var(--color-text-secondary);
-  margin-bottom: 16px;
-  opacity: 0.8;
-}
-
-.completedTag {
-  display: inline-block;
-  background-color: var(--color-surface);
-  color: var(--color-done);
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-right: 8px;
-  margin-bottom: 12px;
-  border: 1px solid var(--color-border);
-}
-
-.outlineBtn {
-  width: 100%;
-  padding: 12px;
-  background-color: transparent;
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
 }
 
 .secondaryBtn {

@@ -1,148 +1,133 @@
+/* ─── 오버레이 ─────────────────────────────────────────── */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
 
+/* ─── 모달 카드 ────────────────────────────────────────── */
 .modal {
-  background: white;
-  border-radius: 16px;
-  width: 100%;
-  max-width: 380px;
-  padding: 32px 28px 28px;
+  background-color: var(--color-surface);
+  border-radius: 12px;
+  width: 460px;
+  max-width: calc(100vw - 32px);
+  padding: 28px 46px 32px;
   position: relative;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.14);
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
 }
 
+/* ─── 닫기 버튼 ────────────────────────────────────────── */
 .closeBtn {
   position: absolute;
   top: 18px;
   right: 18px;
   background: none;
   border: none;
-  color: #6B6B6B;
+  color: var(--color-text-placeholder);
   cursor: pointer;
   padding: 4px;
   line-height: 0;
+  border-radius: 4px;
 }
 
-.closeBtn:hover { color: #1A1A1A; }
+.closeBtn:hover {
+  color: var(--color-text-secondary);
+}
 
+/* ─── 제목 ─────────────────────────────────────────────── */
 .title {
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 700;
-  color: #1A1A1A;
-  margin: 0 0 20px;
+  color: var(--color-text-primary);
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
 }
 
-/* Grade donut */
-.gradeSection {
+/* ─── 일러스트 ─────────────────────────────────────────── */
+.illustration {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 24px;
-}
-
-.gradeLabel {
-  font-size: 13px;
-  color: #6B6B6B;
-  margin: 0 0 8px;
-}
-
-.donutWrap {
-  position: relative;
-  width: 130px;
-  height: 130px;
-  display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
-.donutWrap svg {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-.donutText {
-  position: relative;
-  font-size: 32px;
-  font-weight: 800;
-  color: #1A1A1A;
-  z-index: 1;
-}
-
-.gradeMsg {
-  font-size: 16px;
+/* ─── 메시지 ────────────────────────────────────────────── */
+.message {
+  text-align: center;
+  font-size: 24px;
   font-weight: 700;
-  color: #1A1A1A;
-  margin: 8px 0 0;
-}
-
-/* Stats */
-.statsRow {
-  display: flex;
-  justify-content: space-between;
-  padding: 20px 0;
-  border-top: 1px solid #EBEBEA;
-  border-bottom: 1px solid #EBEBEA;
-  margin-bottom: 24px;
-}
-
-.statItem {
+  color: var(--color-text-secondary);
+  line-height: 1.5;
   display: flex;
   flex-direction: column;
+  gap: 0;
+}
+
+.message p {
+  margin: 0;
+}
+
+/* ─── 파란 안내 박스 ────────────────────────────────────── */
+.infoBox {
+  width: 100%;
+  background-color: #edf5fd;
+  border-radius: 8px;
+  padding: 14px 24px;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  flex: 1;
+  gap: 24px;
 }
 
-.statLabel {
-  font-size: 12px;
-  color: #6B6B6B;
+.infoText {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f76f8;
+  line-height: 1.5;
+  margin: 0;
 }
 
-.statValue {
-  font-size: 18px;
-  font-weight: 700;
-  color: #1A1A1A;
-}
-
-/* Footer */
+/* ─── 버튼 영역 ────────────────────────────────────────── */
 .footer {
   display: flex;
-  gap: 10px;
+  gap: 16px;
+  width: 100%;
 }
 
 .cancelBtn,
-.nextBtn {
+.confirmBtn {
   flex: 1;
   height: 44px;
   border-radius: 8px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: filter 0.15s;
 }
 
 .cancelBtn {
-  background: white;
-  border: 1px solid #dee2e6;
-  color: #495057;
+  background-color: var(--color-surface);
+  border: 1.5px solid #dbdded;
+  color: var(--color-text-secondary);
 }
 
-.cancelBtn:hover { background: #F5F4F0; }
+.cancelBtn:hover {
+  background-color: var(--color-bg);
+}
 
-.nextBtn {
-  background: #22C55E;
+.confirmBtn {
+  background-color: var(--color-live);
   border: none;
-  color: white;
+  color: #ffffff;
 }
 
-.nextBtn:hover { background: #16A34A; }
+.confirmBtn:hover {
+  filter: brightness(0.93);
+}

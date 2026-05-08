@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { ConfirmModal } from '../common/ConfirmModal';
 import styles from './LoginForm.module.css';
 
 type Tab = 'student' | 'teacher';
@@ -18,6 +19,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSignin, onSignup }) => {
   const [isSignup, setIsSignup] = useState(false);
   const [signupRole, setSignupRole] = useState<Tab>('student');
   const [loading, setLoading] = useState(false);
+  const [modal, setModal] = useState<{ title: string; description?: string } | null>(null);
+
+  const closeModal = () => setModal(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,12 +30,15 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSignin, onSignup }) => {
     try {
       if (isSignup) {
         if (!nickname.trim()) {
-          alert('닉네임을 입력해주세요.');
+          setModal({ title: '닉네임을 입력해주세요.' });
           setLoading(false);
           return;
         }
         await onSignup(email, password, nickname, signupRole.toUpperCase());
-        alert('회원가입이 완료되었습니다! 로그인해주세요.');
+        setModal({
+          title: '회원가입이 완료되었습니다!',
+          description: '이제 로그인해주세요.',
+        });
         setIsSignup(false);
         setPassword('');
       } else {
@@ -39,13 +46,34 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSignin, onSignup }) => {
       }
     } catch (err) {
       console.error('Auth error:', err);
-      alert(err instanceof Error ? err.message : '오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      if (isSignup) {
+        setModal({
+          title: '회원가입에 실패했습니다.',
+          description: err instanceof Error ? err.message : '잠시 후 다시 시도해주세요.',
+        });
+      } else {
+        setModal({
+          title: '로그인에 실패했습니다.',
+          description: '이메일과 비밀번호를 확인해주세요.',
+        });
+      }
     }
 
     setLoading(false);
   };
 
   return (
+    <>
+    {modal && (
+      <ConfirmModal
+        title={modal.title}
+        description={modal.description}
+        cancelLabel="취소"
+        confirmLabel="확인"
+        onClose={closeModal}
+        onConfirm={closeModal}
+      />
+    )}
     <div className={styles.container}>
       <div className={styles.loginCard}>
         {!isSignup && (
@@ -166,5 +194,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSignin, onSignup }) => {
         </div>
       </div>
     </div>
+    </>
   );
 };
