@@ -3,6 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './StudentDashboard.module.css';
+import type { RecentSessionInfo } from '@/app/s/home/page';
 
 interface ClassItem {
   id: number;
@@ -23,13 +24,9 @@ interface StudentDashboardProps {
   user: { name: string } | null;
   classes: ClassItem[];
   activeSession?: ActiveSessionInfo | null;
+  recentSessions?: RecentSessionInfo[];
 }
 
-const RECENT_SESSIONS = [
-  { title: '3학년 2반 수학', teacher: '김하린 선생님 | 2교시', status: '종료', type: 'done' },
-  { title: '3학년 2반 영어', teacher: '박수빈 선생님 | 3교시', status: '진행 중', type: 'live' },
-  { title: '3학년 2반 영어', teacher: '박수빈 선생님 | 3교시', status: '대기 중', type: 'wait' },
-];
 
 const FEEDBACK_ITEMS = [
   '영어 수업 참여도가 지난주보다 12% 향상되었어요.',
@@ -37,7 +34,7 @@ const FEEDBACK_ITEMS = [
   '국어 토론 참여 빈도가 꾸준히 증가하고 있어요.',
 ];
 
-export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classes, activeSession }) => {
+export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classes, activeSession, recentSessions = [] }) => {
   const router = useRouter();
 
   return (
@@ -223,18 +220,31 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classe
               <h2 className={styles.sectionTitle} style={{ fontSize: '16px' }}>최근 방문한 세션</h2>
             </div>
             <div className={styles.recentList}>
-              {RECENT_SESSIONS.map((item, i) => (
-                <div key={i} className={styles.recentItem}>
-                  <div className={styles.recentAvatar} />
-                  <div className={styles.recentInfo}>
-                    <div className={styles.recentTitle}>{item.title}</div>
-                    <div className={styles.recentTeacher}>{item.teacher}</div>
+              {recentSessions.length > 0 ? recentSessions.map((item) => {
+                const badgeType = item.status === 'ACTIVE' ? 'live' : 'done';
+                const badgeLabel = item.status === 'ACTIVE' ? '진행 중' : '종료';
+                return (
+                  <div
+                    key={item.id}
+                    className={styles.recentItem}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => router.push(`/s/classes/${item.classId}/sessions/${item.id}`)}
+                  >
+                    <div className={styles.recentAvatar} />
+                    <div className={styles.recentInfo}>
+                      <div className={styles.recentTitle}>{item.sessionName}</div>
+                      <div className={styles.recentTeacher}>
+                        {item.subject}{item.period ? ` | ${item.period}교시` : ''}
+                      </div>
+                    </div>
+                    <span className={`${styles.recentBadge} ${styles[`badge_${badgeType}`]}`}>
+                      {badgeLabel}
+                    </span>
                   </div>
-                  <span className={`${styles.recentBadge} ${styles[`badge_${item.type}`]}`}>
-                    {item.status}
-                  </span>
-                </div>
-              ))}
+                );
+              }) : (
+                <p className={styles.noSessionText}>최근 방문한 세션이 없어요.</p>
+              )}
             </div>
             <button className={styles.viewAllBtn} onClick={() => router.push('/s/classes')}>
               전체 보기 &nbsp;→
