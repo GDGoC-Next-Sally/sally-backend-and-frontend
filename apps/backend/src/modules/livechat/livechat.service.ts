@@ -123,10 +123,10 @@ export class LivechatService {
             // 4. 답변 완료 후 백그라운드 분석 요청 (비동기)
             // AI 서버 규격(session_id, student_id)에 맞춰 데이터 전송
             this.requestAiAnalysis(
-              conversation_history, 
-              student_profile, 
-              dialog.session_id, 
-              studentId, 
+              conversation_history,
+              student_profile,
+              dialog.session_id,
+              studentId,
               aiFullContent.trim()
             );
           });
@@ -190,19 +190,35 @@ export class LivechatService {
       : [];
     const updatedSummaries = [...existing, analysis];
 
-    const updatedDialog = await this.prisma.dialogs.update({
+    await this.prisma.dialogs.update({
       where: { id: dialogId },
       data: {
         real_time_analysis: updatedSummaries as any
       }
     });
 
-    // 2. 선생님에게는 최신 분석 결과 1건만 소켓으로 발송
+    // 2. 경고 조건 체크 및 선생님에게 warning 이벤트 발송
+    const warningReasons: string[] = [];
+    if (analysis.question_intent === '포기표현') warningReasons.push('학생이 포기 의사를 표현했습니다.');
+    if (analysis.engagement_level === '이탈위험') warningReasons.push('학생의 이탈 위험이 감지되었습니다.');
+    if (['좌절', '무반응'].includes(analysis.student_emotion)) warningReasons.push(`학생 감정 상태: ${analysis.student_emotion}`);
+
+    if (warningReasons.length > 0) {
+      this.eventsGateway.sendToUser(dialog.sessions.teacher_id, 'student_warning', {
+        dialog_id: dialogId,
+        student_id: dialog.student_id,
+        reasons: warningReasons,
+        summary: analysis.one_line_summary,
+      });
+    }
+
+    // 3. 선생님에게는 최신 분석 결과 1건만 소켓으로 발송
     this.eventsGateway.sendToUser(dialog.sessions.teacher_id, 'student_analysis_ready', {
       dialog_id: dialogId,
+      student_id: dialog.student_id,
       analysis: analysis  // 최신 것만 전송 (대시보드 갱신용)
     });
 
-    return updatedDialog;
+    return { status: 'ok' };
   }
 }

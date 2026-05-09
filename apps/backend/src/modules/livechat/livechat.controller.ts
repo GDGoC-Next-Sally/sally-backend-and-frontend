@@ -38,6 +38,8 @@ export class LivechatController {
     @Headers('x-internal-secret') secret: string,
     @Body() body: { dialog_id: number; analysis: any }
   ) {
+    console.log('🔥 ANALYTICS CALLBACK HIT');
+    console.log('Dialog ID:', body.dialog_id);
     if (secret !== process.env.INTERNAL_SECRET_KEY) {
       throw new UnauthorizedException('내부 요청이 아닙니다.');
     }
