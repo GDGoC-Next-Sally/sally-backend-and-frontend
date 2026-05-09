@@ -3,12 +3,12 @@ services/report_builder.py — 최종 수업 리포트 생성 서비스
 대화 종료 시 누적된 TeacherSummary 목록을 분석하여 FinalReport를 생성합니다.
 
 설계 원칙:
-- frustration_trend: 최근 3턴의 방향성으로 판단 (실시간성 + 설계 스펙)
+- struggle_trend: 최근 3턴의 방향성으로 판단 (실시간성 + 설계 스펙)
 - avg_understanding_score: 수업 전체 평균 (회고용)
 - recent_avg_understanding_pct: 최근 3턴 × 10 (현재 상태 파악용)
 - understanding_scores_timeline: 전체 턴 × 10 (꺾은선 차트용)
 - dominant_emotion: 수업 전체 최빈값 (최종 리포트 요약용, 실시간 지표는 NestJS가 처리)
-- stability_gauge / urgency_level: frustration_total 기반 대시보드 게이지
+- stability_gauge / urgency_level: struggle_total 기반 대시보드 게이지
 - overall_summary: LLM이 직접 생성하는 서술형 종합 평가 (템플릿 방식 폐지)
 """
 import os
@@ -24,9 +24,9 @@ from ai_server.models import TeacherSummary, FinalReport
 env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-MODEL = "google/gemma-4-31b-it"
+REPORT_MODEL = "nvidia/llama-3.3-nemotron-super-49b-v1.5"
 
-# 긴급 개입 기준값 (frustration_total ≥ 이 값이면 긴급도 최대)
+# 긴급 개입 기준값 (struggle_total ≥ 이 값이면 긴급도 최대)
 URGENCY_MAX_THRESHOLD = 100
 
 
@@ -60,8 +60,8 @@ async def generate_final_report(
             recent_avg_understanding_pct=0.0,
             final_understanding_score=0,
             understanding_scores_timeline=[],
-            frustration_total=0,
-            frustration_trend="stable",
+            struggle_total=0,
+            struggle_trend="stable",
             stability_gauge=100,
             urgency_level=0,
             hallucination_risk_count=0,
@@ -96,29 +96,29 @@ async def generate_final_report(
     understanding_scores_timeline = [s * 10 for s in understanding_scores]
 
     # ── 좌절 지수 분석 ────────────────────────────────────────────────────────
-    frustration_deltas = [
-        s.frustration_delta for s in summaries if s.frustration_delta is not None
+    struggle_deltas = [
+        s.struggle_delta for s in summaries if s.struggle_delta is not None
     ]
-    frustration_total = sum(frustration_deltas)
+    struggle_total = sum(struggle_deltas)
 
     # 최근 3턴 방향성으로 추이 판단 (설계 스펙 준수)
-    recent_deltas = frustration_deltas[-3:] if len(frustration_deltas) >= 3 else frustration_deltas
+    recent_deltas = struggle_deltas[-3:] if len(struggle_deltas) >= 3 else struggle_deltas
     recent_sum = sum(recent_deltas)
     if recent_sum < 0:
-        frustration_trend = "improving"   # 최근 3턴 합산 음수 → 호전 중
+        struggle_trend = "improving"   # 최근 3턴 합산 음수 → 호전 중
     elif recent_sum > 0:
-        frustration_trend = "worsening"   # 최근 3턴 합산 양수 → 악화 중
+        struggle_trend = "worsening"   # 최근 3턴 합산 양수 → 악화 중
     else:
-        frustration_trend = "stable"      # 변화 없음
+        struggle_trend = "stable"      # 변화 없음
 
     # 안정도 게이지 (0~100, 높을수록 안정)
     # 턴당 최대 delta=30 기준으로 동적 산정 (턴 수가 많아도 산정가 차지 않도록)
     max_possible_frustration = max(total_turns * 30, 1)
-    stability_gauge = max(0, min(100, round((1 - frustration_total / max_possible_frustration) * 100)))
+    stability_gauge = max(0, min(100, round((1 - struggle_total / max_possible_frustration) * 100)))
 
     # 긴급도 (0~5, 콜수록 즉시 개입 필요)
     # 동일한 동적 스케일 적용
-    urgency_level = min(5, max(0, round((frustration_total / max_possible_frustration) * 5)))
+    urgency_level = min(5, max(0, round((struggle_total / max_possible_frustration) * 5)))
 
     # ── 환각 위험 횟수 ────────────────────────────────────────────────────────
     hallucination_risk_count = sum(
@@ -170,8 +170,8 @@ async def generate_final_report(
         avg_understanding_score=avg_understanding_score,
         peak_understanding_score=peak_understanding_score,
         final_understanding_score=final_understanding_score,
-        frustration_trend=frustration_trend,
-        frustration_total=frustration_total,
+        struggle_trend=struggle_trend,
+        struggle_total=struggle_total,
         stability_gauge=stability_gauge,
         dominant_emotion=dominant_emotion,
         emotion_trend=emotion_trend,
@@ -189,8 +189,8 @@ async def generate_final_report(
         recent_avg_understanding_pct=recent_avg_understanding_pct,
         final_understanding_score=final_understanding_score,
         understanding_scores_timeline=understanding_scores_timeline,
-        frustration_total=frustration_total,
-        frustration_trend=frustration_trend,
+        struggle_total=struggle_total,
+        struggle_trend=struggle_trend,
         stability_gauge=stability_gauge,
         urgency_level=urgency_level,
         hallucination_risk_count=hallucination_risk_count,
@@ -209,8 +209,8 @@ async def _generate_overall_summary_llm(
     avg_understanding_score: float,
     peak_understanding_score: int,
     final_understanding_score: int,
-    frustration_trend: str,
-    frustration_total: int,
+    struggle_trend: str,
+    struggle_total: int,
     stability_gauge: int,
     dominant_emotion: Optional[str],
     emotion_trend: Optional[str],
@@ -230,7 +230,7 @@ async def _generate_overall_summary_llm(
         "improving": "호전(수업 후반 안정됨)",
         "worsening": "악화(수업 후반 어려움 증가)",
         "stable": "안정(큰 변화 없음)",
-    }.get(frustration_trend, "")
+    }.get(struggle_trend, "")
 
     misconception_text = ", ".join(misconception_tags) if misconception_tags else "없음"
 
@@ -246,7 +246,7 @@ async def _generate_overall_summary_llm(
         "[수업 데이터]\n"
         f"- 총 대화 턴 수: {total_turns}턴\n"
         f"- 가중 평균 이해도: {avg_understanding_score}/10점 | 최고 이해도: {peak_understanding_score}/10점 | 마지막 턴 이해도: {final_understanding_score}/10점\n"
-        f"- 좌절 추이: {trend_label} (누적 좌절 지수: {frustration_total}, 안정도: {stability_gauge}/100)\n"
+        f"- 좌절 추이: {trend_label} (누적 좌절 지수: {struggle_total}, 안정도: {stability_gauge}/100)\n"
         f"- 감정 흐름: {emotion_trend or dominant_emotion or '미확인'}\n"
         f"- 능동 참여율: {active_ratio}%\n"
         f"- 감지된 오개념: {misconception_text}\n"
@@ -257,7 +257,7 @@ async def _generate_overall_summary_llm(
     try:
         client = _get_client()
         response = await client.chat.completions.create(
-            model=MODEL,
+            model=REPORT_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.5,
         )
@@ -269,7 +269,7 @@ async def _generate_overall_summary_llm(
             "improving": "수업 후반으로 갈수록 안정되는 모습을 보였습니다.",
             "worsening": "수업 후반으로 갈수록 어려움이 증가하는 경향이 있었습니다.",
             "stable": "전반적으로 감정 상태가 일관적이었습니다.",
-        }.get(frustration_trend, "")
+        }.get(struggle_trend, "")
         return (
             f"총 {total_turns}턴의 대화가 진행되었습니다. "
             f"전체 평균 이해도 {avg_understanding_score}/10점, 최고 이해도 {peak_understanding_score}/10점. "

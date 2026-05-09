@@ -71,7 +71,7 @@ async def analyze(request: ChatRequest):
     session_id = getattr(request, "session_id", None)
     student_id = getattr(request, "student_id", None)
 
-    # ── 직전 분석 결과 조회 (frustration_delta 등 상대적 변화량 계산 정확도 향상) ────
+    # ── 직전 분석 결과 조회 (struggle_delta 등 상대적 변화량 계산 정확도 향상) ────
     previous_summary = None
     if session_id and student_id:
         try:
