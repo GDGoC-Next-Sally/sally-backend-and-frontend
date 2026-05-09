@@ -82,7 +82,7 @@
 }
 
 .avatarActive {
-  background-color: #22C55E;
+  background-color: var(--color-live);
 }
 
 .name {
@@ -93,7 +93,7 @@
 
 .progressBadge {
   background-color: #F0FBF4;
-  color: #22C55E;
+  color: var(--color-live);
   padding: 2px 8px;
   border-radius: 9999px;
   font-size: 10px;
@@ -108,7 +108,7 @@
 }
 
 .summaryBox {
-  background-color: #F5F4F0;
+  background-color: var(--color-bg);
   border: 1px solid #EBEBEA;
   border-radius: 8px;
   padding: 12px;

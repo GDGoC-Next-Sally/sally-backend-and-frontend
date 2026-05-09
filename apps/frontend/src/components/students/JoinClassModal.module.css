@@ -82,13 +82,13 @@
 }
 
 .digitBox:focus {
-  border-color: #22C55E;
+  border-color: var(--color-live);
   background: #F0FBF4;
 }
 
 .validMsg {
   font-size: 12px;
-  color: #22C55E;
+  color: var(--color-live);
   font-weight: 600;
   margin: 8px 0 0;
   text-align: center;
@@ -99,7 +99,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #F5F4F0;
+  background: var(--color-bg);
   border-radius: 8px;
   padding: 12px 16px;
   border: 1px solid #E0DED8;
@@ -140,15 +140,15 @@
   color: #495057;
 }
 
-.cancelBtn:hover { background: #F5F4F0; }
+.cancelBtn:hover { background: var(--color-bg); }
 
 .joinBtn {
-  background: #22C55E;
+  background: var(--color-live);
   border: none;
   color: white;
 }
 
-.joinBtn:hover { background: #16A34A; }
+.joinBtn:hover { background: var(--color-live-hover); }
 .joinBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 .cancelBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 

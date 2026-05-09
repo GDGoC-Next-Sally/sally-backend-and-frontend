@@ -70,9 +70,9 @@
 }
 
 .tabActive {
-  color: #20c997;
+  color: var(--color-live);
   font-weight: 700;
-  border-bottom-color: #20c997;
+  border-bottom-color: var(--color-live);
 }
 
 /* Filter bar */
@@ -149,7 +149,7 @@
 .sessionIcon {
   width: 40px;
   height: 40px;
-  background-color: #e6fcf5;
+  background-color: var(--color-live-light);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -204,8 +204,8 @@
 }
 
 .badgeActive {
-  background-color: #e6fcf5;
-  color: #20c997;
+  background-color: var(--color-live-light);
+  color: var(--color-live);
 }
 
 .badgePending {
@@ -318,7 +318,7 @@
 }
 
 .createBtn {
-  background-color: #20c997;
+  background-color: var(--color-live);
   color: white;
   border: none;
   border-radius: 8px;
@@ -330,7 +330,7 @@
 }
 
 .createBtn:hover {
-  background-color: #1aab82;
+  background-color: var(--color-live-hover);
 }
 
 .empty {

@@ -1,5 +1,5 @@
 .container {
-  background-color: #F5F4F0;
+  background-color: var(--color-bg);
   min-height: calc(100vh - 56px);
   padding: 24px;
 }
@@ -65,7 +65,7 @@
 }
 
 .waitingChip {
-  background: #F5F4F0;
+  background: var(--color-bg);
   color: #6B6B6B;
   font-size: 12px;
   font-weight: 600;
@@ -80,7 +80,7 @@
 }
 
 .liveChip {
-  background: #22C55E;
+  background: var(--color-live);
   color: white;
   font-size: 12px;
   font-weight: 600;
@@ -142,7 +142,7 @@
 }
 
 .joinBtn {
-  background: #22C55E;
+  background: var(--color-live);
   color: white;
   border: none;
   border-radius: 10px;
@@ -154,7 +154,7 @@
   transition: background 0.15s;
 }
 
-.joinBtn:hover { background: #16A34A; }
+.joinBtn:hover { background: var(--color-live-hover); }
 
 /* Wait stats */
 .waitStats {
@@ -232,12 +232,12 @@
 }
 
 .bubbleLeft {
-  background: #F5F4F0;
+  background: var(--color-bg);
   border-top-left-radius: 0;
 }
 
 .bubbleRight {
-  background: #F0FBF4;
+  background: var(--color-live-light);
   border-top-right-radius: 0;
   border-color: #D1FAE5;
 }
@@ -276,7 +276,7 @@
   transition: border-color 0.15s;
 }
 
-.quickBtn:hover { border-color: #22C55E; color: #22C55E; }
+.quickBtn:hover { border-color: var(--color-live); color: var(--color-live); }
 
 /* Input row */
 .inputRow {
@@ -298,7 +298,7 @@
   background: white;
 }
 
-.msgInput:focus { border-color: #22C55E; }
+.msgInput:focus { border-color: var(--color-live); }
 .msgInput::placeholder { color: #6B6B6B; }
 
 .attachBtn {
@@ -313,7 +313,7 @@
 .attachBtn:hover { color: #1A1A1A; }
 
 .sendBtn {
-  background: #22C55E;
+  background: var(--color-live);
   color: white;
   border: none;
   border-radius: 8px;
@@ -325,7 +325,7 @@
   transition: background 0.15s;
 }
 
-.sendBtn:hover { background: #16A34A; }
+.sendBtn:hover { background: var(--color-live-hover); }
 .sendBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* Guide panel */
@@ -354,7 +354,7 @@
 .guideSectionTitle {
   font-size: 13px;
   font-weight: 700;
-  color: #22C55E;
+  color: var(--color-live);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -376,7 +376,7 @@
 .progressPct {
   font-size: 13px;
   font-weight: 700;
-  color: #22C55E;
+  color: var(--color-live);
 }
 
 .progressTrack {
@@ -388,7 +388,7 @@
 
 .progressFill {
   height: 100%;
-  background: #22C55E;
+  background: var(--color-live);
   border-radius: 4px;
   transition: width 0.3s;
 }

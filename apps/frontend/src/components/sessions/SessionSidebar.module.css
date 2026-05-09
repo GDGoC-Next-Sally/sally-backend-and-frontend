@@ -70,7 +70,7 @@
 }
 
 .itemClickable:hover {
-  background-color: #F5F4F0;
+  background-color: var(--color-bg);
 }
 
 .itemSelected {
@@ -99,7 +99,7 @@
 }
 
 .dotOnline {
-  background-color: #22C55E;
+  background-color: var(--color-live);
 }
 
 .name {
@@ -109,8 +109,8 @@
 }
 
 .badge {
-  background-color: #F0FBF4;
-  color: #22C55E;
+  background-color: var(--color-live-light);
+  color: var(--color-live);
   padding: 2px 8px;
   border-radius: 9999px;
   font-size: 10px;
@@ -134,7 +134,7 @@
 }
 
 .summary {
-  background-color: #F5F4F0;
+  background-color: var(--color-bg);
   border: 1px solid #EBEBEA;
   border-radius: 8px;
   padding: 10px 12px;

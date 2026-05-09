@@ -73,7 +73,7 @@
 
 .input:focus,
 .select:focus {
-  border-color: #20c997;
+  border-color: var(--color-live);
   background-color: #ffffff;
 }
 
@@ -124,9 +124,9 @@
 }
 
 .typeBtnActive {
-  border-color: #20c997;
-  color: #20c997;
-  background-color: #f0fdf9;
+  border-color: var(--color-live);
+  color: var(--color-live);
+  background-color: var(--color-live-light);
   font-weight: 600;
 }
 
@@ -173,11 +173,11 @@
 }
 
 .nextBtn {
-  background-color: #20c997;
+  background-color: var(--color-live);
   border: none;
   color: white;
 }
 
 .nextBtn:hover {
-  background-color: #1aab82;
+  background-color: var(--color-live-hover);
 }

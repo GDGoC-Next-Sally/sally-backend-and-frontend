@@ -74,7 +74,7 @@
 }
 
 .input:focus {
-  border-color: #20c997;
+  border-color: var(--color-live);
 }
 
 .input::placeholder {
@@ -110,7 +110,7 @@
 }
 
 .submitBtn {
-  background-color: #20c997;
+  background-color: var(--color-live);
   color: white;
   border: none;
   border-radius: 8px;

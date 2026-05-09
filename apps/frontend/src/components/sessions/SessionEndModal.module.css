@@ -122,9 +122,9 @@
   height: 100%;
   border-radius: 50%;
   border: 6px solid #EBEBEA;
-  border-top-color: #22C55E;
-  border-right-color: #22C55E;
-  border-bottom-color: #22C55E;
+  border-top-color: var(--color-live);
+  border-right-color: var(--color-live);
+  border-bottom-color: var(--color-live);
   transform: rotate(-45deg);
 }
 

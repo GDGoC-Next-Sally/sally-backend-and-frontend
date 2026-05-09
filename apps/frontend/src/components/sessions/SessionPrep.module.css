@@ -118,7 +118,7 @@
 }
 
 .startBtn {
-  background-color: #20c997;
+  background-color: var(--color-live);
   color: white;
   border: none;
   border-radius: 10px;
@@ -130,7 +130,7 @@
 }
 
 .startBtn:hover {
-  background-color: #1aab82;
+  background-color: var(--color-live-hover);
 }
 
 /* Stats row */

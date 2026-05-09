@@ -346,3 +346,4 @@
 
 .menuItem:hover { background: var(--color-bg); }
 .menuItemDanger { color: var(--color-primary); }
+.menuItemDisabled { color: var(--color-text-placeholder); cursor: not-allowed; }

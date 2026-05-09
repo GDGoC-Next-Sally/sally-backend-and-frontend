@@ -2,7 +2,7 @@
   display: flex;
   gap: 24px;
   padding: 24px;
-  background-color: #F5F4F0;
+  background-color: var(--color-bg);
   min-height: calc(100vh - 56px);
   max-width: 1400px;
   margin: 0 auto;
@@ -79,7 +79,7 @@
   width: 8px;
   height: 8px;
   border-radius: 9999px;
-  background-color: #22C55E;
+  background-color: var(--color-live);
 }
 
 .unitList {
@@ -165,7 +165,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background-color: #F5F4F0;
+  background-color: var(--color-bg);
   border: 1px solid #EBEBEA;
   padding: 8px 16px;
   border-radius: 8px;
@@ -190,13 +190,13 @@
 .progressFill {
   width: 72%;
   height: 100%;
-  background-color: #22C55E;
+  background-color: var(--color-live);
 }
 
 .statusValue {
   font-size: 12px;
   font-weight: 700;
-  color: #22C55E;
+  color: var(--color-live);
   white-space: nowrap;
 }
 
