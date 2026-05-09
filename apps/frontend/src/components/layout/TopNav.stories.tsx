@@ -6,14 +6,38 @@ const meta: Meta<typeof TopNav> = {
   component: TopNav,
   parameters: {
     nextjs: { appDirectory: true, navigation: { pathname: '/t/home' } },
+    layout: 'fullscreen',
   },
 };
 export default meta;
 type Story = StoryObj<typeof TopNav>;
 
+const teacherUser = {
+  name: '김샐리',
+  email: 'teacher@example.com',
+  role: 'teacher' as const,
+};
+
+const studentUser = {
+  name: '이학생',
+  email: 'student@example.com',
+  role: 'student' as const,
+};
+
+/** 로그인 전 상태 */
+export const NotLoggedIn: Story = {
+  args: {
+    user: null,
+  },
+  parameters: {
+    nextjs: { navigation: { pathname: '/' } },
+  },
+};
+
+/** 선생님 - 홈 대시보드 활성화 */
 export const TeacherHome: Story = {
   args: {
-    user: { name: '김선생', email: 'teacher@example.com', role: 'teacher' },
+    user: teacherUser,
     onSignOut: () => alert('로그아웃'),
   },
   parameters: {
@@ -21,9 +45,10 @@ export const TeacherHome: Story = {
   },
 };
 
+/** 선생님 - 내 클래스 관리 활성화 */
 export const TeacherClasses: Story = {
   args: {
-    user: { name: '김선생', email: 'teacher@example.com', role: 'teacher' },
+    user: teacherUser,
     onSignOut: () => alert('로그아웃'),
   },
   parameters: {
@@ -31,19 +56,24 @@ export const TeacherClasses: Story = {
   },
 };
 
-export const Student: Story = {
+/** 선생님 - 분석 리포트 활성화 */
+export const TeacherReport: Story = {
   args: {
-    user: { name: '이학생', email: 'student@example.com', role: 'student' },
+    user: teacherUser,
+    onSignOut: () => alert('로그아웃'),
+  },
+  parameters: {
+    nextjs: { navigation: { pathname: '/t/reports' } },
+  },
+};
+
+/** 학생 - 홈 대시보드 활성화 */
+export const StudentHome: Story = {
+  args: {
+    user: studentUser,
     onSignOut: () => alert('로그아웃'),
   },
   parameters: {
     nextjs: { navigation: { pathname: '/s/home' } },
-  },
-};
-
-export const NotLoggedIn: Story = {
-  args: {
-    user: null,
-    onSignOut: undefined,
   },
 };

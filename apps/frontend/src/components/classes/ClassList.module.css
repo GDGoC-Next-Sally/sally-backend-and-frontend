@@ -161,7 +161,7 @@
 }
 
 .card:hover {
-  border-color: var(--color-primary);
+  border-color: var(--color-live);
   transform: translateY(-2px);
 }
 
