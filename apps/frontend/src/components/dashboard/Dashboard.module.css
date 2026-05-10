@@ -78,6 +78,29 @@
   align-items: center;
 }
 
+.dotRow {
+  display: flex;
+  gap: 5px;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-border);
+  transition: background 0.3s;
+}
+
+.dotActive {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-live);
+  transition: background 0.3s;
+}
+
 .mainGrid {
   display: grid;
   grid-template-columns: 2fr 1fr;

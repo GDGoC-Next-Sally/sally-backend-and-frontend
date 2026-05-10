@@ -1,8 +1,20 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './Dashboard.module.css';
+
+const NOTICES = [
+  { text: '3월 학습 리포트 업데이트 안내\n새로운 분석 항목이 추가되었어요.', date: '2026.03.04' },
+  { text: '4월 학사 일정 공지\n4월 3일(목) 전체 교사 회의가 있습니다.', date: '2026.03.28' },
+  { text: '수업 녹화 기능 베타 오픈\nLIVE 세션 중 녹화 버튼이 활성화됩니다.', date: '2026.04.01' },
+];
+
+const STUDENT_ALERTS = [
+  { count: 3, desc: '지난 7일간 멘션 요청 3건이 발생했어요.' },
+  { count: 1, desc: '김고대 학생이 3일 연속 참여도가 낮아요.' },
+  { count: 2, desc: '이민준, 박서연 학생 퀴즈 정답률이 50% 미만이에요.' },
+];
 
 interface ClassItem {
   id: number;
@@ -113,6 +125,22 @@ function TodayClassContent({ todayClass }: { todayClass?: TodayClass }) {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass }) => {
+  const [noticeIdx, setNoticeIdx] = useState(0);
+  const [alertIdx, setAlertIdx] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setNoticeIdx((i) => (i + 1) % NOTICES.length), 4000);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => setAlertIdx((i) => (i + 1) % STUDENT_ALERTS.length), 5000);
+    return () => clearInterval(t);
+  }, []);
+
+  const notice = NOTICES[noticeIdx];
+  const alert = STUDENT_ALERTS[alertIdx];
+
   return (
     <div className={styles.container}>
       <div className={styles.topSection}>
@@ -125,12 +153,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass }) => 
             </div>
             <div>
               <h3 className={styles.cardTitle}>공지사항</h3>
-              <p className={styles.cardSubtitle}>3월 학습 리포트 업데이트 안내<br/>새로운 분석 항목이 추가되었어요.</p>
+              <p className={styles.cardSubtitle}>{notice.text.split('\n').map((line, i) => <span key={i}>{line}{i === 0 && <br/>}</span>)}</p>
             </div>
           </div>
           <div>
-            <a href="#" className={styles.moreLink}>더보기 &gt;</a>
-            <p className={styles.cardDate}>2026.03.04</p>
+            <div className={styles.dotRow}>
+              {NOTICES.map((_, i) => <span key={i} className={i === noticeIdx ? styles.dotActive : styles.dot} />)}
+            </div>
+            <p className={styles.cardDate}>{notice.date}</p>
           </div>
         </div>
 
@@ -142,11 +172,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass }) => 
               </svg>
             </div>
             <div>
-              <h3 className={styles.cardTitle}>도움이 필요한 학생 <span className={styles.highlightCount}>3</span></h3>
-              <p className={styles.cardSubtitle}>지난 7일간 멘션 요청 3건이 발생했어요.</p>
+              <h3 className={styles.cardTitle}>도움이 필요한 학생 <span className={styles.highlightCount}>{alert.count}</span></h3>
+              <p className={styles.cardSubtitle}>{alert.desc}</p>
             </div>
           </div>
-          <a href="#" className={styles.moreLink}>더보기 &gt;</a>
+          <div className={styles.dotRow}>
+            {STUDENT_ALERTS.map((_, i) => <span key={i} className={i === alertIdx ? styles.dotActive : styles.dot} />)}
+          </div>
         </div>
       </div>
 
