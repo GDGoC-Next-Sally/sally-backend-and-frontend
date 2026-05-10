@@ -34,27 +34,27 @@ class ChatRequest(BaseModel):
     student_id: Optional[str] = None    # 학생 UUID (dialogs 테이블 조회용)
 
 
-# ── TEACHER_SUMMARY 파싱 결과 (LLM이 매 턴 생성하는 원천 데이터) ────────────
-class TeacherSummary(BaseModel):
-    # ── 핵심 분석 지표 (기존 10개 + 신규) ─────────────────────────────────────────
-    struggle_level: Optional[int] = 10             # 현재 학습 난항 절대 수치 (0~100). 대시보드 표시용.
-    struggle_delta: Optional[int] = None           # 이번 턴 좌절 증감분. unobservable이면 null.
-    understanding_score: Optional[int] = 5         # 현재 이해 수준 (1~10)
-    current_topic: Optional[str] = None            # 이번 턴 세부 개념 (topicHints 중 선택)
-    student_emotion: Optional[str] = None          # 감정: 집중|혼란|좌절|흥미|무반응|불안
-    question_intent: Optional[str] = None          # 발화 의도: 개념질문|풀이요청|확인요청|포기표현|잡담|시험답요구
-    confusion_type: Optional[str] = None           # 혼란 유형: 개념_모름|적용_실패|오개념|풀이_막힘|없음
-    knowledge_gap: Optional[str] = None            # 학생이 정확히 무엇을 모르는지 구체적 요약
-    misconception_tag: Optional[str] = None        # 오개념 태그 (misconceptionTagHints 중 선택, 없으면 null)
-    engagement_level: Optional[str] = None         # 학습 참여도: 낮음|보통|높음|이탈위험
-    one_line_summary: Optional[str] = None         # 교사용 최신 학생 상태 한 줄 요약
+# ── 실시간 분석 결과 (5개 핵심 필드, /analyze 엔드포인트 전용) ──────────────
+class RealtimeAnalysis(BaseModel):
+    understanding_score: Optional[int] = None     # 이해도 (1~10, 판단 불가 시 null)
+    current_topic: Optional[str] = None           # 수업 중인 개념
+    student_emotion: Optional[str] = None         # 감정
+    one_line_summary: Optional[str] = None        # 대화 상태 한 줄 요약
+    need_intervention: Optional[bool] = False     # 교사 개입 필요 여부
 
-    # ── 신뢰도 / 관측 가능성 메타데이터 ──────────────────────────────────────────
-    is_observable: Optional[bool] = True           # 이번 발화로 감정/상태 측정이 가능한가
-    confidence: Optional[str] = "medium"           # 분석 신뢰도: high | medium | low
-    needs_followup_check: Optional[bool] = False   # 다음 턴 확인 필요 여부
-    evidence_type: Optional[str] = None            # 판단 근거 유형 (예: giving_up, understanding_confirmed, ambiguous_short)
-    reason: Optional[str] = None                   # unobservable 또는 판단 불가 시 사유
+
+# ── TEACHER_SUMMARY 파싱 결과 (LLM이 매 턴 생성하는 원천 데이터 10개) ────────
+class TeacherSummary(BaseModel):
+    frustration_delta: Optional[int] = 0          # 이번 턴 좌절 증감분 (-30~+30)
+    understanding_score: Optional[int] = 5        # 현재 이해 수준 (1~10)
+    current_topic: Optional[str] = None           # 이번 턴 세부 개념 (topicHints 중 선택)
+    student_emotion: Optional[str] = None         # 감정: 집중|혼란|좌절|흥미|무반응|불안
+    question_intent: Optional[str] = None         # 발화 의도: 개념질문|풀이요청|확인요청|포기표현|잡담|시험답요구
+    confusion_type: Optional[str] = None          # 혼란 유형: 개념_모름|적용_실패|오개념|풀이_막힘|없음
+    knowledge_gap: Optional[str] = None           # 학생이 정확히 무엇을 모르는지 구체적 요약
+    misconception_tag: Optional[str] = None       # 오개념 태그 (misconceptionTagHints 중 선택, 없으면 null)
+    engagement_level: Optional[str] = None        # 학습 참여도: 낮음|보통|높음|이탈위험
+    one_line_summary: Optional[str] = None        # 교사용 최신 학생 상태 한 줄 요약
 
 
 # ── /update-realtime API 요청 바디 ────────────────────────────────────────────
@@ -88,10 +88,10 @@ class FinalReport(BaseModel):
     understanding_scores_timeline: List[int]      # 턴별 이해도 % 시계열 (×10, 꺾은선 차트용)
 
     # ── 좌절 / 안정도 ──────────────────────────────────────────────────────────
-    struggle_total: int                        # 누적 좌절 지수 (struggle_delta 합산)
-    struggle_trend: str                        # 최근 3턴 좌절 추이: "improving" | "worsening" | "stable"
+    frustration_total: int                        # 누적 좌절 지수 (frustration_delta 합산)
+    frustration_trend: str                        # 최근 3턴 좌절 추이: "improving" | "worsening" | "stable"
     stability_gauge: int                          # 안정도 게이지 (0~100, 높을수록 안정)
-    urgency_level: int                            # 긴급도 (0~5, struggle_total ÷ 20)
+    urgency_level: int                            # 긴급도 (0~5, frustration_total ÷ 20)
 
     # ── 감정 / 오개념 ──────────────────────────────────────────────────────────
     dominant_emotion: Optional[str] = None        # 수업 전체 주요 감정 (전체 최빈값, 최종 요약용)

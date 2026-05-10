@@ -10,8 +10,8 @@ from openai import AsyncOpenAI
 from dotenv import load_dotenv
 
 from typing import AsyncGenerator
-from ai_server.models import StudentProfile, ConversationTurn, TeacherSummary
-from ai_server.services.prompt_builder import build_chat_system_prompt, build_analysis_system_prompt, build_chat_few_shot_messages
+from ai_server.models import StudentProfile, ConversationTurn, TeacherSummary, RealtimeAnalysis
+from ai_server.services.prompt_builder import build_chat_system_prompt, build_realtime_analysis_system_prompt, build_chat_few_shot_messages
 
 # ai_server 폴더 안의 .env 파일을 명시적으로 지정
 env_path = Path(__file__).parent.parent / ".env"
@@ -328,7 +328,8 @@ async def analyze_student(
     struggle_delta 등 상대적 변화량 계산의 정확도를 높입니다.
     """
     client = _get_client()
-    system_prompt = build_analysis_system_prompt(student_profile)
+    system_prompt = build_realtime_analysis_system_prompt(student_profile)
+
 
     # ── 대화 기록을 이전 맥락 / 마지막 턴으로 분리 ────────────────────────────
     # 마지막 턴 = 마지막 AI 발화 + 마지막 학생 발화 (최대 최근 2개)
@@ -378,20 +379,17 @@ async def analyze_student(
 
     if previous_summary:
         user_content += (
-            "[직전 턴 분석 결과 — 이번 변화량 계산 기준]\n"
-            f"- previous_struggle_level: {previous_summary.struggle_level}\n"
+            "[직전 턴 분석 결과 — 연속성 참고용]\n"
             f"- previous_understanding_score: {previous_summary.understanding_score}\n"
             f"- previous_student_emotion: {previous_summary.student_emotion}\n"
-            f"- previous_engagement_level: {previous_summary.engagement_level}\n"
-            f"- previous_confusion_type: {previous_summary.confusion_type}\n"
-            f"- previous_evidence_type: {previous_summary.evidence_type}\n"
+            f"- previous_current_topic: {previous_summary.current_topic}\n"
+            f"- previous_one_line_summary: {previous_summary.one_line_summary}\n"
             "\n"
         )
     else:
         user_content += (
             "[직전 턴 분석 결과]\n"
-            "- previous_struggle_level: 없음\n"
-            "- previous_understanding_score: 없음\n"
+            "- 없음 (이번이 첫 분석이거나 기록이 없습니다.)\n"
             "\n"
         )
 
@@ -431,28 +429,15 @@ async def analyze_student(
     raw_text = response.choices[0].message.content
     finish_reason = response.choices[0].finish_reason
     if not raw_text:
-        # 안전 필터 또는 API 오류로 content가 None인 경우 → 조용히 폴백 반환
         print(f"[WARN] 분석 모델 응답이 비어있습니다. (finish_reason={finish_reason}, 안전 필터 또는 API 오류)")
-        prev_level = (previous_summary.struggle_level or 10) if previous_summary else 10
-        return TeacherSummary(
-            struggle_delta=None,
-            understanding_score=5,
-            current_topic="개념학습",
-            student_emotion="혼란",
+        return RealtimeAnalysis(
+            understanding_score=None,
+            current_topic=None,
+            student_emotion="중립",
             one_line_summary="분석 불가 (안전 필터)",
-            question_intent="확인요청",
-            confusion_type="없음",
-            knowledge_gap=None,
-            misconception_tag=None,
-            engagement_level="보통",
-            struggle_level=prev_level,
-            is_observable=False,
-            confidence="low",
-            needs_followup_check=True,
-            evidence_type=None,
-            reason="content_filter_or_api_error",
+            need_intervention=False,
         )
-    
+
     # 순수 JSON 추출 (마크다운 포맷팅 방어)
     raw_text = raw_text.strip()
     if raw_text.startswith("```json"):
@@ -462,25 +447,16 @@ async def analyze_student(
     if raw_text.endswith("```"):
         raw_text = raw_text[:-3]
     raw_text = raw_text.strip()
-    # 제어 문자 정제 (LLM이 JSON 문자열 내부에 리터럴 개행 등을 포함하는 경우 방어)
-    # 1차: \t, \n, \r을 제외한 불필요한 제어 문자 제거
     raw_text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', raw_text)
-    # 2차: 큰따옴표로 묶인 JSON 문자열 값 내부의 리터럴 개행/탭을 이스케이프
     def _escape_in_string(m: re.Match) -> str:
         return m.group(0).replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t')
     raw_text = re.sub(r'"(?:[^"\\]|\\.)*"', _escape_in_string, raw_text, flags=re.DOTALL)
-    
-    # 3차: LLM이 친절하게 // 주석을 달아준 경우(예: "struggle_level": 10 // 집중) 파이썬 json에서 에러가 나므로 제거
     raw_text = re.sub(r'//.*', '', raw_text)
 
     try:
         data = json.loads(raw_text)
-        summary = TeacherSummary(**data)
-        summary = _enforce_consistency(summary, previous_summary)
-        summary = _process_struggle_metrics(summary, last_turns, previous_summary)
-        return summary
+        return RealtimeAnalysis(**data)
     except json.JSONDecodeError as e:
         error_msg = f"LLM 분석 응답을 JSON으로 파싱할 수 없습니다: {e}\nRaw Response: {raw_text}"
         print(f"[ERROR] {error_msg}")
-        # 폴백 데이터를 반환하지 않고 명시적으로 실패(예외) 처리
         raise ValueError(error_msg)
