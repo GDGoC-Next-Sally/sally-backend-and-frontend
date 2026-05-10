@@ -214,8 +214,8 @@
 }
 
 .badgeClosed {
-  background-color: #fff0f6;
-  color: #f06595;
+  background-color: var(--color-border-light);
+  color: var(--color-text-secondary);
 }
 
 /* Three-dot menu */

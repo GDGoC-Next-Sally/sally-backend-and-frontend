@@ -9,7 +9,7 @@ interface Props {
   classId: number;
   session?: Session;
   onClose: () => void;
-  onSubmit: (body: CreateSessionBody) => void;
+  onSubmit: (body: CreateSessionBody) => void | Promise<void>;
 }
 
 export const SessionModal: React.FC<Props> = ({ classId, session, onClose, onSubmit }) => {
@@ -18,9 +18,13 @@ export const SessionModal: React.FC<Props> = ({ classId, session, onClose, onSub
   const [name, setName] = useState(session?.session_name ?? '');
   const [explanation, setExplanation] = useState(session?.explanation ?? '');
   const [objective, setObjective] = useState(session?.objective ?? '');
-  const [scheduledDate, setScheduledDate] = useState(dayjs(session?.scheduled_date).format('YYYY-MM-DD') ?? '');
-  const [scheduledStart, setScheduledStart] = useState(dayjs(session?.scheduled_start).format('HH:mm') ?? '');
-  const [scheduledEnd, setScheduledEnd] = useState(dayjs(session?.scheduled_end).format('HH:mm') ?? '');
+  const [scheduledDate, setScheduledDate] = useState(() => {
+    if (!session?.scheduled_date) return '';
+    const d = new Date(session.scheduled_date);
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+  });
+  const [scheduledStart, setScheduledStart] = useState(session?.scheduled_start ? dayjs(session.scheduled_start).format('HH:mm') : '');
+  const [scheduledEnd, setScheduledEnd] = useState(session?.scheduled_end ? dayjs(session.scheduled_end).format('HH:mm') : '');
   const [period, setPeriod] = useState<string>(session?.period?.toString() ?? '');
   const [error, setError] = useState('');
 
@@ -34,7 +38,7 @@ export const SessionModal: React.FC<Props> = ({ classId, session, onClose, onSub
       session_name: name.trim(),
       explanation: explanation.trim() || undefined,
       objective: objective.trim() || undefined,
-      scheduled_date: dayjs(scheduledDate).toISOString() || undefined,
+      scheduled_date: scheduledDate ? `${scheduledDate}T12:00:00.000Z` : undefined,
       scheduled_start: scheduledDate && scheduledStart ? dayjs(`${scheduledDate}T${scheduledStart}`).toISOString() : undefined,
       scheduled_end: scheduledDate && scheduledEnd ? dayjs(`${scheduledDate}T${scheduledEnd}`).toISOString() : undefined,
       period: period ? Number(period) : undefined,

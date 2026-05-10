@@ -37,11 +37,11 @@ export const SessionSidebar: React.FC<Props> = ({
         <p className={styles.empty}>아직 입장한 학생이 없습니다.</p>
       ) : (
         <ul className={styles.list}>
-          {students.map((student) => {
+          {students.map((student, idx) => {
             const isSelected = phase === 'active' && student.userId === selectedId;
             return (
               <li
-                key={student.userId}
+                key={student.userId ?? `student-${idx}`}
                 className={`${styles.item} ${isSelected ? styles.itemSelected : ''} ${phase === 'active' ? styles.itemClickable : ''}`}
                 onClick={() => phase === 'active' && onSelect?.(student.userId)}
               >

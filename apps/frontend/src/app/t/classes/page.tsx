@@ -18,7 +18,7 @@ export default function TeacherClassesPage() {
 
   const fetchClasses = useCallback(() => {
     getTeacherClasses()
-      .then((data) => setClasses(data.map((c) => ({ ...c, schedule: c.schedule || '월1, 화4, 수4, 금4' })) as ClassItem[]))
+      .then((data) => setClasses(data))
       .catch(() => setClasses([]));
   }, []);
 

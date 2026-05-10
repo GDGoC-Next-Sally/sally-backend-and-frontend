@@ -65,12 +65,7 @@ export const ClassList: React.FC<ClassListProps> = ({
 
   const selectedClass = classes.find((c) => c.id === selectedId) ?? null;
 
-  const enriched = classes.map((c) => ({
-    ...c,
-    schedule: c.schedule || '월1, 화4, 수4, 금4',
-  }));
-
-  const filtered = enriched.filter((c) => {
+  const filtered = classes.filter((c) => {
     const label = `${c.grade ?? ''}학년 ${c.homeroom ?? ''} ${c.subject}`;
     return label.includes(search);
   });
@@ -171,13 +166,6 @@ export const ClassList: React.FC<ClassListProps> = ({
                   className={`${styles.card} ${isSelected ? styles.cardSelected : ''}`}
                   onClick={() => setSelectedId(isSelected ? null : cls.id)}
                 >
-                  <div className={styles.cardSchedule}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}>
-                      <circle cx="12" cy="12" r="10" />
-                      <polyline points="12 6 12 12 16 14" />
-                    </svg>
-                    {cls.schedule}
-                  </div>
                   <div className={`${styles.cardTitle} ${isSelected ? styles.cardTitleSelected : ''}`}>
                     {cls.grade ? `${cls.grade}학년 ` : ''}{cls.homeroom ?? '미지정'}
                   </div>

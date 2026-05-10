@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import styles from './Dashboard.module.css';
 
 const NOTICES = [
@@ -32,6 +33,8 @@ interface TodayClass {
   period: number;
   studentCount?: number;
   aiNote?: string;
+  sessionId?: number;
+  classId?: number;
 }
 
 interface DashboardProps {
@@ -58,6 +61,7 @@ const ChevronRight = () => (
 
 /* ── 통합 카드 컴포넌트 ───────────────────────────────────── */
 function TodayClassContent({ todayClass }: { todayClass?: TodayClass }) {
+  const router = useRouter();
   if (!todayClass) {
     return (
       <div className={styles.emptyBody}>
@@ -106,7 +110,14 @@ function TodayClassContent({ todayClass }: { todayClass?: TodayClass }) {
         </div>
 
         {/* 동작 버튼 */}
-        <button className={styles.cardActionBtn}>
+        <button
+          className={styles.cardActionBtn}
+          onClick={() => {
+            if (todayClass.sessionId && todayClass.classId) {
+              router.push(`/t/classes/${todayClass.classId}/sessions/${todayClass.sessionId}`);
+            }
+          }}
+        >
           <span style={{ width: 18 }} />
           <span>{cfg.btnText}</span>
           <ChevronRight />

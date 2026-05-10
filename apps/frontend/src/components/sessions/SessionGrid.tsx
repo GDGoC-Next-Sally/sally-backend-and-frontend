@@ -8,16 +8,18 @@ import { SessionModal } from './SessionModal';
 import { ConfirmModal } from '../common/ConfirmModal';
 import styles from './SessionGrid.module.css';
 import type { CreateSessionBody } from '@/actions/sessions';
+import { computeSessionStatus, type ComputedStatus } from '@/utils/sessionStatus';
 
-const STATUS_CONFIG = {
-  ACTIVE:   { label: '진행중',   className: 'badgeActive' },
-  PLANNING: { label: '임시 예정', className: 'badgePending' },
-  FINISHED: { label: '종료',     className: 'badgeClosed' },
-} as const;
+const STATUS_CONFIG: Record<ComputedStatus, { label: string; badgeClass: string; iconColor: string; iconBg: string }> = {
+  live:     { label: '진행중', badgeClass: 'badgeActive',  iconColor: 'var(--color-live)',              iconBg: 'var(--color-live-light)' },
+  upcoming: { label: '예정',   badgeClass: 'badgePending', iconColor: '#ff922b',                        iconBg: '#fff4e6' },
+  finished: { label: '종료',   badgeClass: 'badgeClosed',  iconColor: 'var(--color-text-secondary)',    iconBg: 'var(--color-border-light)' },
+};
 
 function formatDate(dateStr?: string | null) {
   if (!dateStr) return '';
-  return new Date(dateStr).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+  const d = new Date(dateStr);
+  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
 }
 
 type Tab = '전체보기' | '세션 목록' | '과제 & 자료';
@@ -134,15 +136,16 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
           </div>
         )}
         {filtered.map((session) => {
-          const cfg = STATUS_CONFIG[session.status] ?? STATUS_CONFIG.PLANNING;
+          const computed = computeSessionStatus(session);
+          const cfg = STATUS_CONFIG[computed];
           return (
             <div
               key={session.id}
               className={styles.sessionRow}
               onClick={() => router.push(`/t/classes/${classId}/sessions/${session.id}`)}
             >
-              <div className={styles.sessionIcon}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#20c997" strokeWidth="2">
+              <div className={styles.sessionIcon} style={{ backgroundColor: cfg.iconBg }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={cfg.iconColor} strokeWidth="2">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
               </div>
@@ -158,7 +161,7 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
 
               <div className={styles.sessionTime}>{formatDate(session.scheduled_date)}</div>
 
-              <span className={`${styles.badge} ${styles[cfg.className]}`}>{cfg.label}</span>
+              <span className={`${styles.badge} ${styles[cfg.badgeClass]}`}>{cfg.label}</span>
 
               <div className={styles.menuContainer}>
                 <button
@@ -195,7 +198,7 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
         <SessionModal
           classId={classId}
           onClose={() => setIsCreateOpen(false)}
-          onSubmit={(body) => { onCreateSession(body); onRefresh(); }}
+          onSubmit={async (body) => { await onCreateSession(body); onRefresh(); }}
         />
       )}
       {editTarget && (
@@ -203,7 +206,7 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
           classId={classId}
           session={editTarget}
           onClose={() => setEditTarget(null)}
-          onSubmit={(body) => { if (editTarget) onUpdateSession(editTarget.id, body); onRefresh(); }}
+          onSubmit={async (body) => { if (editTarget) await onUpdateSession(editTarget.id, body); onRefresh(); }}
         />
       )}
       {deleteTargetId !== null && (
