@@ -77,5 +77,7 @@ export async function joinSession(sessionId: string): Promise<JoinSessionResult>
 }
 
 export async function getAttendance(sessionId: string): Promise<AttendanceStudent[]> {
-  return serverFetch(`/sessions/${sessionId}/attendance`);
+  const raw: { id: string; name: string; attended_at: string }[] =
+    await serverFetch(`/sessions/${sessionId}/attendance`);
+  return raw.map(r => ({ userId: r.id, name: r.name, joinedAt: r.attended_at }));
 }

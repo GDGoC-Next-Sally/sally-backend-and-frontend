@@ -76,15 +76,19 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [selectedMessages]);
 
-  // Load dialog map (student_id → dialog_id) for existing students
+  // Load dialog map, then immediately load chat for the selected student
   useEffect(() => {
     getSessionDialogs(sessionId).then(dialogs => {
       dialogs.forEach(({ student_id, dialog_id }) => {
         dialogMapRef.current.set(student_id, dialog_id);
         revDialogMapRef.current.set(dialog_id, student_id);
       });
+      // Dialog map is now ready — load chat if already in active phase
+      if (selectedStudentIdRef.current && initialPhase === 'active') {
+        loadChat(selectedStudentIdRef.current);
+      }
     }).catch(() => {});
-  }, [sessionId]);
+  }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Connect socket
   useEffect(() => {
@@ -164,12 +168,13 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
     loadChat(id);
   }, [loadChat]);
 
-  // Auto-load chat when phase becomes active and a student is already selected
+  // When session starts (waiting → active), load chat for selected student
+  // Dialog map is already populated by the time teacher clicks "start"
   useEffect(() => {
     if (phase === 'active' && selectedStudentId) {
       loadChat(selectedStudentId);
     }
-  }, [phase]);
+  }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleStart = async () => {
     setLoading(true);

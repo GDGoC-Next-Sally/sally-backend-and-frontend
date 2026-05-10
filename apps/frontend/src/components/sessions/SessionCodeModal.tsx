@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ConfirmModal } from '../common/ConfirmModal';
 import styles from './SessionCodeModal.module.css';
 
@@ -23,6 +23,11 @@ export const SessionCodeModal: React.FC<SessionCodeModalProps> = ({
 }) => {
   const [code, setCode] = useState(inviteCode ?? '--------');
   const [blockNew, setBlockNew] = useState(!registerable);
+
+  // Sync code when parent refreshes invite_code after regeneration
+  useEffect(() => {
+    if (inviteCode) setCode(inviteCode);
+  }, [inviteCode]);
   const [copied, setCopied] = useState(false);
   const [isReissueConfirmOpen, setIsReissueConfirmOpen] = useState(false);
 
