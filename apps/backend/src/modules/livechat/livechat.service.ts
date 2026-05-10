@@ -221,4 +221,34 @@ export class LivechatService {
 
     return { status: 'ok' };
   }
+
+  async deleteMessages(dialogId: number, userId: string, role: string) {
+    const dialog = await this.prisma.dialogs.findUnique({
+      where: { id: dialogId },
+      include: { sessions: true }
+    });
+
+    if (!dialog) throw new NotFoundException('대화를 찾을 수 없습니다.');
+
+    // 권한 확인: 본인, 해당 클래스 선생님, 혹은 관리자
+    if (role !== 'ADMIN' && dialog.student_id !== userId && dialog.sessions.teacher_id !== userId) {
+      throw new UnauthorizedException('권한이 없습니다.');
+    }
+
+    // 1. 채팅 메시지 삭제
+    await this.prisma.chat_messages.deleteMany({
+      where: { dialog_id: dialogId }
+    });
+
+    // 2. 실시간 분석 결과도 초기화
+    await this.prisma.dialogs.update({
+      where: { id: dialogId },
+      data: { 
+        real_time_analysis: [],
+        is_analyzed: false
+      }
+    });
+
+    return { status: 'deleted' };
+  }
 }

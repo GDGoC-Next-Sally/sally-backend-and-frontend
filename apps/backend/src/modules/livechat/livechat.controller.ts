@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Req, Sse, Headers, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Req, Sse, Headers, UnauthorizedException, Delete } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { LivechatService } from './livechat.service';
 import { SendChatMessageDto } from './dto/send-chat-message.dto';
@@ -44,5 +44,11 @@ export class LivechatController {
       throw new UnauthorizedException('내부 요청이 아닙니다.');
     }
     return this.livechatService.handleAnalytics(body.dialog_id, body.analysis);
+  }
+
+  @Delete('dialog/:dialogId')
+  @ApiOperation({ summary: '대화방 채팅 기록 및 분석 데이터 삭제' })
+  deleteMessages(@Param('dialogId') dialogId: string, @Req() req: any) {
+    return this.livechatService.deleteMessages(+dialogId, req.user.userId, req.user.role);
   }
 }

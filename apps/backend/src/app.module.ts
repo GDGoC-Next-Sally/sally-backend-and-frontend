@@ -11,6 +11,7 @@ import { GatewaysModule } from './common/gateways/gateways.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
 import { LivechatModule } from './modules/livechat/livechat.module';
 import { MonitoringModule } from './modules/monitoring/monitoring.module';
+import { DevModule } from './modules/dev/dev.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { MonitoringModule } from './modules/monitoring/monitoring.module';
     SessionsModule,
     LivechatModule,
     MonitoringModule,
+    DevModule,
   ],
   controllers: [AppController],
   providers: [AppService],
