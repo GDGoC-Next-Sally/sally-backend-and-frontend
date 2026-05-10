@@ -4,6 +4,7 @@ import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import styles from './TopNav.module.css';
+import { ChangePasswordModal } from './ChangePasswordModal';
 
 interface TopNavUser {
   name: string;
@@ -58,6 +59,7 @@ function ReportNavIcon({ active }: { active: boolean }) {
 export const TopNav: React.FC<TopNavProps> = ({ user, onSignOut }) => {
   const pathname = usePathname();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const roleTitle = user?.role === 'teacher' ? '선생님' : '학생';
@@ -71,6 +73,7 @@ export const TopNav: React.FC<TopNavProps> = ({ user, onSignOut }) => {
   const isReportPage = pathname?.includes('/reports');
 
   return (
+    <>
     <nav className={styles.nav}>
       {/* 로고 */}
       <Link href={homeHref} className={styles.logo}>
@@ -131,8 +134,12 @@ export const TopNav: React.FC<TopNavProps> = ({ user, onSignOut }) => {
               <>
                 <div className={styles.dropdownBackdrop} onClick={() => setDropdownOpen(false)} />
                 <div className={styles.dropdown}>
-                  <button type="button" className={styles.dropdownItem}>
-                    계정 설정
+                  <button
+                    type="button"
+                    className={styles.dropdownItem}
+                    onClick={() => { setDropdownOpen(false); setShowPasswordModal(true); }}
+                  >
+                    비밀번호 변경
                   </button>
                   <button type="button" className={styles.dropdownItem}>
                     알림
@@ -152,5 +159,10 @@ export const TopNav: React.FC<TopNavProps> = ({ user, onSignOut }) => {
         )}
       </div>
     </nav>
+
+      {showPasswordModal && (
+        <ChangePasswordModal onClose={() => setShowPasswordModal(false)} />
+      )}
+    </>
   );
 };
