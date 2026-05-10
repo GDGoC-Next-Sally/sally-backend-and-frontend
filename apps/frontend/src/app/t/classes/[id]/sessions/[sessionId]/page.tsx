@@ -17,6 +17,7 @@ export default function SessionPage() {
   const sessionId = params.sessionId as string;
 
   const [initialPhase, setInitialPhase] = useState<'waiting' | 'active' | null>(null);
+  const [sessionName, setSessionName] = useState<string | undefined>();
   const [students, setStudents] = useState<AttendanceStudent[]>([]);
 
   const fetchStudents = useCallback(async () => {
@@ -32,6 +33,7 @@ export default function SessionPage() {
     const init = async () => {
       try {
         const session = await getSession(sessionId);
+        setSessionName(session.session_name);
         setInitialPhase(session.status === 'ACTIVE' ? 'active' : 'waiting');
         await fetchStudents();
       } catch {
@@ -58,6 +60,7 @@ export default function SessionPage() {
       classId={classId}
       sessionId={sessionId}
       initialPhase={initialPhase}
+      sessionName={sessionName}
       students={students}
       onStart={handleStart}
       onFinish={handleFinish}

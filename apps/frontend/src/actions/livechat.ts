@@ -13,3 +13,12 @@ export interface ChatMessage {
 export async function getMessages(dialogId: number): Promise<ChatMessage[]> {
   return serverFetch(`/livechat/dialog/${dialogId}`);
 }
+
+export interface SessionDialog {
+  student_id: string;
+  dialog_id: number;
+}
+
+export async function getSessionDialogs(sessionId: string): Promise<SessionDialog[]> {
+  return serverFetch(`/sessions/${sessionId}/dialogs`);
+}
