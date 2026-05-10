@@ -72,14 +72,15 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
         const computed = computeSessionStatus(session);
         if (computed === 'live') {
           try {
-            const { dialog_id } = await joinSession(sessionId);
+            const result = await joinSession(sessionId);
+            const dialog_id = result.dialog.id;
             const history = await getMessages(dialog_id);
             setDialogId(dialog_id);
             setMessages(history);
             setStartTime(session.started_at ? new Date(session.started_at) : new Date());
             setPhase('live');
           } catch {
-            setPhase('live'); // show live UI even if join partially fails
+            setPhase('waiting');
           }
         } else {
           setPhase('waiting');
@@ -109,7 +110,8 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
         setPhase('waiting');
         return;
       }
-      const { dialog_id } = await joinSession(sessionId);
+      const result = await joinSession(sessionId);
+      const dialog_id = result.dialog.id;
       const history = await getMessages(dialog_id);
       setDialogId(dialog_id);
       setMessages(history);
