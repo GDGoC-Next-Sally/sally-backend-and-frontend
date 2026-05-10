@@ -14,11 +14,24 @@ export async function getMessages(dialogId: number): Promise<ChatMessage[]> {
   return serverFetch(`/livechat/dialog/${dialogId}`);
 }
 
-export interface SessionDialog {
-  student_id: string;
-  dialog_id: number;
+export interface SessionStudentMonitor {
+  dialogId: number;
+  studentId: string;
+  name: string;
+  latestAnalysis: unknown | null;
 }
 
-export async function getSessionDialogs(sessionId: string): Promise<SessionDialog[]> {
-  return serverFetch(`/sessions/${sessionId}/dialogs`);
+export async function getSessionStudents(sessionId: string): Promise<SessionStudentMonitor[]> {
+  return serverFetch(`/monitoring/session/${sessionId}/students`);
+}
+
+export interface StudentDetail {
+  dialogId: number;
+  studentId: string;
+  messages: ChatMessage[];
+  analysisHistory: unknown[];
+}
+
+export async function getStudentDetail(dialogId: number): Promise<StudentDetail> {
+  return serverFetch(`/monitoring/dialog/${dialogId}`);
 }

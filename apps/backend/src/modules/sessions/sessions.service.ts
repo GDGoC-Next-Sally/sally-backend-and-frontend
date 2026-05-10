@@ -221,18 +221,6 @@ export class SessionsService {
     };
   }
 
-  async getSessionDialogs(sessionId: number, teacherId: string) {
-    const session = await this.prisma.sessions.findUnique({ where: { id: sessionId } });
-    if (!session) throw new NotFoundException(`세션 #${sessionId}를 찾을 수 없습니다.`);
-    if (session.teacher_id !== teacherId) throw new UnauthorizedException('권한이 없습니다.');
-
-    const dialogs = await this.prisma.dialogs.findMany({
-      where: { session_id: sessionId },
-      select: { id: true, student_id: true },
-    });
-    return dialogs.map(d => ({ student_id: d.student_id, dialog_id: d.id }));
-  }
-
   /**
    * 특정 세션의 출석 명단을 조회합니다.
    */

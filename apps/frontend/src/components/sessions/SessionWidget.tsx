@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { SessionSidebar } from './SessionSidebar';
 import { ConfirmModal } from '../common/ConfirmModal';
 import { type AttendanceStudent } from '@/actions/sessions';
-import { getMessages, getSessionDialogs, type ChatMessage } from '@/actions/livechat';
+import { getSessionStudents, getStudentDetail, type ChatMessage } from '@/actions/livechat';
 import { createClient } from '@/utils/supabase/client';
 import styles from './SessionWidget.module.css';
 
@@ -76,12 +76,12 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [selectedMessages]);
 
-  // Load dialog map, then immediately load chat for the selected student
+  // Load dialog map via monitoring API, then immediately load chat for selected student
   useEffect(() => {
-    getSessionDialogs(sessionId).then(dialogs => {
-      dialogs.forEach(({ student_id, dialog_id }) => {
-        dialogMapRef.current.set(student_id, dialog_id);
-        revDialogMapRef.current.set(dialog_id, student_id);
+    getSessionStudents(sessionId).then(students => {
+      students.forEach(({ studentId, dialogId }) => {
+        dialogMapRef.current.set(studentId, dialogId);
+        revDialogMapRef.current.set(dialogId, studentId);
       });
       // Dialog map is now ready — load chat if already in active phase
       if (selectedStudentIdRef.current && initialPhase === 'active') {
@@ -154,8 +154,8 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
     }
     setIsLoadingChat(true);
     try {
-      const msgs = await getMessages(dialogId);
-      setSelectedMessages(msgs);
+      const detail = await getStudentDetail(dialogId);
+      setSelectedMessages(detail.messages);
     } catch {
       setSelectedMessages([]);
     } finally {

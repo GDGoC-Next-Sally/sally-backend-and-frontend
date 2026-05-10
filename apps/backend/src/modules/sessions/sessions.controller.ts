@@ -69,13 +69,6 @@ export class SessionsController {
     return this.sessionsService.joinSession(+id, req.user.userId);
   }
 
-  @Get(':id/dialogs')
-  @Roles(UserRole.TEACHER)
-  @ApiOperation({ summary: '세션의 학생별 대화방 ID 조회' })
-  getSessionDialogs(@Param('id') id: string, @Req() req: any) {
-    return this.sessionsService.getSessionDialogs(+id, req.user.userId);
-  }
-
   @Get(':id/attendance')
   @Roles(UserRole.TEACHER)
   @ApiOperation({ summary: '특정 세션의 출석 명단 조회' })
