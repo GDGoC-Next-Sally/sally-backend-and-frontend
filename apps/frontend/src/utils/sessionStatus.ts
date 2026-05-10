@@ -1,12 +1,17 @@
-import type { Session } from '@/actions/sessions';
-
 export type ComputedStatus = 'upcoming' | 'live' | 'finished';
+
+interface SessionLike {
+  status: 'ACTIVE' | 'FINISHED' | 'PLANNING';
+  scheduled_date?: string | null;
+  scheduled_start?: string | null;
+  scheduled_end?: string | null;
+}
 
 /**
  * 백엔드 status + 등록된 시간 기반으로 실제 상태 계산
  * ACTIVE/FINISHED는 백엔드 값 우선, PLANNING은 시간으로 판단
  */
-export function computeSessionStatus(session: Session): ComputedStatus {
+export function computeSessionStatus(session: SessionLike): ComputedStatus {
   if (session.status === 'ACTIVE') return 'live';
   if (session.status === 'FINISHED') return 'finished';
 

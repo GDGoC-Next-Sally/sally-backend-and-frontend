@@ -3,6 +3,7 @@
 import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { type Session } from '@/actions/sessions';
+import { computeSessionStatus, type ComputedStatus } from '@/utils/sessionStatus';
 import styles from './StudentSessionList.module.css';
 
 interface ClassInfo {
@@ -14,17 +15,24 @@ interface ClassInfo {
 
 type Tab = 'overview' | 'sessions' | 'materials';
 
-const STATUS_LABEL: Record<string, string> = {
-  ACTIVE: '진행중',
-  PLANNING: '준비중',
-  FINISHED: '종료',
+const STATUS_LABEL: Record<ComputedStatus, string> = {
+  live:     '진행중',
+  upcoming: '준비중',
+  finished: '종료',
 };
 
-const STATUS_CLASS: Record<string, string> = {
-  ACTIVE: styles.badgeActive,
-  PLANNING: styles.badgePlanning,
-  FINISHED: styles.badgeDone,
+const STATUS_CLASS: Record<ComputedStatus, string> = {
+  live:     styles.badgeActive,
+  upcoming: styles.badgePlanning,
+  finished: styles.badgeDone,
 };
+
+function formatDate(dateStr?: string | null) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
+    .toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+}
 
 interface Props {
   classId: string;
@@ -62,8 +70,8 @@ export const StudentSessionList: React.FC<Props> = ({
     }
   };
 
-  const activeSession = sessions.find((s) => s.status === 'ACTIVE');
-  const finishedSessions = sessions.filter((s) => s.status === 'FINISHED');
+  const activeSession = sessions.find((s) => computeSessionStatus(s) === 'live');
+  const finishedSessions = sessions.filter((s) => computeSessionStatus(s) === 'finished');
   const classTitle = classInfo?.subject ?? '클래스';
 
   const filteredSessions = sessions.filter((s) =>
@@ -154,7 +162,7 @@ export const StudentSessionList: React.FC<Props> = ({
                     <span className={styles.pastNum}>{idx + 1}</span>
                     <div className={styles.pastInfo}>
                       {s.scheduled_date && (
-                        <div className={styles.pastDate}>{s.scheduled_date}</div>
+                        <div className={styles.pastDate}>{formatDate(s.scheduled_date)}</div>
                       )}
                       <div className={styles.pastTitle}>{s.session_name}</div>
                     </div>
@@ -203,10 +211,13 @@ export const StudentSessionList: React.FC<Props> = ({
                   {search ? '검색 결과가 없습니다.' : '등록된 세션이 없습니다.'}
                 </p>
               ) : (
-                filteredSessions.map((session) => (
+                filteredSessions.map((session) => {
+                  const computed = computeSessionStatus(session);
+                  const iconColor = computed === 'live' ? 'var(--color-live)' : computed === 'upcoming' ? '#ff922b' : 'var(--color-text-secondary)';
+                  return (
                   <div key={session.id} className={styles.sessionRow}>
                     <div className={styles.sessionIcon}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={iconColor} strokeWidth="2">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                       </svg>
                     </div>
@@ -217,12 +228,12 @@ export const StudentSessionList: React.FC<Props> = ({
                       )}
                     </div>
                     {session.scheduled_date && (
-                      <span className={styles.sessionTime}>{session.scheduled_date}</span>
+                      <span className={styles.sessionTime}>{formatDate(session.scheduled_date)}</span>
                     )}
-                    <span className={`${styles.statusBadge} ${STATUS_CLASS[session.status] ?? ''}`}>
-                      {STATUS_LABEL[session.status] ?? session.status}
+                    <span className={`${styles.statusBadge} ${STATUS_CLASS[computed]}`}>
+                      {STATUS_LABEL[computed]}
                     </span>
-                    {session.status === 'ACTIVE' && (
+                    {computed === 'live' && (
                       <button
                         className={styles.joinSessionBtn}
                         onClick={() => handleJoin(session.id)}
@@ -231,7 +242,7 @@ export const StudentSessionList: React.FC<Props> = ({
                         {joining === session.id ? '참여 중...' : '참여하기'}
                       </button>
                     )}
-                    {session.status !== 'ACTIVE' && (
+                    {computed !== 'live' && (
                       <div className={styles.menuWrapper}>
                         <button
                           className={styles.menuTrigger}
@@ -255,7 +266,8 @@ export const StudentSessionList: React.FC<Props> = ({
                       </div>
                     )}
                   </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>

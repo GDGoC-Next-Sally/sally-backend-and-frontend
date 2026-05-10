@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getTeacherClasses, type ClassItem } from '@/actions/classes';
 import { getSessionsByClass, type Session } from '@/actions/sessions';
 import { Dashboard } from '@/components/dashboard/Dashboard';
@@ -15,15 +15,13 @@ interface TodayClassData {
   classId: number;
 }
 
-function findNearestSession(
-  entries: Array<{ cls: ClassItem; session: Session }>
-): TodayClassData | undefined {
-  // 계산된 상태로 필터링 (finished 제외)
+type Entry = { cls: ClassItem; session: Session };
+
+function findNearestSession(entries: Entry[]): TodayClassData | undefined {
   const valid = entries
     .map((e) => ({ ...e, computed: computeSessionStatus(e.session) }))
     .filter((e) => e.computed !== 'finished');
 
-  // live 우선, 그 다음 upcoming 순
   valid.sort((a, b) => {
     if (a.computed === 'live' && b.computed !== 'live') return -1;
     if (b.computed === 'live' && a.computed !== 'live') return 1;
@@ -48,6 +46,7 @@ function findNearestSession(
 export default function TeacherHomePage() {
   const [classes, setClasses] = useState<{ id: number; subject: string; grade: number | null; homeroom: string | null }[]>([]);
   const [todayClass, setTodayClass] = useState<TodayClassData | undefined>(undefined);
+  const entriesRef = useRef<Entry[]>([]);
 
   useEffect(() => {
     const load = async () => {
@@ -61,7 +60,7 @@ export default function TeacherHomePage() {
           )
         );
 
-        const entries: Array<{ cls: ClassItem; session: Session }> = [];
+        const entries: Entry[] = [];
         for (const r of results) {
           if (r.status === 'fulfilled') {
             for (const session of r.value.sessions) {
@@ -70,12 +69,21 @@ export default function TeacherHomePage() {
           }
         }
 
+        entriesRef.current = entries;
         setTodayClass(findNearestSession(entries));
       } catch {
         setClasses([]);
       }
     };
     load();
+  }, []);
+
+  // 60초마다 시간 기반 상태 재계산 (예정 → 진행중 등 자동 전환)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTodayClass(findNearestSession(entriesRef.current));
+    }, 60_000);
+    return () => clearInterval(timer);
   }, []);
 
   return <Dashboard classes={classes} todayClass={todayClass} />;
