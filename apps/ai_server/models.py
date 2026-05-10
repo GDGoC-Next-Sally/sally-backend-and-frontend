@@ -34,6 +34,15 @@ class ChatRequest(BaseModel):
     student_id: Optional[str] = None    # 학생 UUID (dialogs 테이블 조회용)
 
 
+# ── 실시간 분석 결과 (5개 핵심 필드, /analyze 엔드포인트 전용) ──────────────
+class RealtimeAnalysis(BaseModel):
+    understanding_score: Optional[int] = None     # 이해도 (1~10, 판단 불가 시 null)
+    current_topic: Optional[str] = None           # 수업 중인 개념
+    student_emotion: Optional[str] = None         # 감정
+    one_line_summary: Optional[str] = None        # 대화 상태 한 줄 요약
+    need_intervention: Optional[bool] = False     # 교사 개입 필요 여부
+
+
 # ── TEACHER_SUMMARY 파싱 결과 (LLM이 매 턴 생성하는 원천 데이터 10개) ────────
 class TeacherSummary(BaseModel):
     frustration_delta: Optional[int] = 0          # 이번 턴 좌절 증감분 (-30~+30)

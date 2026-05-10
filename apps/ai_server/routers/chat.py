@@ -4,7 +4,7 @@ routers/chat.py — AI 서버 API 엔드포인트 모음
 import asyncio
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-from ai_server.models import ChatRequest, TeacherSummary, EndSessionRequest, EndSessionResponse, UpdateRealtimeRequest
+from ai_server.models import ChatRequest, TeacherSummary, EndSessionRequest, EndSessionResponse, UpdateRealtimeRequest, RealtimeAnalysis
 from ai_server.services.llm_service import stream_chat, analyze_student
 from ai_server.services.report_builder import generate_final_report
 from ai_server.services.storage_client import upload_report
@@ -46,7 +46,7 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=500, detail=f"LLM 채팅 스트리밍 실패: {str(e)}")
 
 
-@router.post("/analyze", response_model=TeacherSummary)
+@router.post("/analyze", response_model=RealtimeAnalysis)
 async def analyze(request: ChatRequest):
     """
     [NestJS 백엔드 → 이 API] 학생 상태 실시간 분석 (백그라운드) 엔드포인트
@@ -71,7 +71,7 @@ async def analyze(request: ChatRequest):
     session_id = getattr(request, "session_id", None)
     student_id = getattr(request, "student_id", None)
 
-    # ── 직전 분석 결과 조회 (frustration_delta 등 상대적 변화량 계산 정확도 향상) ────
+    # ── 직전 분석 결과 조회 (연속성 참고용) ────────────────────────────────
     previous_summary = None
     if session_id and student_id:
         try:
@@ -79,7 +79,7 @@ async def analyze(request: ChatRequest):
             if dialog:
                 raw_list = await get_real_time_analyses(dialog["id"])
                 if raw_list:
-                    previous_summary = TeacherSummary(**raw_list[-1])
+                    previous_summary = RealtimeAnalysis(**raw_list[-1])
         except Exception as e:
             print(f"[WARN] 직전 분석 결과 조회 실패 (session_id={session_id}): {e}")
 
