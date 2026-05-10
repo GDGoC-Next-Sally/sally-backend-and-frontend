@@ -6,9 +6,13 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from ai_server.models import ChatRequest, TeacherSummary, EndSessionRequest, EndSessionResponse, UpdateRealtimeRequest, RealtimeAnalysis
 from ai_server.services.llm_service import stream_chat, analyze_student
-from ai_server.services.report_builder import generate_final_report
 from ai_server.services.storage_client import upload_report
 from ai_server.services.callback_client import notify_backend_analytics_callback
+
+from ai_server.services.report_builder import (
+    generate_final_report,
+    normalize_chat_messages,
+)
 from ai_server.services.db_client import (
     get_dialog,
     mark_dialog_analyzed,
@@ -19,7 +23,6 @@ from ai_server.services.db_client import (
 )
 
 router = APIRouter()
-
 
 @router.post("/chat")
 async def chat(request: ChatRequest):
@@ -144,104 +147,126 @@ async def update_realtime(request: UpdateRealtimeRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB 업데이트 실패: {str(e)}")
 
-
 @router.post("/end-session", response_model=EndSessionResponse)
 async def end_session(request: EndSessionRequest):
     """
-    [NestJS 백엔드 → 이 API] 대화 종료 및 최종 리포트 생성 엔드포인트
+    [NestJS 백엔드 → AI Server] 대화 종료 및 학생별 최종 리포트 생성 엔드포인트
 
-    대화가 완전히 종료되었을 때 NestJS 백엔드가 호출합니다.
-    누적된 teacher_summary 목록을 분석하여 FinalReport를 생성한 뒤:
-      1. student_reports 테이블의 content 컬럼에 JSON 데이터를 직접 삽입합니다.
-      2. dialogs 테이블의 is_analyzed 플래그를 true로 업데이트합니다.
-      (※ Supabase Storage 파일 업로드 방식은 사용 중지됨)
-
-    요청(Request):
-        - session_id: 수업 세션 ID (int)
-        - student_id: 학생 UUID
-        - summaries: 대화 전체의 teacher_summary 누적 목록
-        - student_profile: 학생 프로파일 (선택)
-
-    응답(Response):
-        - status: "ok"
-        - session_id: 세션 ID
-        - report: 최종 리포트 데이터 (FinalReport)
-        - report_url: Supabase Storage에 업로드된 파일 공개 URL
+    처리 흐름:
+      1. session_id + student_id로 dialog 조회
+      2. dialog_id 기준으로 chat_messages 조회
+      3. chat_messages를 FinalReport 생성용 포맷으로 정규화
+      4. 학생 메시지 존재 여부 확인
+      5. optional real_time_analysis 조회
+      6. 토큰 수 추정 및 짧은 세션/긴 세션 분기 처리하여 FinalReport 생성
+      7. student_reports 테이블에 리포트 저장
+      8. dialogs.is_analyzed = true 업데이트
+      9. FinalReport 반환
     """
-    # ── Step 1: dialog 정보 조회 (dialog_id 획득) ────────────────────────────
-    dialog_id = None
-    if request.student_id:
-        try:
-            dialog = await get_dialog(
-                session_id=request.session_id,
-                student_id=request.student_id,
-            )
-            if dialog:
-                dialog_id = dialog["id"]
-        except Exception as e:
-            print(f"[WARN] dialog 조회 실패: {e}")
 
-    # ── Step 2: DB에서 summaries 직접 읽기 (프론트 전달 불필요) ──────────────
-    summaries_from_db: list[TeacherSummary] = []
-    if dialog_id:
-        try:
-            raw_list = await get_real_time_analyses(dialog_id)
-            summaries_from_db = [TeacherSummary(**item) for item in raw_list]
-        except Exception as e:
-            print(f"[WARN] DB에서 summaries 읽기 실패: {e}")
+    # Step 0. request 검증
+    if not request.student_id:
+        raise HTTPException(
+            status_code=400,
+            detail="student_id가 필요합니다. 학생별 리포트는 session_id + student_id 기준으로 생성됩니다."
+        )
 
-    # 프론트가 summaries를 직접 보낸 경우 DB 데이터보다 우선 사용 (하위 호환)
-    summaries = request.summaries if request.summaries else summaries_from_db
-
-    if not summaries:
-        raise HTTPException(status_code=400, detail="분석 데이터가 없습니다. /update-realtime이 먼저 호출되어야 합니다.")
-
-    # ── Step 3: FinalReport 생성 ─────────────────────────────────────────────
+    # Step 1. dialog 정보 조회
     try:
-        report = await generate_final_report(
-            session_id=str(request.session_id),
-            summaries=summaries,
+        dialog = await get_dialog(
+            session_id=request.session_id,
             student_id=request.student_id,
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"리포트 생성 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"dialog 조회 중 오류가 발생했습니다: {str(e)}"
+        )
 
-    # ── Step 4: student_reports 테이블에 리포트 JSON 직접 저장 ───────────────
-    if dialog_id and request.student_id:
-        try:
-            # Pydantic 모델을 딕셔너리로 변환하여 저장
-            report_dict = report.model_dump() if hasattr(report, "model_dump") else report.dict()
-            await save_student_report(
-                student_id=request.student_id,
-                session_id=request.session_id,
-                dialog_id=dialog_id,
-                content=report_dict
-            )
-        except Exception as e:
-            print(f"[WARN] student_reports 저장 실패: {e}")
+    if not dialog:
+        raise HTTPException(
+            status_code=404,
+            detail="dialog를 찾을 수 없습니다. session_id와 student_id를 확인하세요."
+        )
 
-    # ── Step 5: dialogs.is_analyzed = true 업데이트 ─────────────────────────
-    if dialog_id:
-        try:
-            await mark_dialog_analyzed(dialog_id)
-        except Exception as e:
-            print(f"[WARN] is_analyzed 업데이트 실패: {e}")
+    dialog_id = dialog["id"]
 
-    # (참고) 이전 Supabase Storage 업로드 로직은 일단 비활성화(주석 처리) 해둡니다.
-    # report_url = ""
-    # try:
-    #     report_url = await upload_report(report)
-    #     if report_url and request.student_id:
-    #         student_part = request.student_id.replace("-", "")
-    #         file_name = f"report_{request.session_id}_{student_part}.json"
-    #         from ai_server.services.db_client import save_report_file_url
-    #         await save_report_file_url(request.session_id, file_name, report_url)
-    # except Exception as e:
-    #     print(f"[WARN] Storage 업로드 로직 무시됨: {e}")
+    # Step 2. chat_messages 조회
+    try:
+        raw_messages = await get_chat_messages(dialog_id)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"chat_messages 조회 중 오류가 발생했습니다: {str(e)}"
+        )
 
+    if not raw_messages:
+        raise HTTPException(
+            status_code=400,
+            detail="채팅 메시지가 없습니다. 대화 기록이 저장되었는지 확인하세요."
+        )
+
+    # Step 3. chat_messages 정규화
+    chat_messages = normalize_chat_messages(raw_messages)
+
+    student_message_count = sum(
+        1 for msg in chat_messages
+        if msg.get("role") == "student" and msg.get("content", "").strip()
+    )
+
+    if student_message_count == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="학생 메시지가 없어 학생별 리포트를 생성할 수 없습니다."
+        )
+
+    # Step 4. optional realtime summaries 조회
+    realtime_summaries = None
+    try:
+        realtime_summaries = await get_realtime_summaries(
+            dialog_id=dialog_id
+        )
+    except Exception as e:
+        print(f"[WARN] real_time_analysis 조회 실패: {e}")
+
+    # Step 5. FinalReport 생성
+    try:
+        report = await generate_final_report(
+            chat_messages=chat_messages,
+            realtime_summaries=realtime_summaries,
+            session_id=str(request.session_id),
+            student_id=request.student_id,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"리포트 생성 실패: {str(e)}"
+        )
+
+    # Step 6. student_reports 저장
+    try:
+        report_dict = report.model_dump() if hasattr(report, "model_dump") else report.dict()
+
+        await save_student_report(
+            student_id=request.student_id,
+            session_id=request.session_id,
+            dialog_id=dialog_id,
+            content=report_dict,
+        )
+    except Exception as e:
+        print(f"[WARN] student_reports 저장 실패: {e}")
+
+    # Step 7. dialog 분석 완료 처리
+    try:
+        await mark_dialog_analyzed(dialog_id)
+    except Exception as e:
+        print(f"[WARN] is_analyzed 업데이트 실패: {e}")
+
+    # Step 8. 응답 반환
     return EndSessionResponse(
         status="ok",
         session_id=str(request.session_id),
+        student_id=request.student_id,
         report=report,
-        report_url="", # 더 이상 파일 URL을 생성하지 않으므로 빈 문자열 반환
+        report_url="",
     )
