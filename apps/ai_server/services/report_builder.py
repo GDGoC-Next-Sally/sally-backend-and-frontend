@@ -224,24 +224,32 @@ def _split_into_chunks(text: str, chunk_max_chars: int = CHUNK_MAX_CHARS) -> lis
 # ─────────────────────────────────────────────────────────────
 # Prompt builders
 # ─────────────────────────────────────────────────────────────
-
 def _build_report_prompt(conversation_text: str) -> str:
     """전체 대화 기반 최종 리포트 생성 프롬프트를 생성합니다."""
     return f"""당신은 교사를 돕는 학습 분석 AI입니다.
 
 아래는 한 학생과 AI 튜터 Sally가 진행한 한 세션의 채팅 기록입니다.
 이 대화를 바탕으로 교사용 학생별 최종 리포트를 생성하세요.
-선생님 관점에서 학생을 평가해주세요. 너무 긍정적으로 말하지 말고, 장점과 단점을 모두 알려주세요. 
+선생님 관점에서 비판적으로 평가하세요.
 
-중요한 판단 기준:
+리포트 목적:
+- 세션 주요 학습 주제와 학생의 최종 취약 개념을 정리합니다.
+- 세션 종료 시점에도 남아 있는 오개념과 구체적 약점을 요약합니다.
+- 교사가 빠르게 볼 수 있는 세션 상태 요약과 상세 줄글 리포트를 생성합니다.
+
+핵심 판단 원칙:
+- 최종 리포트는 세션 중간의 일시적 오류가 아니라, 세션 종료 시점의 이해 상태를 기준으로 작성하세요.
 - 학생의 이해 상태와 오개념은 반드시 [student] 발화를 중심으로 판단하세요.
-- [assistant]의 설명 내용을 학생이 이해한 것으로 간주하지 마세요.
-- 학생이 반복해서 헷갈린 표현, 틀린 해석, 막힌 풀이 단계를 중심으로 약점을 요약하세요.
-- 근거가 부족한 내용은 추측하지 말고 "판단하기 어렵다"고 작성하세요.
-- 학습과 관련 없는 잡담은 리포트의 핵심 근거로 사용하지 마세요.
-- 최종 리포트에는 이해도 점수, 좌절도 점수, 참여도 수치 등 수치형 지표를 포함하지 마세요.
-- 출력은 반드시 JSON 형식으로만 작성하세요.
-- 마크다운, 코드블록, 설명문, 주석은 출력하지 마세요.
+- [assistant]의 설명을 학생이 이해한 것으로 간주하지 마세요.
+- 초반에 오개념이 있었더라도 이후 학생이 스스로 정정했거나 올바르게 이해한 근거가 있으면 최종 오개념·약점으로 분류하지 마세요.
+- 해결된 오개념은 misconception_summary에 넣지 말고, detailed_report에서 이해 변화로 설명하세요.
+- 마지막까지 이해했는지 근거가 부족하면 해결됐다고 단정하지 말고 추가 확인이 필요하다고 표현하세요.
+- 취약 개념, 오개념, 약점이 실제 대화에서 확인되지 않으면 지어내지 말고 ["없음"]으로 작성하세요.
+- 긍정 평가와 부정 평가는 실제 대화에서 확인된 근거 비율을 반영하세요.
+- 학생을 비난하거나 낙인찍지 말고, 교사가 지도에 참고할 수 있는 표현으로 작성하세요.
+- 학습과 관련 없는 잡담은 핵심 근거로 사용하지 마세요.
+- 수치형 지표는 포함하지 마세요.
+- 출력은 반드시 JSON 형식으로만 작성하고, 마크다운/코드블록/설명문은 출력하지 마세요.
 - JSON에는 key_concepts, misconception_summary, session_summary, detailed_report 4개 필드만 포함하세요.
 
 출력 형식:
@@ -253,24 +261,34 @@ def _build_report_prompt(conversation_text: str) -> str:
 }}
 
 필드 작성 기준:
-- key_concepts: 이 세션에서 다룬 주요 학습 주제와 학생이 어려워한 취약 개념을 짧은 명사구 배열로 작성하세요.
-- misconception_summary: 반복 오개념과 구체적 약점을 교사가 이해할 수 있는 문장 배열로 작성하세요.
-- session_summary: 교사가 빠르게 볼 수 있도록 80자 이내의 1문장으로 작성하세요.
-- detailed_report: 하나의 문단으로 작성하세요. 세션에서 다룬 내용, 학생의 현재 이해 상태, 반복된 약점, 다음 지도 방향을 포함하되, 과도하게 길게 쓰지 말고 4~6문장 정도로 자연스럽게 요약하세요.
+1. key_concepts = 주요/취약 개념
+- 세션에서 다룬 주요 학습 주제와 세션 종료 시점에도 추가 지도가 필요한 취약 개념을 짧은 명사구 배열로 작성하세요.
+- 초반에 어려워했더라도 이후 이해한 근거가 있으면 취약 개념으로 분류하지 마세요.
+- 단, 세션의 주요 학습 주제라면 포함할 수 있습니다.
+- 주요 학습 주제나 취약 개념이 모두 명확하지 않으면 ["없음"]으로 작성하세요.
+- 주요 학습 주제와 취약 개념 나눠서 작성하세요.
+- {{ "주요 학습 개념": "", "취약 개념": ""}} 이 형태로 출력하세요. 
 
-작성 규칙:
-- key_concepts는 중복 없이 작성하세요.
-- misconception_summary는 단순 키워드가 아니라 구체적인 문장으로 작성하세요.
-- 학생에게서 확인되지 않은 오개념은 만들지 마세요.
-- 근거가 부족한 경우 key_concepts 또는 misconception_summary는 빈 배열 []로 둘 수 있습니다.
-- detailed_report는 줄바꿈 없이 하나의 문단으로 작성하세요.
-- detailed_report에는 교사가 다음 수업에서 참고할 수 있는 지도 방향을 포함하세요.
-- 모든 내용은 한국어로 작성하세요.
+2. misconception_summary = 오개념·약점 요약
+- 세션 종료 시점까지 남아 있는 오개념, 해결되지 않은 혼란, 여전히 남은 풀이 약점을 구체적인 문장 배열로 작성하세요.
+- 단순히 "개념 이해 부족"처럼 추상적으로 쓰지 말고, 무엇을 어떻게 잘못 이해했는지 작성하세요.
+- 초반 오개념이 이후 해결되었다면 이 필드에 포함하지 마세요.
+- 최종적으로 남은 오개념이나 약점이 명확하지 않으면 ["없음"]으로 작성하세요.
+
+3. session_summary = 세션 상태 요약
+- 교사용 한 줄 요약입니다.
+- 세션 종료 시점 기준의 학습 상태, 확인된 강점, 남은 취약점, 다음 지도 필요성을 80자 이내 1문장으로 작성하세요.
+
+4. detailed_report = AI가 생성하는 줄글 형식 리포트
+- 세션에서 다룬 내용, 학생의 이해 수준, 확인된 장점, 해결된 혼란, 마지막까지 남은 약점, 다음 지도 방향을 자연스러운 하나의 문단으로 작성하세요.
+- 긍정/부정 평가는 실제 대화의 근거 비율을 반영하세요.
+- 오개념이나 약점이 확인되지 않았다면 "뚜렷한 오개념은 확인되지 않았습니다"라고 작성하세요.
+- 세션 내용이 복잡하면 6~10문장까지 작성할 수 있습니다.
+- 줄바꿈 없이 하나의 문단으로 작성하세요.
 
 채팅 기록:
 {conversation_text}
 """
-
 
 def _build_chunk_summary_prompt(
     chunk_text: str,
@@ -283,13 +301,25 @@ def _build_chunk_summary_prompt(
 아래는 학생과 AI 튜터 Sally의 학습 대화 중 {chunk_index + 1}/{total_chunks}번째 부분입니다.
 이 대화 chunk를 읽고, 최종 리포트 생성에 필요한 정보만 한국어로 요약하세요.
 
+최종 리포트에서 필요한 정보:
+- 주요/취약 개념
+- 세션 종료 시점에도 남을 수 있는 오개념·약점 후보
+- 이 chunk 안에서 해결된 혼란 또는 정정된 오개념
+- 세션 상태 요약에 반영할 학습 상태
+- 줄글 리포트에 반영할 이해 변화, 장점, 약점, 다음 지도 방향
+
 중요:
 - 학생의 이해 상태와 오개념은 반드시 [student] 발화를 중심으로 판단하세요.
 - [assistant]의 설명을 학생이 이해한 것으로 간주하지 마세요.
-- 반복되는 혼란, 오개념, 풀이 막힘을 중심으로 요약하세요.
+- [assistant]가 설명한 내용은 다룬 개념으로 볼 수는 있지만, 학생이 이해한 내용으로 단정하지 마세요.
+- 반복되는 혼란, 오개념, 풀이 막힘을 중심으로 요약하되, 이 chunk 안에서 해결되었는지도 함께 확인하세요.
+- 세션 초반이나 chunk 초반에 나타난 오개념이라도, 이후 학생 발화에서 정정되거나 이해가 개선된 근거가 있으면 resolved_confusions에 기록하세요.
 - 근거가 되는 핵심 학생 발화를 함께 남기세요.
 - 근거가 부족한 내용은 추측하지 말고 빈 배열 또는 "판단하기 어려움"으로 표시하세요.
 - 학습과 관련 없는 잡담은 핵심 근거로 사용하지 마세요.
+- 한 번만 나온 단순 실수는 반복 오개념처럼 과장하지 마세요.
+- 취약 개념, 오개념, 약점이 실제 대화에서 확인되지 않으면 절대 지어내지 마세요.
+- 긍정적 요소와 부정적 요소를 모두 확인하고, 실제 대화의 근거 비율에 맞게 요약하세요.
 - 출력은 반드시 JSON 형식으로만 작성하세요.
 - 마크다운, 코드블록, 설명문, 주석은 출력하지 마세요.
 
@@ -301,19 +331,23 @@ def _build_chunk_summary_prompt(
   "student_confusions": ["string"],
   "misconceptions": ["string"],
   "weak_steps": ["string"],
+  "resolved_confusions": ["string"],
   "evidence_student_utterances": ["string"],
+  "positive_observations": ["string"],
   "progress": "string"
 }}
 
 필드 작성 기준:
 - chunk_index: 현재 chunk 번호입니다.
 - total_chunks: 전체 chunk 개수입니다.
-- main_topics: 이 chunk에서 실제로 다룬 주요 학습 개념을 짧은 명사구 배열로 작성하세요.
-- student_confusions: 학생이 헷갈려 한 부분을 구체적인 문장 배열로 작성하세요.
-- misconceptions: 학생 발화에서 드러난 잘못된 이해나 오개념을 문장 배열로 작성하세요.
-- weak_steps: 문제 풀이, 개념 적용, 설명 이해 과정에서 학생이 막힌 단계를 문장 배열로 작성하세요.
-- evidence_student_utterances: 위 판단의 근거가 되는 핵심 [student] 발화 원문을 그대로 배열로 남기세요.
-- progress: 이 chunk 안에서 보인 이해 변화나 진전을 1문장으로 작성하세요. 판단하기 어렵다면 "판단하기 어려움"이라고 작성하세요.
+- main_topics: 이 chunk에서 실제로 다룬 주요 학습 개념과 취약 개념 후보를 짧은 명사구 배열로 작성하세요. 확인되지 않으면 []로 작성하세요.
+- student_confusions: 이 chunk에서 학생이 헷갈려 한 부분을 구체적인 문장 배열로 작성하세요. 확인되지 않으면 []로 작성하세요.
+- misconceptions: 이 chunk에서 학생 발화에 드러난 잘못된 이해나 오개념 후보를 문장 배열로 작성하세요. 단, 같은 chunk 안에서 이후 해결된 경우에는 resolved_confusions에도 반드시 기록하세요. 확인되지 않으면 []로 작성하세요.
+- weak_steps: 문제 풀이, 개념 적용, 설명 이해 과정에서 학생이 막힌 단계를 문장 배열로 작성하세요. 확인되지 않으면 []로 작성하세요.
+- resolved_confusions: 이 chunk 안에서 초반에는 헷갈렸지만 이후 학생 발화에서 정정되었거나 이해가 개선된 것으로 확인되는 내용을 작성하세요. 확인되지 않으면 []로 작성하세요.
+- evidence_student_utterances: 위 판단의 근거가 되는 핵심 [student] 발화 원문을 그대로 배열로 남기세요. 확인되지 않으면 []로 작성하세요.
+- positive_observations: 학생이 잘 이해한 부분, 스스로 정정한 부분, 개선된 부분, 적절히 답한 부분을 문장 배열로 작성하세요. 확인되지 않으면 []로 작성하세요.
+- progress: 이 chunk 안에서 보인 이해 변화, 장점, 개선 흐름, 또는 여전히 남은 어려움을 1문장으로 작성하세요. 판단하기 어렵다면 "판단하기 어려움"이라고 작성하세요.
 
 작성 규칙:
 - 해당 항목이 대화에서 확인되지 않으면 빈 배열 []로 출력하세요.
@@ -321,12 +355,13 @@ def _build_chunk_summary_prompt(
 - [assistant]가 설명한 개념을 main_topics에는 포함할 수 있지만, 학생이 이해했다고 단정하지 마세요.
 - evidence_student_utterances에는 [assistant] 발화를 넣지 마세요.
 - 동일한 의미의 항목은 중복해서 작성하지 마세요.
+- 긍정적 평가와 부정적 평가는 실제 대화에서 확인된 근거의 비율을 반영하세요.
+- 해결된 오개념이나 정정된 혼란은 misconceptions에만 남기지 말고 resolved_confusions에도 기록하세요.
 - 모든 내용은 한국어로 작성하세요.
 
 대화 chunk:
 {chunk_text}
 """
-
 
 def _build_synthesis_prompt(chunk_summaries: list[str]) -> str:
     """chunk 요약들을 합쳐 최종 리포트를 만드는 프롬프트를 생성합니다."""
@@ -337,27 +372,33 @@ def _build_synthesis_prompt(chunk_summaries: list[str]) -> str:
     return f"""당신은 교사를 돕는 학습 분석 AI입니다.
 
 아래는 한 학생과 AI 튜터 Sally가 진행한 긴 학습 세션을 파트별로 요약한 내용입니다.
-각 파트 요약을 종합하여 교사용 학생별 최종 리포트를 생성하세요.
-선생님 관점에서 학생을 평가해줘. 너무 긍정적으로 말하지 말고, 장점과 단점을 모두 알려줘.
+파트별 요약을 시간 순서대로 종합하여 교사용 학생별 최종 리포트를 생성하세요.
 
-중요한 판단 기준:
-- 학생의 이해 상태와 오개념은 파트별 요약에 포함된 학생 발화 근거를 중심으로 판단하세요.
-- [assistant]가 설명한 내용을 학생이 이해한 것으로 간주하지 마세요.
-- 여러 파트에서 반복적으로 등장한 혼란, 오개념, 풀이 막힘을 우선적으로 반영하세요.
-- 단일 파트에서만 등장한 사소한 실수는 핵심 약점으로 과장하지 마세요.
-- 근거가 부족한 내용은 추측하지 말고 "판단하기 어렵다"고 작성하세요.
-- 학습과 관련 없는 잡담은 리포트의 핵심 근거로 사용하지 마세요.
-- 최종 리포트에는 이해도 점수, 좌절도 점수, 참여도 수치 등 수치형 지표를 포함하지 마세요.
-- 출력은 반드시 JSON 형식으로만 작성하세요.
-- 마크다운, 코드블록, 설명문, 주석은 출력하지 마세요.
+리포트 목적:
+- 세션 주요 학습 주제와 학생의 최종 취약 개념을 정리합니다.
+- 세션 종료 시점에도 남아 있는 오개념과 구체적 약점을 요약합니다.
+- 교사가 빠르게 볼 수 있는 세션 상태 요약과 상세 줄글 리포트를 생성합니다.
+
+핵심 판단 원칙:
+- 최종 리포트는 중간의 일시적 오류가 아니라, 세션 종료 시점의 이해 상태를 기준으로 작성하세요.
+- 파트별 요약을 시간 순서로 해석하고, 앞 파트의 오개념이 뒤 파트에서 해결되었는지 반드시 확인하세요.
+- 앞 파트의 misconceptions에 등장한 내용이라도 뒤 파트의 resolved_confusions, positive_observations, progress에서 정정 또는 개선 근거가 있으면 최종 오개념·약점으로 분류하지 마세요.
+- 해결된 오개념은 misconception_summary에 넣지 말고, detailed_report에서 이해 변화로 설명하세요.
+- 마지막까지 이해했는지 근거가 부족하면 해결됐다고 단정하지 말고 추가 확인이 필요하다고 표현하세요.
+- 취약 개념, 오개념, 약점이 실제 요약에서 확인되지 않으면 지어내지 말고 ["없음"]으로 작성하세요.
+- 긍정 평가와 부정 평가는 파트별 요약에서 확인된 근거 비율을 반영하세요.
+- 학생을 비난하거나 낙인찍지 말고, 교사가 지도에 참고할 수 있는 표현으로 작성하세요.
+- 학습과 관련 없는 잡담은 핵심 근거로 사용하지 마세요.
+- 수치형 지표는 포함하지 마세요.
+- 출력은 반드시 JSON 형식으로만 작성하고, 마크다운/코드블록/설명문은 출력하지 마세요.
 - JSON에는 key_concepts, misconception_summary, session_summary, detailed_report 4개 필드만 포함하세요.
 
 파트별 요약 활용 기준:
 - main_topics는 key_concepts 후보로 활용하세요.
-- student_confusions, misconceptions, weak_steps는 misconception_summary의 핵심 근거로 활용하세요.
-- evidence_student_utterances는 판단 근거로 참고하되, 최종 리포트에 과도하게 나열하지 마세요.
-- progress는 detailed_report에서 학생의 이해 변화나 개선 흐름을 설명할 때 참고하세요.
-- 여러 파트에서 같은 의미로 반복된 항목은 하나로 합쳐 작성하세요.
+- student_confusions, misconceptions, weak_steps는 최종 약점 후보로 보되, 후반부에서 해결되었는지 확인하세요.
+- resolved_confusions는 최종 misconception_summary에서 제외해야 할 해결된 혼란 후보로 활용하세요.
+- positive_observations와 progress는 detailed_report에서 장점과 이해 변화 설명에 활용하세요.
+- evidence_student_utterances는 판단 근거로만 참고하고, 최종 리포트에 과도하게 나열하지 마세요.
 
 출력 형식:
 {{
@@ -368,19 +409,30 @@ def _build_synthesis_prompt(chunk_summaries: list[str]) -> str:
 }}
 
 필드 작성 기준:
-- key_concepts: 이 세션에서 다룬 주요 학습 주제와 학생이 어려워한 취약 개념을 짧은 명사구 배열로 작성하세요.
-- misconception_summary: 반복 오개념과 구체적 약점을 교사가 이해할 수 있는 문장 배열로 작성하세요.
-- session_summary: 교사가 빠르게 볼 수 있도록 80자 이내의 1문장으로 작성하세요.
-- detailed_report: 하나의 문단으로 작성하세요. 세션에서 다룬 내용, 학생의 현재 이해 상태, 반복된 약점, 다음 지도 방향을 포함하되, 과도하게 길게 쓰지 말고 4~6문장 정도로 자연스럽게 요약하세요.
+1. key_concepts = 주요/취약 개념
+- 세션에서 다룬 주요 학습 주제와 세션 종료 시점에도 추가 지도가 필요한 취약 개념을 짧은 명사구 배열로 작성하세요.
+- 초반 또는 중간에 어려워했더라도 후반부에서 이해한 근거가 있으면 취약 개념으로 분류하지 마세요.
+- 단, 세션의 주요 학습 주제라면 포함할 수 있습니다.
+- 주요 학습 주제나 취약 개념이 모두 명확하지 않으면 ["없음"]으로 작성하세요.
+- 주요 학습 주제와 취약 개념 나눠서 작성하세요.
+- {{ "주요 학습 개념": "", "취약 개념": ""}} 이 형태로 출력하세요. 
 
-작성 규칙:
-- key_concepts는 중복 없이 작성하세요.
-- misconception_summary는 단순 키워드가 아니라 구체적인 문장으로 작성하세요.
-- 학생에게서 확인되지 않은 오개념은 만들지 마세요.
-- 근거가 부족한 경우 key_concepts 또는 misconception_summary는 빈 배열 []로 둘 수 있습니다.
-- detailed_report는 줄바꿈 없이 하나의 문단으로 작성하세요.
-- detailed_report에는 교사가 다음 수업에서 참고할 수 있는 지도 방향을 포함하세요.
-- 모든 내용은 한국어로 작성하세요.
+2. misconception_summary = 오개념·약점 요약
+- 세션 종료 시점까지 남아 있는 오개념, 해결되지 않은 혼란, 여전히 남은 풀이 약점을 구체적인 문장 배열로 작성하세요.
+- 단순히 "개념 이해 부족"처럼 추상적으로 쓰지 말고, 무엇을 어떻게 잘못 이해했는지 작성하세요.
+- 앞 파트의 오개념이 뒤 파트에서 해결되었다면 이 필드에 포함하지 마세요.
+- 최종적으로 남은 오개념이나 약점이 명확하지 않으면 ["없음"]으로 작성하세요.
+
+3. session_summary = 세션 상태 요약
+- 교사용 한 줄 요약입니다.
+- 세션 종료 시점 기준의 학습 상태, 확인된 강점, 남은 취약점, 다음 지도 필요성을 80자 이내 1문장으로 작성하세요.
+
+4. detailed_report = AI가 생성하는 줄글 형식 리포트
+- 세션에서 다룬 내용, 학생의 이해 수준, 확인된 장점, 해결된 혼란, 마지막까지 남은 약점, 다음 지도 방향을 자연스러운 하나의 문단으로 작성하세요.
+- 긍정/부정 평가는 파트별 요약의 근거 비율을 반영하세요.
+- 오개념이나 약점이 확인되지 않았다면 "뚜렷한 오개념은 확인되지 않았습니다"라고 작성하세요.
+- 세션 내용이 복잡하면 6~10문장까지 작성할 수 있습니다.
+- 줄바꿈 없이 하나의 문단으로 작성하세요.
 
 파트별 요약:
 {summaries_text}
@@ -407,7 +459,6 @@ def _build_repair_json_prompt(raw_text: str) -> str:
 변환할 텍스트:
 {raw_text}
 """
-
 
 # ─────────────────────────────────────────────────────────────
 # JSON parsing / validation
@@ -447,10 +498,35 @@ def _extract_json_object(raw_text: str) -> str:
     return text[start:end + 1]
 
 
+def _normalize_key_concepts(raw: Any) -> dict:
+    """
+    LLM이 key_concepts를 list로 반환하는 경우를 dict로 정규화합니다.
+
+    기대 형태: {"주요 학습 개념": "...", "취약 개념": "..."}
+    fallback:  LLM이 list를 반환하면 {"주요 학습 개념": ", ".join(raw), "취약 개념": ""} 으로 변환
+    """
+    if isinstance(raw, dict):
+        return raw
+    if isinstance(raw, list):
+        # list인 경우 전체를 "주요 학습 개념"으로 넣고 취약 개념은 빈 문자열
+        return {
+            "주요 학습 개념": ", ".join(str(v) for v in raw),
+            "취약 개념": "",
+        }
+    return {"주요 학습 개념": str(raw) if raw else "", "취약 개념": ""}
+
+
 def _parse_report_json(raw_text: str) -> dict[str, Any]:
     """LLM 응답에서 FinalReport JSON을 추출하고 파싱합니다."""
     json_text = _extract_json_object(raw_text)
-    return json.loads(json_text)
+    data = json.loads(json_text)
+
+    # key_concepts 타입 정규화 (LLM이 list로 반환하는 경우 방어)
+    if "key_concepts" in data:
+        data["key_concepts"] = _normalize_key_concepts(data["key_concepts"])
+
+    return data
+
 
 
 async def _repair_and_parse_report_json(
@@ -478,7 +554,7 @@ async def _repair_and_parse_report_json(
 def _fallback_parse_error_report(raw_text: str) -> FinalReport:
     """파싱 및 repair까지 실패했을 때 반환할 fallback 리포트입니다."""
     return FinalReport(
-        key_concepts=[],
+        key_concepts={},
         misconception_summary=[],
         session_summary="리포트 파싱 오류",
         detailed_report=(
@@ -492,7 +568,7 @@ def _fallback_parse_error_report(raw_text: str) -> FinalReport:
 def _empty_student_report() -> FinalReport:
     """학생 발화가 없을 때 반환할 fallback 리포트입니다."""
     return FinalReport(
-        key_concepts=[],
+        key_concepts={},
         misconception_summary=[],
         session_summary="학생 발화 기록 없음",
         detailed_report=(
@@ -628,7 +704,7 @@ async def generate_final_report(
             f"session_id={session_id}, student_id={student_id}, error={e}"
         )
         return FinalReport(
-            key_concepts=[],
+            key_concepts={},
             misconception_summary=[],
             session_summary="리포트 생성 실패",
             detailed_report="LLM 호출 중 오류가 발생하여 리포트를 생성하지 못했습니다.",

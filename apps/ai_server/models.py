@@ -77,9 +77,9 @@ class EndSessionRequest(BaseModel):
 
 # ── 최종 리포트 데이터 구조 ───────────────────────────────────────────────────
 class FinalReport(BaseModel):
-    key_concepts: list[str] = Field(
-        default_factory=list,
-        description="세션 주요 학습 주제와 학생의 취약 개념 목록"
+    key_concepts: dict = Field(
+        default_factory=dict,
+        description="세션 주요 학습 주제와 학생의 취약 개념 분리 매핑 (주요 학습 개념, 취약 개념)"
     )
     misconception_summary: list[str] = Field(
         default_factory=list,
