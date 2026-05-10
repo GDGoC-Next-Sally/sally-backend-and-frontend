@@ -67,7 +67,7 @@ export async function finishSession(sessionId: string): Promise<void> {
   return serverFetch(`/sessions/${sessionId}/finish`, { method: 'POST' });
 }
 
-export async function joinSession(sessionId: string): Promise<void> {
+export async function joinSession(sessionId: string): Promise<{ dialog_id: number }> {
   return serverFetch(`/sessions/${sessionId}/join`, { method: 'POST' });
 }
 

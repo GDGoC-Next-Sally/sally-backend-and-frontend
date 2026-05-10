@@ -224,11 +224,33 @@
   flex-shrink: 0;
 }
 
+.msgBubbleContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 60%;
+}
+
+.senderLabel {
+  font-size: 11px;
+  color: #6B6B6B;
+  padding: 0 4px;
+}
+
 .msgBubble {
-  width: 200px;
-  height: 60px;
   border-radius: 12px;
   border: 1px solid #E0DED8;
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.typingDot {
+  font-size: 10px;
+  color: #aaa;
+  letter-spacing: 2px;
 }
 
 .bubbleLeft {
