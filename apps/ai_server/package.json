@@ -2,7 +2,7 @@
   "name": "ai_server",
   "version": "1.0.0",
   "scripts": {
-    "dev": "[ ! -d .venv ] && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt; cd ../.. && PYTHONPATH=apps apps/ai_server/.venv/bin/uvicorn ai_server.main:app --reload --port 8000",
-    "install:python": "python3 -m venv .venv && .venv/bin/pip install -r requirements.txt"
+    "dev": "node dev.mjs",
+    "install:python": "node -e \"const{execSync}=require('child_process');execSync('python3 -m venv .venv',{stdio:'inherit'});execSync(process.platform==='win32'?'.venv\\\\Scripts\\\\python.exe -m pip install -r requirements.txt':'.venv/bin/pip install -r requirements.txt',{stdio:'inherit'})\""
   }
 }

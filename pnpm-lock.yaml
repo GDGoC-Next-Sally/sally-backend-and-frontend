@@ -18,6 +18,8 @@ importers:
         specifier: ^9.2.1
         version: 9.2.1
 
+  apps/ai_server: {}
+
   apps/backend:
     dependencies:
       '@nestjs/common':
