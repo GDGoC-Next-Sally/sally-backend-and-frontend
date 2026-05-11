@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { type Session } from '@/actions/sessions';
 import { type ClassItem } from '@/actions/classes';
 import { SessionModal } from './SessionModal';
+import { CreateSessionModal } from './CreateSessionModal';
 import { ConfirmModal } from '../common/ConfirmModal';
 import styles from './SessionGrid.module.css';
 import type { CreateSessionBody } from '@/actions/sessions';
@@ -195,7 +196,7 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
       </div>
 
       {isCreateOpen && (
-        <SessionModal
+        <CreateSessionModal
           classId={classId}
           onClose={() => setIsCreateOpen(false)}
           onSubmit={async (body) => { await onCreateSession(body); onRefresh(); }}
