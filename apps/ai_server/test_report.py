@@ -608,7 +608,10 @@ async def run_json_parse_repair_fallback_case() -> dict:
     # 9-1. 깨진 JSON → 1차 파싱 실패 확인
     broken_json = """
     {
-      "key_concepts": ["관계대명사"],
+      "key_concepts": {
+        "main_concepts": ["관계대명사"],
+        "weak_concepts": ["없음"]
+      },
       "misconception_summary": ["없음"],
       "session_summary": "관계대명사의 기본 구조를 이해했습니다.",
       "detailed_report": "학생은 관계대명사의 기본 역할을 이해했습니다."
@@ -627,7 +630,10 @@ async def run_json_parse_repair_fallback_case() -> dict:
     # 9-2. 깨진 JSON → repair 성공 확인
     repaired_json = json.dumps(
         {
-            "key_concepts": ["관계대명사", "주격 관계대명사", "목적격 관계대명사"],
+            "key_concepts": {
+                "main_concepts": ["관계대명사", "주격 관계대명사", "목적격 관계대명사"],
+                "weak_concepts": ["없음"],
+            },
             "misconception_summary": ["없음"],
             "session_summary": "관계대명사의 주격과 목적격 차이를 최종적으로 구분했습니다.",
             "detailed_report": "학생은 초반에 관계대명사를 단순히 문장을 연결하는 말로만 이해했지만, 이후 대명사 역할까지 포함한다는 점을 이해하는 방향으로 발전했습니다. 주격 관계대명사와 목적격 관계대명사의 차이도 예문을 통해 구분하는 모습을 보였습니다. 특히 목적격 관계대명사 뒤에 대명사 it을 반복해서 쓰면 안 된다는 점을 정정했습니다. 뚜렷한 오개념은 최종적으로 확인되지 않았습니다.",

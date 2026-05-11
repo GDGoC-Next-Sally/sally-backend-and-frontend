@@ -10,7 +10,7 @@ from openai import AsyncOpenAI
 from dotenv import load_dotenv
 
 from typing import AsyncGenerator
-from ai_server.models import StudentProfile, ConversationTurn, TeacherSummary, RealtimeAnalysis
+from ai_server.models import StudentProfile, ConversationTurn, RealtimeAnalysis
 from ai_server.services.message_formatting import format_labeled_message, speaker_label
 from ai_server.services.prompt_builder import build_chat_system_prompt, build_realtime_analysis_system_prompt, build_chat_few_shot_messages
 
@@ -84,8 +84,8 @@ async def stream_chat(
     # few-shot 예시: AI가 실제 대화 패턴을 '보고' 따라 하도록 삽입 (리허설)
     messages.extend(build_chat_few_shot_messages(student_profile))
 
-    # 실제 학생과의 대화 기록 이어 붙이기
-    # sender_type이 있으면 발화자 명찰을 텍스트 앞에 붙여 AI가 문맥을 파악할 수 있게 합니다.
+    # 실제 대화 기록 이어 붙이기
+    # TEACHER는 학생에게 보인 발화가 아니라 AI용 비공개 지도 방향으로 라벨링합니다.
     for turn in conversation_history:
         if turn.role == "model":
             messages.append({"role": "assistant", "content": turn.text})
@@ -141,17 +141,13 @@ async def stream_chat(
 async def analyze_student(
     conversation_history: list[ConversationTurn],
     student_profile: StudentProfile | None = None,
-    previous_summary: TeacherSummary | None = None,
-) -> TeacherSummary:
+    previous_summary: RealtimeAnalysis | None = None,
+) -> RealtimeAnalysis:
     """
-    전체 대화 기록을 기반으로 학생의 현재 상태를 분석하여 TeacherSummary JSON 데이터를 반환합니다.
+    전체 대화 기록을 기반으로 학생의 현재 상태를 분석하여 RealtimeAnalysis JSON 데이터를 반환합니다.
     previous_summary가 제공되면 직전 분석 수치를 User Prompt에 주입하여
     struggle_delta 등 상대적 변화량 계산의 정확도를 높입니다.
     """
-    client = _get_client()
-    system_prompt = build_realtime_analysis_system_prompt(student_profile)
-
-
     # ── 대화 기록을 이전 맥락 / 마지막 턴으로 분리 ────────────────────────────
     # 마지막 턴 = 마지막 AI 발화 + 마지막 학생 발화 (최대 최근 2개)
 
@@ -159,22 +155,37 @@ async def analyze_student(
     MAX_CONTEXT_TURNS = 6
     MAX_TURN_CHARS = 500
 
+    def _is_student_turn(turn: ConversationTurn) -> bool:
+        if turn.role == "model":
+            return False
+        sender_type = (turn.sender_type or "STUDENT").upper()
+        return sender_type in {"STUDENT", "USER", "LEARNER", "HUMAN"}
+
     # 마지막 학생 발화를 기준으로 마지막 상호작용 구성
+    # 선생님 지시는 백그라운드 지도 방향이므로 분석 대상 학생 발화로 잡지 않습니다.
     last_student_idx = None
     for i in range(len(conversation_history) - 1, -1, -1):
-        if conversation_history[i].role != "model":
+        if _is_student_turn(conversation_history[i]):
             last_student_idx = i
             break
 
     if last_student_idx is None:
-        context_turns = []
-        last_turns = conversation_history[-1:]
+        return RealtimeAnalysis(
+            understanding_score=None,
+            current_topic="학생 발화 없음",
+            student_emotion="중립",
+            one_line_summary="분석할 학생 발화 없음",
+            need_intervention=False,
+        )
     else:
         start_idx = max(0, last_student_idx - 1)
         last_turns = conversation_history[start_idx:last_student_idx + 1]
 
         context_start = max(0, start_idx - MAX_CONTEXT_TURNS)
         context_turns = conversation_history[context_start:start_idx]
+
+    client = _get_client()
+    system_prompt = build_realtime_analysis_system_prompt(student_profile)
 
 
     def _truncate(text: str, max_chars: int = MAX_TURN_CHARS) -> str:
@@ -198,11 +209,7 @@ async def analyze_student(
         return "\n".join(lines) + "\n"
 
     def _is_nonresponsive_student_turn(turn: ConversationTurn) -> bool:
-        if turn.role == "model":
-            return False
-
-        sender_type = (turn.sender_type or "STUDENT").upper()
-        if sender_type not in {"STUDENT", "USER", "LEARNER", "HUMAN"}:
+        if not _is_student_turn(turn):
             return False
 
         text = turn.text.strip()
@@ -210,7 +217,7 @@ async def analyze_student(
 
     recent_student_turns = [
         turn for turn in conversation_history
-        if turn.role != "model" and (turn.sender_type or "STUDENT").upper() in {"STUDENT", "USER", "LEARNER", "HUMAN"}
+        if _is_student_turn(turn)
     ][-3:]
     recent_nonresponsive_count = sum(
         1 for turn in recent_student_turns
@@ -254,6 +261,7 @@ async def analyze_student(
     user_content += (
         "[★ 지금 분석할 마지막 상호작용]\n"
         "AI 선생님 발화는 학생 반응 해석을 위한 맥락입니다.\n"
+        "선생님 지시는 AI용 비공개 지도 방향이며 학생 발화가 아닙니다.\n"
         "분석 대상은 마지막 학생 발화입니다.\n"
         f"{_format_turns(last_turns)}\n"
     )
@@ -262,6 +270,7 @@ async def analyze_student(
         "\n[출력 지시]\n"
         "- 위 마지막 학생 발화에 나타난 상태만 분석하세요.\n"
         "- 최근 이전 대화는 흐름 파악에만 사용하세요.\n"
+        "- 선생님 지시는 학생 이해도, 감정, 개입 필요 여부의 직접 근거로 사용하지 마세요.\n"
         "- JSON만 출력하세요. 설명, 마크다운, 코드블록은 금지입니다.\n"
         "- 마지막 학생 발화가 짧고 모호하면 understanding_score=null로 두세요.\n"
     )

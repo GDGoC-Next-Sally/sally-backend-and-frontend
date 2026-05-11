@@ -155,13 +155,13 @@ async def update_real_time_analysis(dialog_id: int, analysis_json: dict) -> None
 
 async def append_real_time_analysis(dialog_id: int, analysis_json: dict) -> None:
     """
-    매 턴마다 TeacherSummary 분석 결과를 JSON 배열로 누적 저장합니다.
+    매 턴마다 RealtimeAnalysis 분석 결과를 JSON 배열로 누적 저장합니다.
     기존 배열을 읽어 새 항목을 append한 뒤 전체를 다시 저장합니다.
 
     저장 구조:
         real_time_analysis: [
-            { ...1턴 TeacherSummary... },
-            { ...2턴 TeacherSummary... },
+            { ...1턴 RealtimeAnalysis... },
+            { ...2턴 RealtimeAnalysis... },
             ...
         ]
     """
@@ -193,11 +193,11 @@ async def append_real_time_analysis(dialog_id: int, analysis_json: dict) -> None
 
 async def get_real_time_analyses(dialog_id: int) -> list[dict]:
     """
-    dialog_id로 누적 저장된 전체 TeacherSummary 배열을 조회합니다.
+    dialog_id로 누적 저장된 전체 RealtimeAnalysis 배열을 조회합니다.
     /end-session에서 프론트가 summaries를 보내지 않아도 DB에서 직접 읽어올 때 사용합니다.
 
     Returns:
-        [{ ...TeacherSummary 1턴... }, { ...2턴... }, ...] 또는 []
+        [{ ...RealtimeAnalysis 1턴... }, { ...2턴... }, ...] 또는 []
     """
     def _query():
         try:

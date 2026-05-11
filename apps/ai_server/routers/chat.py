@@ -63,7 +63,7 @@ async def analyze(request: ChatRequest):
         - student_id: (선택) 학생 UUID — dialog 조회 및 백엔드 콜백에 사용
         
     응답(Response):
-        - TeacherSummary: 교사 대시보드용 분석 데이터 JSON
+        - RealtimeAnalysis: 교사 대시보드용 실시간 분석 데이터 JSON
         
     사이드이펙트:
         - session_id + student_id가 모두 제공된 경우, 분석 완료 후
@@ -127,7 +127,7 @@ async def update_realtime(request: UpdateRealtimeRequest):
     요청(Request):
         - session_id: 수업 세션 ID
         - student_id: 학생 UUID
-        - analysis: /analyze 에서 반환된 TeacherSummary JSON 객체
+        - analysis: /analyze 에서 반환된 RealtimeAnalysis JSON 객체
         
     응답(Response):
         - status: "ok"

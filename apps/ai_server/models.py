@@ -37,6 +37,7 @@ class ChatRequest(BaseModel):
     # NestJS가 호출할 때 함께 전달하면 분석 완료 후 자동으로 콜백이 발송됩니다.
     session_id: Optional[int] = None    # 수업 세션 ID (dialogs 테이블 조회용)
     student_id: Optional[str] = None    # 학생 UUID (dialogs 테이블 조회용)
+    need_intervention: Optional[bool] = False  # 교사 개입 필요 여부
 
 
 # ── 실시간 분석 결과 (5개 핵심 필드, /analyze 엔드포인트 전용) ──────────────
@@ -66,7 +67,7 @@ class TeacherSummary(BaseModel):
 class UpdateRealtimeRequest(BaseModel):
     session_id: int
     student_id: str
-    analysis: TeacherSummary
+    analysis: RealtimeAnalysis
 
 
 

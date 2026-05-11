@@ -23,7 +23,7 @@ async def test_stream_chat():
         ConversationTurn(role="user", text="네 준비됐어요!", sender_type="STUDENT", student_name="지연"),
         ConversationTurn(role="model", text="좋아요! 먼저, 두 문장을 연결할 때 쓰는 말이 무엇인지 아나요?"),
         ConversationTurn(role="user", text="접속사요?", sender_type="STUDENT", student_name="지연"),
-        ConversationTurn(role="user", text="접속사도 맞지만, 오늘은 대명사 역할까지 같이 하는 '관계대명사'를 배울 거야. Sally 선생님이 설명해줄게 집중해보자!", sender_type="TEACHER", sender_name="김선생님"),
+        ConversationTurn(role="user", text="학생이 관계대명사를 접속사로만 이해하고 있습니다. 대명사 역할까지 같이 한다는 점을 짚고, 정답을 바로 주기보다 짧은 예문으로 유도해주세요.", sender_type="TEACHER", sender_name="김선생님"),
     ]
 
     request = ChatRequest(
@@ -32,7 +32,7 @@ async def test_stream_chat():
     )
 
     print("======================================================================")
-    print("📝 /chat 스트리밍 테스트 (다자간 대화: 학생 + 선생님 개입)")
+    print("📝 /chat 스트리밍 테스트 (학생 대화 + 선생님 백그라운드 지시)")
     print("======================================================================\n")
 
     for turn in history:

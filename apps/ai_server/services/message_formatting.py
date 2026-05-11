@@ -25,14 +25,14 @@ def speaker_label(
     LLM이 user 메시지의 주체를 명확히 알 수 있도록 발화자 라벨을 반환합니다.
 
     규칙:
-    - 선생님 개입: "선생님"
+    - 선생님 개입: "선생님 지시" (학생에게 보인 발화가 아닌 AI용 비공개 지도 방향)
     - 시스템 조율 메시지: "시스템"
     - 학생 메시지: 학생 이름이 있으면 해당 이름, 없으면 default_student_label
     """
     normalized_type = str(sender_type or "STUDENT").strip().upper()
 
     if normalized_type in {"TEACHER", "ADMIN", "선생님"}:
-        return "선생님"
+        return "선생님 지시"
 
     if normalized_type in {"SYSTEM", "시스템"}:
         return "시스템"
