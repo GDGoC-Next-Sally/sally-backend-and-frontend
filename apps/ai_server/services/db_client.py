@@ -290,3 +290,24 @@ async def save_student_report(
             print(f"[WARN] save_student_report 실패: {e}")
 
     await asyncio.to_thread(_query)
+
+
+async def save_session_report(
+    session_id: int,
+    content: dict,
+) -> None:
+    """
+    세션 전체 요약 리포트를 session_reports 테이블에 저장합니다.
+    session_id는 unique key이므로 같은 세션에서 재생성하면 기존 리포트를 갱신합니다.
+    """
+    def _query():
+        db = _get_db()
+        db.table("session_reports").upsert(
+            {
+                "session_id": session_id,
+                "content": content,
+            },
+            on_conflict="session_id",
+        ).execute()
+
+    await asyncio.to_thread(_query)

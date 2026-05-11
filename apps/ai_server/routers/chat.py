@@ -17,6 +17,7 @@ from ai_server.services.session_report_builder import generate_session_report
 from ai_server.services.db_client import (
     get_dialog,
     mark_dialog_analyzed,
+    save_session_report,
     save_student_report,
     update_real_time_analysis,
     append_real_time_analysis,
@@ -155,7 +156,7 @@ async def session_report(request: SessionReportRequest):
     [NestJS 백엔드 → AI Server] 세션별 전체 학생 리포트 생성 엔드포인트
 
     요청:
-        - session_id: 선택 세션 ID
+        - session_id: 세션 ID
         - students: 학생별 채팅 기록 목록
 
     응답:
@@ -163,13 +164,16 @@ async def session_report(request: SessionReportRequest):
         - key_questions: 주요 질문 문장들
         - weak_concepts_top5: 취약개념 TOP 5
     """
+    if request.session_id is None:
+        raise HTTPException(status_code=400, detail="session_id가 필요합니다.")
+
     if not request.students:
         raise HTTPException(status_code=400, detail="students가 비어있습니다.")
 
     try:
         report = await generate_session_report(
             students=request.students,
-            session_id=str(request.session_id) if request.session_id is not None else None,
+            session_id=str(request.session_id),
         )
     except Exception as e:
         raise HTTPException(
@@ -177,9 +181,21 @@ async def session_report(request: SessionReportRequest):
             detail=f"세션 전체 리포트 생성 실패: {str(e)}",
         )
 
+    try:
+        report_dict = report.model_dump() if hasattr(report, "model_dump") else report.dict()
+        await save_session_report(
+            session_id=request.session_id,
+            content=report_dict,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"세션 전체 리포트 저장 실패: {str(e)}",
+        )
+
     return SessionReportResponse(
         status="ok",
-        session_id=str(request.session_id) if request.session_id is not None else None,
+        session_id=str(request.session_id),
         report=report,
     )
 
