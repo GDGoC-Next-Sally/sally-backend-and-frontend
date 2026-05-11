@@ -24,8 +24,6 @@ load_dotenv(dotenv_path=env_path)
 
 _supabase_client: Optional[Client] = None
 
-
-
 def _get_db() -> Client:
     """Supabase 동기 클라이언트 싱글톤 반환 (내부 전용)"""
     global _supabase_client
