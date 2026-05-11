@@ -24,6 +24,7 @@
   "devDependencies": {
     "@storybook/addon-docs": "^10.3.6",
     "@storybook/nextjs": "^10.3.6",
+    "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

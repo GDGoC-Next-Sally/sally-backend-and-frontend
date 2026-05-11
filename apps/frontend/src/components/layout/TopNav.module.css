@@ -12,16 +12,17 @@
 /* 로고 */
 .logo {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 9px;
   text-decoration: none;
   flex-shrink: 0;
+  height: 36px;
 }
 
 .logoImage {
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
+  height: 100%;
+  width: auto;
+  display: block;
 }
 
 .logoText {

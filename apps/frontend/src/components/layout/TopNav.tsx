@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import styles from './TopNav.module.css';
 import { ChangePasswordModal } from './ChangePasswordModal';
+import SallyLogo from '../../lib/icon/sallylogo.jsx';
+import ProfileIcon from '../../lib/icon/profile.jsx';
 
 interface TopNavUser {
   name: string;
@@ -74,91 +76,91 @@ export const TopNav: React.FC<TopNavProps> = ({ user, onSignOut }) => {
 
   return (
     <>
-    <nav className={styles.nav}>
-      {/* 로고 */}
-      <Link href={homeHref} className={styles.logo}>
-        <img src="/images/image_sallylogo.png" alt="Sally 로고" className={styles.logoImage} />
-      </Link>
+      <nav className={styles.nav}>
+        {/* 로고 */}
+        <Link href={homeHref} className={styles.logo}>
+          <SallyLogo className={styles.logoImage} aria-label="Sally 로고" />
+        </Link>
 
-      {/* 중앙 네비게이션 */}
-      <div className={styles.navItems}>
-        <Link href={homeHref} className={`${styles.navItem} ${isHomePage ? styles.navItemActive : ''}`}>
-          <HomeNavIcon active={isHomePage} />
-          <span>홈 대시보드</span>
-        </Link>
-        <Link href={classesHref} className={`${styles.navItem} ${isClassesPage ? styles.navItemActive : ''}`}>
-          <ClassNavIcon active={isClassesPage} />
-          <span>내 클래스 관리</span>
-        </Link>
-        <Link href={reportHref} className={`${styles.navItem} ${isReportPage ? styles.navItemActive : ''}`}>
-          <ReportNavIcon active={isReportPage} />
-          <span>분석 리포트</span>
-        </Link>
-      </div>
-
-      {/* 프로필 영역 */}
-      <div className={styles.profileWrapper} ref={dropdownRef}>
-        {!user ? (
-          <Link href="/login" className={styles.loginSection}>
-            <img src="/images/image_profile.png" alt="프로필" className={styles.avatarImage} />
-            <span className={styles.loginText}>로그인을 해주세요</span>
+        {/* 중앙 네비게이션 */}
+        <div className={styles.navItems}>
+          <Link href={homeHref} className={`${styles.navItem} ${isHomePage ? styles.navItemActive : ''}`}>
+            <HomeNavIcon active={isHomePage} />
+            <span>홈 대시보드</span>
           </Link>
-        ) : (
-          <>
-            <button
-              type="button"
-              className={styles.profileSection}
-              onClick={() => setDropdownOpen((v) => !v)}
-            >
-              <img src="/images/image_profile.png" alt="프로필" className={styles.avatarImage} />
-              <span className={styles.userName}>{user.name} {roleTitle}</span>
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className={`${styles.chevron} ${dropdownOpen ? styles.chevronOpen : ''}`}
-              >
-                <path
-                  d="M5 7.5L10 12.5L15 7.5"
-                  stroke="#1A1A1A"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
+          <Link href={classesHref} className={`${styles.navItem} ${isClassesPage ? styles.navItemActive : ''}`}>
+            <ClassNavIcon active={isClassesPage} />
+            <span>내 클래스 관리</span>
+          </Link>
+          <Link href={reportHref} className={`${styles.navItem} ${isReportPage ? styles.navItemActive : ''}`}>
+            <ReportNavIcon active={isReportPage} />
+            <span>분석 리포트</span>
+          </Link>
+        </div>
 
-            {dropdownOpen && (
-              <>
-                <div className={styles.dropdownBackdrop} onClick={() => setDropdownOpen(false)} />
-                <div className={styles.dropdown}>
-                  <button
-                    type="button"
-                    className={styles.dropdownItem}
-                    onClick={() => { setDropdownOpen(false); setShowPasswordModal(true); }}
-                  >
-                    비밀번호 변경
-                  </button>
-                  <button type="button" className={styles.dropdownItem}>
-                    알림
-                  </button>
-                  <div className={styles.dropdownDivider} />
-                  <button
-                    type="button"
-                    className={`${styles.dropdownItem} ${styles.dropdownItemDanger}`}
-                    onClick={() => { setDropdownOpen(false); onSignOut?.(); }}
-                  >
-                    로그아웃
-                  </button>
-                </div>
-              </>
-            )}
-          </>
-        )}
-      </div>
-    </nav>
+        {/* 프로필 영역 */}
+        <div className={styles.profileWrapper} ref={dropdownRef}>
+          {!user ? (
+            <Link href="/login" className={styles.loginSection}>
+              <ProfileIcon className={styles.avatarImage} />
+              <span className={styles.loginText}>로그인을 해주세요</span>
+            </Link>
+          ) : (
+            <>
+              <button
+                type="button"
+                className={styles.profileSection}
+                onClick={() => setDropdownOpen((v) => !v)}
+              >
+                <ProfileIcon className={styles.avatarImage} />
+                <span className={styles.userName}>{user.name} {roleTitle}</span>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`${styles.chevron} ${dropdownOpen ? styles.chevronOpen : ''}`}
+                >
+                  <path
+                    d="M5 7.5L10 12.5L15 7.5"
+                    stroke="#1A1A1A"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+
+              {dropdownOpen && (
+                <>
+                  <div className={styles.dropdownBackdrop} onClick={() => setDropdownOpen(false)} />
+                  <div className={styles.dropdown}>
+                    <button
+                      type="button"
+                      className={styles.dropdownItem}
+                      onClick={() => { setDropdownOpen(false); setShowPasswordModal(true); }}
+                    >
+                      비밀번호 변경
+                    </button>
+                    <button type="button" className={styles.dropdownItem}>
+                      알림
+                    </button>
+                    <div className={styles.dropdownDivider} />
+                    <button
+                      type="button"
+                      className={`${styles.dropdownItem} ${styles.dropdownItemDanger}`}
+                      onClick={() => { setDropdownOpen(false); onSignOut?.(); }}
+                    >
+                      로그아웃
+                    </button>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </div>
+      </nav>
 
       {showPasswordModal && (
         <ChangePasswordModal onClose={() => setShowPasswordModal(false)} />
