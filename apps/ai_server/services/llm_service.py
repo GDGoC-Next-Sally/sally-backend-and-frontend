@@ -23,248 +23,8 @@ CHAT_MODEL = "meta/llama-3.3-70b-instruct"         # 채팅용: 성능이 뛰어
 ANALYZE_MODEL = "meta/llama-3.3-70b-instruct"
 #ANALYZE_MODEL = "nvidia/llama-3.1-nemotron-nano-8b-v1"     # 8B: 너무 단순하여 분석 정확도 낮음
 
-
-# ── 분석 파이프라인 상수 ─────────────────────────────────────────────────────
-EMA_ALPHA = 0.4               # understanding_score EMA 가중치 (현재 턴 반영 비율)
-SHORT_RESPONSE_THRESHOLD = 15  # 짧은 응답 기준 (자)
-
-KEYWORDS_STRUGGLE = [
-    "모르겠어요", "모르겠어", "못하겠어요", "못하겠어",
-    "그냥 알려줘", "답 알려줘", "어려워요", "어려워",
-    "포기", "이해 안돼", "이해가 안",
-]
-KEYWORDS_UNDERSTANDING = [
-    "알겠어요", "알겠어", "이해했어요", "이해했어",
-    "아!", "아 맞다", "그렇구나", "맞죠", "됐어요",
-]
-
-def _build_heuristic_signals(
-    last_turns: list[ConversationTurn],
-    conversation_history: list[ConversationTurn],
-) -> str:
-    """
-    마지막 학생 발화에서 자동 감지한 신호를 짧고 구조화된 형태로 반환합니다.
-    최종 판단은 LLM이 최근 대화 맥락과 함께 수행하도록, 휴리스틱은 단정적 표현을 피합니다.
-    """
-    student_turns = [t for t in last_turns if t.role == "user"]
-    if not student_turns:
-        return ""
-
-    last_text = student_turns[-1].text.strip()
-    signals = []
-
-    # 1. 응답 길이
-    char_count = len(last_text)
-    is_short = char_count <= SHORT_RESPONSE_THRESHOLD
-    signals.append(f"- last_student_char_count: {char_count}")
-    signals.append(f"- is_short_response: {str(is_short).lower()}")
-
-    if is_short:
-        signals.append("- short_response_note: 짧은 응답은 단독으로 무관심/혼란으로 단정하지 말고 키워드와 맥락을 함께 보세요.")
-
-    # 2. 키워드 감지
-    found_struggle = [kw for kw in KEYWORDS_STRUGGLE if kw in last_text]
-    found_understanding = [kw for kw in KEYWORDS_UNDERSTANDING if kw in last_text]
-
-    if found_struggle:
-        signals.append(f"- struggle_keywords_found: {found_struggle}")
-    else:
-        signals.append("- struggle_keywords_found: []")
-
-    if found_understanding:
-        signals.append(f"- understanding_keywords_found: {found_understanding}")
-    else:
-        signals.append("- understanding_keywords_found: []")
-
-    if found_struggle and found_understanding:
-        signals.append("- mixed_signal: true")
-        signals.append("- mixed_signal_note: 부정/혼란 표현과 이해 표현이 함께 있으므로 confusion_resolving 가능성을 검토하세요.")
-    else:
-        signals.append("- mixed_signal: false")
-
-    # 3. 예시/재설명/질문 요청 감지
-    example_request_keywords = ["예시", "예문", "하나 더", "한 번 더", "다른 예", "다른 예시"]
-    clarification_keywords = ["왜", "어떻게", "다시", "설명", "모르겠", "헷갈", "어려워"]
-
-    has_example_request = any(kw in last_text for kw in example_request_keywords)
-    has_clarification_request = any(kw in last_text for kw in clarification_keywords) or "?" in last_text
-
-    signals.append(f"- has_example_request: {str(has_example_request).lower()}")
-    signals.append(f"- has_clarification_request: {str(has_clarification_request).lower()}")
-
-    # 4. 포기/분노 신호 감지
-    giving_up_keywords = ["그만", "안 할래", "못하겠", "포기", "하기 싫", "싫어"]
-    anger_keywords = ["짜증", "화나", "열받", "빡", "답답"]
-
-    has_giving_up_signal = any(kw in last_text for kw in giving_up_keywords)
-    has_anger_signal = any(kw in last_text for kw in anger_keywords)
-
-    signals.append(f"- has_giving_up_signal: {str(has_giving_up_signal).lower()}")
-    signals.append(f"- has_anger_signal: {str(has_anger_signal).lower()}")
-
-    # 5. 연속 짧은 응답 횟수
-    all_student_turns = [t for t in conversation_history if t.role == "user"]
-    consecutive_short = 0
-
-    for t in reversed(all_student_turns):
-        if len(t.text.strip()) <= SHORT_RESPONSE_THRESHOLD:
-            consecutive_short += 1
-        else:
-            break
-
-    signals.append(f"- consecutive_short_responses: {consecutive_short}")
-
-    possible_disengagement = (
-        consecutive_short >= 2
-        and not found_understanding
-        and not has_example_request
-        and not has_clarification_request
-        and not has_giving_up_signal
-        and not has_anger_signal
-    )
-
-    signals.append(f"- possible_disengagement_pattern: {str(possible_disengagement).lower()}")
-
-    return "[자동 감지된 신호 — 참고용]\n" + "\n".join(signals) + "\n"
-
-def _enforce_consistency(
-    summary: TeacherSummary,
-    previous_summary: TeacherSummary | None = None,
-) -> TeacherSummary:
-    """LLM 출력에 규칙 기반 후처리를 적용합니다.
-    1) 값 범위 클램핑  2) EMA 스무딩(understanding_score)  3) 필드 간 모순 제거"""
-    # ── 1. 범위 클램핑
-    summary.struggle_delta = max(-30, min(30, summary.struggle_delta or 0))
-    raw_score = max(1, min(10, summary.understanding_score or 5))
-
-    # ── 2. EMA 스무딩 — 이전 점수와 혼합하여 급등락 완화
-    if previous_summary and previous_summary.understanding_score:
-        prev_score = max(1, min(10, previous_summary.understanding_score))
-        smoothed = EMA_ALPHA * raw_score + (1 - EMA_ALPHA) * prev_score
-        summary.understanding_score = max(1, min(10, round(smoothed)))
-    else:
-        summary.understanding_score = raw_score
-
-    # ── 3. 필드 간 모순 제거
-    # 규칙 A: confusion_type 없음 → knowledge_gap null 강제
-    if summary.confusion_type == "없음":
-        summary.knowledge_gap = None
-    # 규칙 B: misconception_tag 있으면 confusion_type을 오개념 강제
-    if summary.misconception_tag:
-        summary.confusion_type = "오개념"
-    # 규칙 C: 흥미/집중이면 이탈위험 불가
-    if summary.student_emotion in ("흥미", "집중") and summary.engagement_level == "이탈위험":
-        summary.engagement_level = "높음"
-    # 규칙 D: 이해도 8 이상 → 과도한 좌절 상승 억제
-    if summary.understanding_score >= 8 and (summary.struggle_delta or 0) > 10:
-        summary.struggle_delta = 10
-
-    return summary
-
-
-def _process_struggle_metrics(
-    summary: TeacherSummary,
-    last_turns: list,
-    previous_summary: "TeacherSummary | None",
-) -> TeacherSummary:
-    """
-    11단계 파이프라인 기반 frustration 지표 후처리.
-    LLM의 raw 출력을 받아 unobservable 처리, 의도 기반 보정,
-    confidence 기반 magnitude 조정, adaptive EMA를 순서대로 적용합니다.
-    """
-    # ── 0. unobservable 처리 ────────────────────────────────────────────────
-    if not summary.is_observable:
-        summary.struggle_delta = None
-        summary.needs_followup_check = True
-        summary.reason = summary.reason or "too_short_or_ambiguous"
-        # struggle_level은 이전 값 그대로 유지
-        if previous_summary and previous_summary.struggle_level is not None:
-            summary.struggle_level = previous_summary.struggle_level
-        return summary
-
-    # ── 1. struggle_level 범위 클램핑 ────────────────────────────────────
-    raw_level = max(0, min(100, summary.struggle_level or 10))
-
-    # ── 2. evidence_type 기반 의도 보정 ─────────────────────────────────────
-    evidence = summary.evidence_type or "other"
-    if evidence in ("giving_up", "anger"):
-        raw_level = min(100, raw_level + 5)   # 강한 부정 신호 → 상승 편향
-    elif evidence == "repeated_confusion":
-        raw_level = min(100, raw_level + 3)
-    elif evidence == "understanding_confirmed":
-        raw_level = max(0, raw_level - 5)     # 이해 확인 → 하락 편향
-    elif evidence == "confusion_resolving":
-        raw_level = max(0, raw_level - 3)
-    elif evidence in ("clarification_request", "other"):
-        pass                                  # 단순 질문/기타 → 가감점 없음 (+0점 유지)
-    elif evidence == "ambiguous_short":
-        # 키워드로 2차 판단
-        student_turns = [t for t in last_turns if t.role == "user"]
-        if student_turns:
-            last_text = student_turns[-1].text
-            if any(kw in last_text for kw in KEYWORDS_STRUGGLE):
-                raw_level = min(100, raw_level + 3)
-            elif any(kw in last_text for kw in KEYWORDS_UNDERSTANDING):
-                raw_level = max(0, raw_level - 3)
-
-    # ── 3. confidence 기반 magnitude 조정 ───────────────────────────────────
-    confidence = summary.confidence or "medium"
-    prev_level = (previous_summary.struggle_level or 10) if previous_summary else 10
-    raw_delta = raw_level - prev_level
-
-    if confidence == "low":
-        raw_delta = raw_delta // 2       # 신뢰도 낮으면 delta 크기 절반으로
-    elif confidence == "medium":
-        pass                             # 그대로 유지
-
-    # 위험 표현 없는 very low confidence → null 처리
-    student_turns_all = [t for t in last_turns if t.role == "user"]
-    last_text_all = student_turns_all[-1].text if student_turns_all else ""
-    has_danger = any(kw in last_text_all for kw in KEYWORDS_STRUGGLE)
-    if confidence == "low" and not has_danger and abs(raw_delta) < 3:
-        summary.struggle_delta = None
-        summary.struggle_level = prev_level
-        summary.needs_followup_check = True
-        summary.reason = summary.reason or "low_confidence_no_signal"
-        return summary
-
-    # ── 4. 감정 일관성 강제 ─────────────────────────────────────────────────
-    emotion = summary.student_emotion or ""
-    if emotion in ("흥미", "집중"):
-        raw_level = min(raw_level, 35)   # 긍정 감정이면 level 35 상한
-    elif emotion in ("좌절", "분노"):
-        raw_level = max(raw_level, 55)   # 부정 감정이면 level 55 하한
-    elif emotion == "혼란":
-        raw_level = max(raw_level, 40)   # 혼란이면 최소 40
-
-    # ── 5. 이해도 연동 상한 ─────────────────────────────────────────────────
-    understanding = summary.understanding_score or 5
-    if understanding >= 8:
-        raw_level = min(raw_level, 40)
-    elif understanding >= 6:
-        raw_level = min(raw_level, 60)
-
-    # ── 6. Adaptive EMA (위험 신호에 따라 가중치 조정) ──────────────────────
-    if previous_summary and previous_summary.struggle_level is not None:
-        prev = float(previous_summary.struggle_level)
-        if evidence in ("giving_up", "anger"):
-            alpha = 0.80   # 위험 신호: 현재 턴 가중치 높임
-        elif evidence in ("understanding_confirmed", "confusion_resolving"):
-            alpha = 0.55   # 회복 신호: 보수적으로
-        else:
-            alpha = 0.65   # 일반
-        raw_level = round(alpha * raw_level + (1 - alpha) * prev)
-
-    raw_level = max(0, min(100, raw_level))
-
-    # ── 7. delta 계산 및 최종 clipping ──────────────────────────────────────
-    final_delta = raw_level - prev_level
-    final_delta = max(-30, min(30, round(final_delta)))
-
-    summary.struggle_level = raw_level
-    summary.struggle_delta = final_delta
-
-    return summary
+# 한자(중국어 포함) 및 일본어(히라가나, 가타카나) 강제 필터링 정규식
+FOREIGN_CHAR_PATTERN = re.compile(r"[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\u3040-\u309F\u30A0-\u30FF]")
 
 def _get_client() -> AsyncOpenAI:
     """API Key를 런타임에 읽어서 클라이언트를 생성합니다 (lazy init)."""
@@ -277,6 +37,35 @@ def _get_client() -> AsyncOpenAI:
         timeout=120.0,  # 대형 모델의 긴 TTFT(첫 토큰 대기)를 위해 120초로 설정
     )
 
+async def _translate_foreign_text(client: AsyncOpenAI, text: str) -> str:
+    """한자나 일본어가 포함된 짧은 텍스트(단어/어구)를 문맥에 맞게 자연스러운 한글로 변환합니다."""
+    prompt = f"""아래 텍스트에 포함된 한자(중국어) 및 일본어 표기를 문맥에 맞는 자연스러운 한국어(한글) 단어나 어구로 변환하세요.
+의미와 품사는 그대로 유지하고, 마크다운이나 부연 설명 없이 변환된 텍스트만 출력하세요.
+입력 텍스트 끝에 공백이나 기호가 있다면 변환 후에도 동일하게 유지하세요.
+절대 결과에 한자, 중국어, 일본어 문자를 남기지 마십시오.
+
+입력:
+{text}
+"""
+    try:
+        response = await client.chat.completions.create(
+            model=CHAT_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0,
+            max_tokens=50,
+        )
+        result = response.choices[0].message.content
+        if result:
+            # LLM이 번역을 시도했으나 여전히 외국어가 남아있다면 강제 제거
+            if FOREIGN_CHAR_PATTERN.search(result):
+                print(f"[WARN] 한글 변환 LLM이 여전히 외국어를 포함함. 강제 제거: {result}")
+                return FOREIGN_CHAR_PATTERN.sub("", result)
+            return result
+    except Exception as e:
+        print(f"[WARN] 한글 변환 LLM 호출 실패: {e}")
+        
+    # 실패 시 원본에서 문제되는 문자만 강제 제거해서 반환 (fallback)
+    return FOREIGN_CHAR_PATTERN.sub("", text)
 
 async def stream_chat(
     conversation_history: list[ConversationTurn],
@@ -309,12 +98,33 @@ async def stream_chat(
         stream=True,
     )
 
+    buffer = ""
     async for chunk in response:
         if not chunk.choices:   # llama 등 일부 모델이 마지막에 빈 chunk를 보냄
             continue
         delta = chunk.choices[0].delta.content
-        if delta:
-            yield delta
+        if not delta:
+            continue
+            
+        buffer += delta
+        
+        # 스트리밍 지연을 최소화하기 위해 공백이나 개행 문자를 기준으로 단어 단위로 버퍼링합니다.
+        # 완성된 단어(공백 이전까지의 텍스트)를 잘라내어 검사합니다.
+        match = re.search(r'([\s\S]*[\s\n])([^\s\n]*)$', buffer)
+        if match:
+            completed_text = match.group(1)
+            buffer = match.group(2)
+            
+            if FOREIGN_CHAR_PATTERN.search(completed_text):
+                completed_text = await _translate_foreign_text(client, completed_text)
+                
+            yield completed_text
+
+    # 남은 버퍼 처리
+    if buffer:
+        if FOREIGN_CHAR_PATTERN.search(buffer):
+            buffer = await _translate_foreign_text(client, buffer)
+        yield buffer
 
 
 async def analyze_student(
@@ -399,10 +209,6 @@ async def analyze_student(
         "분석 대상은 마지막 학생 발화입니다.\n"
         f"{_format_turns(last_turns)}\n"
     )
-
-    heuristic = _build_heuristic_signals(last_turns, conversation_history)
-    if heuristic:
-        user_content += f"\n[휴리스틱 신호]\n{heuristic}\n"
 
     user_content += (
         "\n[출력 지시]\n"

@@ -2,7 +2,8 @@
 models.py — FastAPI 요청/응답 데이터 구조 정의
 JS의 studentProfile, conversationHistory 구조를 파이썬 타입으로 변환합니다.
 """
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
 from typing import Optional, List, Dict
 
 
@@ -76,36 +77,22 @@ class EndSessionRequest(BaseModel):
 
 # ── 최종 리포트 데이터 구조 ───────────────────────────────────────────────────
 class FinalReport(BaseModel):
-    session_id: str
-    student_id: Optional[str] = None
-    total_turns: int                              # 총 대화 턴 수
-
-    # ── 이해도 ─────────────────────────────────────────────────────────────────
-    avg_understanding_score: float                # 전체 평균 이해도 (1~10, 수업 회고용)
-    peak_understanding_score: int = 0             # 수업 중 최고 이해도 점수 (1~10, 학생이 도달한 최정점)
-    recent_avg_understanding_pct: float           # 최근 3턴 평균 이해도 % (×10, 현재 상태용)
-    final_understanding_score: int                # 마지막 턴 이해도 점수 (1~10)
-    understanding_scores_timeline: List[int]      # 턴별 이해도 % 시계열 (×10, 꺾은선 차트용)
-
-    # ── 좌절 / 안정도 ──────────────────────────────────────────────────────────
-    frustration_total: int                        # 누적 좌절 지수 (frustration_delta 합산)
-    frustration_trend: str                        # 최근 3턴 좌절 추이: "improving" | "worsening" | "stable"
-    stability_gauge: int                          # 안정도 게이지 (0~100, 높을수록 안정)
-    urgency_level: int                            # 긴급도 (0~5, frustration_total ÷ 20)
-
-    # ── 감정 / 오개념 ──────────────────────────────────────────────────────────
-    dominant_emotion: Optional[str] = None        # 수업 전체 주요 감정 (전체 최빈값, 최종 요약용)
-    emotion_trend: Optional[str] = None           # 감정 흐름 (전반부 → 후반부, 예: "혼란 → 집중")
-    misconception_tags: List[str] = []            # 감지된 오개념 태그 목록 (중복 제거)
-    hallucination_risk_count: int = 0             # 환각 위험 감지 횟수
-
-    # ── 학습 패턴 ──────────────────────────────────────────────────────────────
-    learning_mode_distribution: Dict[str, int] = {}   # 학습 모드 분포 {"active": 3, "passive": 5}
-    active_ratio: float = 0.0                    # 능동 참여율 % (active + self_correct 회)
-    one_line_summaries: List[str] = []            # 턴별 한 줄 요약 목록
-
-    # ── 총평 ───────────────────────────────────────────────────────────────────
-    overall_summary: str = ""                     # 전체 수업 자동 생성 총평
+    key_concepts: dict = Field(
+        default_factory=dict,
+        description="세션 주요 학습 주제와 학생의 취약 개념 분리 매핑 (주요 학습 개념, 취약 개념)"
+    )
+    misconception_summary: list[str] = Field(
+        default_factory=list,
+        description="반복 오개념과 구체적 약점 요약"
+    )
+    session_summary: str = Field(
+        default="",
+        description="교사용 한 줄 세션 상태 요약"
+    )
+    detailed_report: str = Field(
+        default="",
+        description="AI가 생성한 상세 줄글 리포트"
+    )                    # 전체 수업 자동 생성 총평
 
 
 # ── /end-session API 응답 바디 ────────────────────────────────────────────────
