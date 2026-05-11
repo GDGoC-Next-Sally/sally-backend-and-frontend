@@ -12,7 +12,7 @@ export class LivechatService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventsGateway: EventsGateway,
-  ) {}
+  ) { }
 
   async getMessages(dialogId: number, userId: string, role: string) {
     const dialog = await this.prisma.dialogs.findUnique({
@@ -36,8 +36,8 @@ export class LivechatService {
   // 학생 전용 메시지 전송
   async sendMessage(studentId: string, dto: SendChatMessageDto) {
     const dialog = await this.prisma.dialogs.findUnique({
-      where: { id: dto.dialog_id }, 
-      include: { 
+      where: { id: dto.dialog_id },
+      include: {
         sessions: {
           include: { classes: true }
         }
@@ -72,7 +72,7 @@ export class LivechatService {
 
   getAiResponseStream(studentId: string, dto: SendChatMessageDto): Observable<any> {
     return new Observable((subscriber) => {
-      this.sendMessage(studentId, dto).then(async ({ userMessage, dialog}) => {
+      this.sendMessage(studentId, dto).then(async ({ userMessage, dialog }) => {
         try {
           // 1. 과거 대화 내역 조회 (AI 서버용 conversation_history 구성)
           const pastMessages = await this.prisma.chat_messages.findMany({
@@ -243,12 +243,99 @@ export class LivechatService {
     // 2. 실시간 분석 결과도 초기화
     await this.prisma.dialogs.update({
       where: { id: dialogId },
-      data: { 
+      data: {
         real_time_analysis: [],
         is_analyzed: false
       }
     });
 
     return { status: 'deleted' };
+  }
+
+  /**
+   * 세션 시작 또는 학생 참여 시 AI의 첫인사를 개인화하여 생성합니다. (SSE 스트리밍)
+   */
+  generateGreeting(dialogId: number, studentId: string): Observable<any> {
+    return new Observable((subscriber) => {
+      (async () => {
+        try {
+          const dialog = await this.prisma.dialogs.findUnique({
+            where: { id: dialogId },
+            include: { sessions: { include: { classes: true } } }
+          });
+
+          if (!dialog) throw new Error('대화를 찾을 수 없습니다.');
+          const session = dialog.sessions;
+
+          if (dialog.student_id !== studentId) {
+            throw new UnauthorizedException('본인의 대화에서만 생성이 가능합니다.');
+          }
+
+          // 이미 대화 내역(인사말 등)이 존재하는지 확인하여 중복 생성 방지
+          const existingMessages = await this.prisma.chat_messages.findFirst({
+            where: { dialog_id: dialogId }
+          });
+
+          if (existingMessages) {
+            subscriber.complete();
+            return;
+          }
+
+          // 1. 학생 프로필 구성
+          const student = await this.prisma.users.findUnique({
+            where: { id: studentId },
+            select: { name: true }
+          });
+          const studentName = student?.name || '학생';
+
+          const student_profile = {
+            subject: session.classes?.subject || '미설정',
+            scope: session.session_name,
+            learning_objectives: session.objective || '미설정',
+            key_concepts: session.explanation || '미설정',
+            topic_hints: [],
+          };
+
+          // 2. 가상의 첫 발화(Prompt) 작성 (DB 저장 X, 학생 이름 포함하여 개인화)
+          const conversation_history = [
+            {
+              role: 'user',
+              text: `안녕하세요 선생님! 오늘 수업 시작할 준비가 되었습니다. 제 이름은 ${studentName}입니다. 오늘 배울 내용에 대해 저에게 개인화해서 친근하게 먼저 인사를 건네주세요.`
+            }
+          ];
+
+          const response = await axios.post(`${AI_SERVER_URL}/api/chat`, {
+            conversation_history,
+            student_profile
+          }, { responseType: 'stream' });
+
+          let aiFullContent = '';
+
+          response.data.on('data', (chunk: Buffer) => {
+            const text = chunk.toString();
+            aiFullContent += text;
+            subscriber.next({ data: { chunk: text } });
+          });
+
+          response.data.on('end', async () => {
+            const content = aiFullContent.trim();
+            if (content) {
+              // 3. AI 메시지만 DB에 저장 및 전송 (Prompt는 저장하지 않음)
+              await this.saveAiMessage(dialogId, content, session.teacher_id);
+            }
+            subscriber.complete();
+          });
+
+          response.data.on('error', (err: any) => {
+            console.error('Greeting AI stream error:', err);
+            subscriber.error(err);
+          });
+
+        } catch (err) {
+          console.error('Failed to trigger greeting from AI:', err.message);
+          subscriber.error(err);
+        }
+      })();
+    });
   }
 }

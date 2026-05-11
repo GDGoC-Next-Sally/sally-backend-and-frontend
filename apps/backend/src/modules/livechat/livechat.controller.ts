@@ -30,6 +30,14 @@ export class LivechatController {
     return this.livechatService.getAiResponseStream(req.user.userId, dto);
   }
 
+  @Post('greeting')
+  @Roles(UserRole.STUDENT)
+  @ApiOperation({ summary: '첫 인사말 생성 및 AI 응답 스트리밍 (SSE)' })
+  @Sse('greeting')
+  generateGreeting(@Req() req: any, @Body() dto: { dialog_id: number }): Observable<MessageEvent> {
+    return this.livechatService.generateGreeting(dto.dialog_id, req.user.userId);
+  }
+
   // FastAPI 전용 콜백 엔드포인트 (JWT 가드 제외 - 내부 서버 간 통신)
   @Internal()  // 가드 우회
   @Post('analytics-callback')
