@@ -139,7 +139,6 @@ export class SessionsService {
   async finishSession(id: number, teacherId: string) {
     const session = await this.prisma.sessions.findUnique({
       where: { id },
-      include: { classes: true },
     });
     if (!session) throw new NotFoundException(`세션 #${id}를 찾을 수 없습니다.`);
     if (session.teacher_id !== teacherId) throw new UnauthorizedException('수업을 종료할 권한이 없습니다.');
@@ -157,9 +156,9 @@ export class SessionsService {
     // 세션에 속한 모든 학생 다이얼로그 조회 후 AI 서버에 최종 리포트 요청 (비동기, fire and forget)
     this.prisma.dialogs.findMany({
       where: { session_id: id },
-      select: { student_id: true, real_time_analysis: true },
+      select: { student_id: true },
     }).then(dialogs => {
-      this.reportsService.requestFinalReports(id, teacherId, dialogs, session);
+      this.reportsService.requestFinalReports(id, teacherId, dialogs);
     }).catch(err => {
       console.error(`Failed to fetch dialogs for final report (session ${id}):`, err.message);
     });
