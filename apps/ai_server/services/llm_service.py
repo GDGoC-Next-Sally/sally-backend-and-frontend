@@ -197,6 +197,28 @@ async def analyze_student(
             lines.append(f"{speaker}: {_truncate(turn.text)}")
         return "\n".join(lines) + "\n"
 
+    def _is_nonresponsive_student_turn(turn: ConversationTurn) -> bool:
+        if turn.role == "model":
+            return False
+
+        sender_type = (turn.sender_type or "STUDENT").upper()
+        if sender_type not in {"STUDENT", "USER", "LEARNER", "HUMAN"}:
+            return False
+
+        text = turn.text.strip()
+        return text in {"", ".", "..", "...", "네", "음", "ㅇ", "ㅋㅋ"} or len(text) <= 2
+
+    recent_student_turns = [
+        turn for turn in conversation_history
+        if turn.role != "model" and (turn.sender_type or "STUDENT").upper() in {"STUDENT", "USER", "LEARNER", "HUMAN"}
+    ][-3:]
+    recent_nonresponsive_count = sum(
+        1 for turn in recent_student_turns
+        if _is_nonresponsive_student_turn(turn)
+    )
+    last_student_turn = recent_student_turns[-1] if recent_student_turns else None
+    last_student_text = last_student_turn.text.strip() if last_student_turn else ""
+
     user_content = ""
 
     if context_turns:
@@ -223,6 +245,13 @@ async def analyze_student(
         )
 
     user_content += (
+        "[관측 보조 신호]\n"
+        f"- recent_nonresponsive_student_turn_count: {recent_nonresponsive_count}\n"
+        "- 이 값이 2 이상이면 최근 학생 무반응이 반복된 상태입니다.\n"
+        "\n"
+    )
+
+    user_content += (
         "[★ 지금 분석할 마지막 상호작용]\n"
         "AI 선생님 발화는 학생 반응 해석을 위한 맥락입니다.\n"
         "분석 대상은 마지막 학생 발화입니다.\n"
@@ -234,7 +263,7 @@ async def analyze_student(
         "- 위 마지막 학생 발화에 나타난 상태만 분석하세요.\n"
         "- 최근 이전 대화는 흐름 파악에만 사용하세요.\n"
         "- JSON만 출력하세요. 설명, 마크다운, 코드블록은 금지입니다.\n"
-        "- 마지막 학생 발화가 짧고 모호하면 is_observable=false, struggle_delta=null로 두세요.\n"
+        "- 마지막 학생 발화가 짧고 모호하면 understanding_score=null로 두세요.\n"
     )
 
     messages = [
@@ -280,6 +309,16 @@ async def analyze_student(
 
     try:
         data = json.loads(raw_text)
+        if recent_nonresponsive_count >= 2:
+            data["understanding_score"] = None
+            data["current_topic"] = "응답 없음"
+            data["student_emotion"] = "무반응"
+            data["need_intervention"] = True
+        elif data.get("current_topic") == "수업 외 대화" and len(last_student_text) > 2:
+            data["understanding_score"] = None
+            if data.get("student_emotion") == "무반응":
+                data["student_emotion"] = "중립"
+            data["need_intervention"] = False
         return RealtimeAnalysis(**data)
     except json.JSONDecodeError as e:
         error_msg = f"LLM 분석 응답을 JSON으로 파싱할 수 없습니다: {e}\nRaw Response: {raw_text}"

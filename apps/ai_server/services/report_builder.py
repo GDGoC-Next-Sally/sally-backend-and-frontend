@@ -298,7 +298,10 @@ def _build_report_prompt(conversation_text: str) -> str:
 
 출력 형식:
 {{
-  "key_concepts": ["string"],
+  "key_concepts": {{
+    "main_concepts": ["string"],
+    "weak_concepts": ["string"]
+  }},
   "misconception_summary": ["string"],
   "session_summary": "string",
   "detailed_report": "string"
@@ -306,11 +309,11 @@ def _build_report_prompt(conversation_text: str) -> str:
 
 필드 작성 기준:
 1. key_concepts = 주요/취약 개념
-- 세션에서 다룬 주요 학습 주제와 세션 종료 시점에도 추가 지도가 필요한 취약 개념을 짧은 명사구 배열로 작성하세요.
+- 반드시 객체로 작성하세요. 배열이나 문자열로 작성하지 마세요.
+- main_concepts에는 세션에서 다룬 주요 학습 주제를 짧은 명사구 배열로 작성하세요.
+- weak_concepts에는 세션 종료 시점에도 추가 지도가 필요한 취약 개념을 짧은 명사구 배열로 작성하세요.
 - 초반에 어려워했더라도 이후 이해한 근거가 있으면 취약 개념으로 분류하지 마세요.
-- 단, 세션의 주요 학습 주제라면 포함할 수 있습니다.
-- 주요 학습 주제나 취약 개념이 모두 명확하지 않으면 ["없음"]으로 작성하세요.
-- key_concepts는 반드시 string 배열로만 작성하세요. 객체나 중첩 JSON으로 작성하지 마세요.
+- 주요 학습 주제나 취약 개념이 명확하지 않은 하위 필드는 ["없음"]으로 작성하세요.
 
 2. misconception_summary = 오개념·약점 요약
 - 세션 종료 시점까지 남아 있는 오개념, 해결되지 않은 혼란, 여전히 남은 풀이 약점을 구체적인 문장 배열로 작성하세요.
@@ -450,7 +453,10 @@ def _build_synthesis_prompt(chunk_summaries: list[str]) -> str:
 
 출력 형식:
 {{
-  "key_concepts": ["string"],
+  "key_concepts": {{
+    "main_concepts": ["string"],
+    "weak_concepts": ["string"]
+  }},
   "misconception_summary": ["string"],
   "session_summary": "string",
   "detailed_report": "string"
@@ -458,11 +464,11 @@ def _build_synthesis_prompt(chunk_summaries: list[str]) -> str:
 
 필드 작성 기준:
 1. key_concepts = 주요/취약 개념
-- 세션에서 다룬 주요 학습 주제와 세션 종료 시점에도 추가 지도가 필요한 취약 개념을 짧은 명사구 배열로 작성하세요.
+- 반드시 객체로 작성하세요. 배열이나 문자열로 작성하지 마세요.
+- main_concepts에는 세션에서 다룬 주요 학습 주제를 짧은 명사구 배열로 작성하세요.
+- weak_concepts에는 세션 종료 시점에도 추가 지도가 필요한 취약 개념을 짧은 명사구 배열로 작성하세요.
 - 초반 또는 중간에 어려워했더라도 후반부에서 이해한 근거가 있으면 취약 개념으로 분류하지 마세요.
-- 단, 세션의 주요 학습 주제라면 포함할 수 있습니다.
-- 주요 학습 주제나 취약 개념이 모두 명확하지 않으면 ["없음"]으로 작성하세요.
-- key_concepts는 반드시 string 배열로만 작성하세요. 객체나 중첩 JSON으로 작성하지 마세요.
+- 주요 학습 주제나 취약 개념이 명확하지 않은 하위 필드는 ["없음"]으로 작성하세요.
 
 2. misconception_summary = 오개념·약점 요약
 - 세션 종료 시점까지 남아 있는 오개념, 해결되지 않은 혼란, 여전히 남은 풀이 약점을 구체적인 문장 배열로 작성하세요.
@@ -492,7 +498,9 @@ def _build_repair_json_prompt(raw_text: str) -> str:
     return f"""아래 텍스트를 유효한 JSON으로만 변환하세요.
 
 반드시 다음 4개 필드만 포함하세요.
-- key_concepts: string[]
+- key_concepts: object
+  - main_concepts: string[]
+  - weak_concepts: string[]
 - misconception_summary: string[]
 - session_summary: string
 - detailed_report: string
@@ -500,7 +508,8 @@ def _build_repair_json_prompt(raw_text: str) -> str:
 규칙:
 - 마크다운, 코드블록, 설명문, 주석은 출력하지 마세요.
 - JSON 객체 하나만 출력하세요.
-- 필드가 없거나 판단하기 어려운 경우 key_concepts와 misconception_summary는 ["없음"]으로 두세요.
+- key_concepts는 반드시 객체로 출력하고, 판단하기 어려운 하위 필드는 ["없음"]으로 두세요.
+- misconception_summary가 없거나 판단하기 어려운 경우 ["없음"]으로 두세요.
 - session_summary와 detailed_report가 없으면 주어진 텍스트를 바탕으로 짧게 생성하세요.
 - 모든 설명은 현대 한국어의 한글 문장으로 작성하세요.
 - 한자, 일본어, 중국어 표기를 절대 사용하지 마세요.
@@ -574,6 +583,58 @@ def _parse_report_json(raw_text: str) -> dict[str, Any]:
     return json.loads(json_text)
 
 
+def _default_key_concepts() -> dict[str, list[str]]:
+    return {
+        "main_concepts": ["없음"],
+        "weak_concepts": ["없음"],
+    }
+
+
+def _normalize_key_concepts(value: Any) -> dict[str, list[str]]:
+    """
+    FinalReport.key_concepts는 dict 스키마입니다.
+    구버전 프롬프트/LLM 응답이 string[] 또는 string으로 반환한 경우에도
+    저장 가능한 구조로 정규화합니다.
+    """
+    if isinstance(value, dict):
+        main_concepts = value.get("main_concepts") or value.get("main") or value.get("topics")
+        weak_concepts = value.get("weak_concepts") or value.get("weak") or value.get("gaps")
+
+        def _list_or_default(items: Any) -> list[str]:
+            if isinstance(items, list):
+                cleaned = [str(item).strip() for item in items if str(item).strip()]
+                return cleaned or ["없음"]
+            if isinstance(items, str) and items.strip():
+                return [items.strip()]
+            return ["없음"]
+
+        return {
+            "main_concepts": _list_or_default(main_concepts),
+            "weak_concepts": _list_or_default(weak_concepts),
+        }
+
+    if isinstance(value, list):
+        cleaned = [str(item).strip() for item in value if str(item).strip()]
+        return {
+            "main_concepts": cleaned or ["없음"],
+            "weak_concepts": ["없음"],
+        }
+
+    if isinstance(value, str) and value.strip():
+        return {
+            "main_concepts": [value.strip()],
+            "weak_concepts": ["없음"],
+        }
+
+    return _default_key_concepts()
+
+
+def _normalize_final_report_data(data: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(data)
+    normalized["key_concepts"] = _normalize_key_concepts(normalized.get("key_concepts"))
+    return normalized
+
+
 # ─────────────────────────────────────────────────────────────
 # Foreign Character detection / repair
 # ─────────────────────────────────────────────────────────────
@@ -612,7 +673,7 @@ async def _remove_foreign_chars_and_parse_report_json(
     )
 
     cleaned_text = response.choices[0].message.content or ""
-    cleaned_data = _parse_report_json(cleaned_text)
+    cleaned_data = _normalize_final_report_data(_parse_report_json(cleaned_text))
     return FinalReport(**cleaned_data)
 
 
@@ -673,14 +734,14 @@ async def _repair_and_parse_report_json(
     )
 
     repaired_text = response.choices[0].message.content or ""
-    repaired_data = _parse_report_json(repaired_text)
+    repaired_data = _normalize_final_report_data(_parse_report_json(repaired_text))
     return FinalReport(**repaired_data)
 
 
 def _fallback_parse_error_report(raw_text: str) -> FinalReport:
     """파싱 및 repair까지 실패했을 때 반환할 fallback 리포트입니다."""
     return FinalReport(
-        key_concepts=["없음"],
+        key_concepts=_default_key_concepts(),
         misconception_summary=["없음"],
         session_summary="리포트 파싱 오류",
         detailed_report=(
@@ -694,7 +755,7 @@ def _fallback_parse_error_report(raw_text: str) -> FinalReport:
 def _empty_student_report() -> FinalReport:
     """학생 발화가 없을 때 반환할 fallback 리포트입니다."""
     return FinalReport(
-        key_concepts=["없음"],
+        key_concepts=_default_key_concepts(),
         misconception_summary=["없음"],
         session_summary="학생 발화 기록 없음",
         detailed_report=(
@@ -709,7 +770,7 @@ def _empty_student_report() -> FinalReport:
 def _llm_call_failed_report() -> FinalReport:
     """LLM 호출 실패 시 반환할 fallback 리포트입니다."""
     return FinalReport(
-        key_concepts=["없음"],
+        key_concepts=_default_key_concepts(),
         misconception_summary=["없음"],
         session_summary="리포트 생성 실패",
         detailed_report="LLM 호출 중 오류가 발생하여 리포트를 생성하지 못했습니다.",
@@ -849,7 +910,7 @@ async def generate_final_report(
 
     # ── Step 5~8: JSON 파싱, repair retry, 한자 제거, fallback ─────────────
     try:
-        data = _parse_report_json(raw_text)
+        data = _normalize_final_report_data(_parse_report_json(raw_text))
         report = FinalReport(**data)
         report = await _ensure_no_foreign_chars_in_report(
             client=client,
