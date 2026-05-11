@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 from typing import AsyncGenerator
 from ai_server.models import StudentProfile, ConversationTurn, TeacherSummary, RealtimeAnalysis
+from ai_server.services.message_formatting import format_labeled_message, speaker_label
 from ai_server.services.prompt_builder import build_chat_system_prompt, build_realtime_analysis_system_prompt, build_chat_few_shot_messages
 
 # ai_server 폴더 안의 .env 파일을 명시적으로 지정
@@ -89,14 +90,13 @@ async def stream_chat(
         if turn.role == "model":
             messages.append({"role": "assistant", "content": turn.text})
         else:
-            # sender_type에 따라 발화자 명찰 부여
-            sender_type = (turn.sender_type or "STUDENT").upper()
-            if sender_type == "TEACHER":
-                labeled_text = f"선생님: {turn.text}"
-            elif sender_type == "SYSTEM":
-                labeled_text = f"시스템: {turn.text}"
-            else:  # STUDENT 또는 기타
-                labeled_text = f"학생: {turn.text}"
+            labeled_text = format_labeled_message(
+                turn.text,
+                turn.sender_type,
+                student_name=turn.student_name,
+                sender_name=turn.sender_name,
+                speaker_name=turn.speaker_name,
+            )
             messages.append({"role": "user", "content": labeled_text})
 
     response = await client.chat.completions.create(
@@ -188,13 +188,12 @@ async def analyze_student(
             if turn.role == "model":
                 speaker = "AI 선생님"
             else:
-                sender_type = (turn.sender_type or "STUDENT").upper()
-                if sender_type == "TEACHER":
-                    speaker = "선생님"
-                elif sender_type == "SYSTEM":
-                    speaker = "시스템"
-                else:
-                    speaker = "학생"
+                speaker = speaker_label(
+                    turn.sender_type,
+                    student_name=turn.student_name,
+                    sender_name=turn.sender_name,
+                    speaker_name=turn.speaker_name,
+                )
             lines.append(f"{speaker}: {_truncate(turn.text)}")
         return "\n".join(lines) + "\n"
 

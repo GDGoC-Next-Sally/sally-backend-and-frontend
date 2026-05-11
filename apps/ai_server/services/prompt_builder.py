@@ -39,7 +39,7 @@ def build_chat_system_prompt(profile: Optional[StudentProfile] = None) -> str:
 
         # 대화 참여자 규칙 (Multi-party Conversation)
         - 대화 기록에는 세 종류의 발화자가 등장할 수 있습니다.
-        - "학생: {메시지}" → 네가 직접 응답해야 할 학생의 발화입니다.
+        - "학생이름: {메시지}" 또는 "학생: {메시지}" → 네가 직접 응답해야 할 학생의 발화입니다.
         - "선생님: {메시지}" → 담당 선생님이 개입하여 직접 지도한 내용입니다. 선생님의 말을 존중하고 그 방향에 맞춰 보조하십시오. 선생님이 이미 답을 알려줬다면 같은 내용을 반복하지 말고 다음 단계로 유도하십시오.
         - "시스템: {메시지}" → 운영 시스템이 보내는 조율 메시지입니다. 학생에게 직접 언급하지 말고 내부 지침으로만 참고하십시오.
 
@@ -143,7 +143,7 @@ def build_chat_few_shot_messages(profile: Optional[StudentProfile] = None) -> li
         # 예시 1: 모호한 요청 → 수업 맥락으로 해석 + 출발점 확인
         {
             "role": "user",
-            "content": f"{scope} 관련해서 정리해줄래?"
+            "content": f"학생: {scope} 관련해서 정리해줄래?"
         },
         {
             "role": "assistant",
@@ -157,7 +157,7 @@ def build_chat_few_shot_messages(profile: Optional[StudentProfile] = None) -> li
         # 예시 2: 모르겠다는 신호 → 감정 수용 + 아주 작은 단계로 시작
         {
             "role": "user",
-            "content": "잘 모르겠어요..."
+            "content": "학생: 잘 모르겠어요..."
         },
         {
             "role": "assistant",
@@ -171,7 +171,7 @@ def build_chat_few_shot_messages(profile: Optional[StudentProfile] = None) -> li
         # 예시 3: 이해했다고 했지만 근거 부족 → 자기 설명 유도
         {
             "role": "user",
-            "content": "아 이해했어요."
+            "content": "학생: 아 이해했어요."
         },
         {
             "role": "assistant",
@@ -184,7 +184,7 @@ def build_chat_few_shot_messages(profile: Optional[StudentProfile] = None) -> li
         # 예시 4: 틀린 답변 → 부정하지 않고 힌트 제공
         {
             "role": "user",
-            "content": "음... 답은 이거 아닌가요?"
+            "content": "학생: 음... 답은 이거 아닌가요?"
         },
         {
             "role": "assistant",

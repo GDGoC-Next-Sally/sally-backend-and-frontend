@@ -24,6 +24,9 @@ class ConversationTurn(BaseModel):
     role: str      # "user" | "model" (JS와 동일)
     text: str
     sender_type: Optional[str] = None  # "STUDENT" | "TEACHER" | "AI" | "SYSTEM" (백엔드가 명찰로 추가)
+    student_name: Optional[str] = None  # 학생 발화일 때 프롬프트 라벨로 사용할 학생 이름
+    sender_name: Optional[str] = None   # 백엔드 메시지 발화자 이름 호환 필드
+    speaker_name: Optional[str] = None  # 백엔드 메시지 발화자 이름 호환 필드
 
 
 # ── /chat 및 /analyze API 요청 바디 ─────────────────────────────────────────────

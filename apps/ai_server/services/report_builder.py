@@ -29,6 +29,7 @@ from dotenv import load_dotenv
 from openai import AsyncOpenAI
 
 from ai_server.models import FinalReport
+from ai_server.services.message_formatting import format_labeled_message
 
 
 # ─────────────────────────────────────────────────────────────
@@ -90,8 +91,9 @@ def normalize_chat_messages(raw_messages: list[dict]) -> list[dict]:
 
     표준 포맷:
     {
-        "role": "student" | "assistant",
+        "role": "student" | "assistant" | "teacher" | "system",
         "content": str,
+        "speaker_name": str | None,
         "created_at": str | None
     }
 
@@ -128,6 +130,15 @@ def normalize_chat_messages(raw_messages: list[dict]) -> list[dict]:
             or msg.get("createdAt")
             or msg.get("timestamp")
             or msg.get("time")
+        )
+
+        speaker_name = (
+            msg.get("student_name")
+            or msg.get("sender_name")
+            or msg.get("speaker_name")
+            or msg.get("author_name")
+            or msg.get("user_name")
+            or msg.get("name")
         )
 
         content = str(content).strip()
@@ -170,6 +181,7 @@ def normalize_chat_messages(raw_messages: list[dict]) -> list[dict]:
             {
                 "role": normalized_role,
                 "content": content,
+                "speaker_name": str(speaker_name).strip() if speaker_name else None,
                 "created_at": str(created_at) if created_at else None,
             }
         )
@@ -181,8 +193,8 @@ def _format_conversation(chat_messages: list[dict]) -> tuple[str, bool]:
     """
     정규화된 채팅 메시지 목록을 LLM용 대화 텍스트로 포맷팅합니다.
 
-    프롬프트의 판단 기준과 맞추기 위해 role tag는 반드시
-    [student], [assistant]로 통일합니다.
+    user 메시지 주체가 드러나도록 "선생님: {}", "학생이름: {}",
+    "시스템: {}" 형태로 포맷팅합니다.
 
     Returns:
         (formatted_text, has_student_message)
@@ -198,14 +210,20 @@ def _format_conversation(chat_messages: list[dict]) -> tuple[str, bool]:
             continue
 
         if role == "student":
-            lines.append(f"[student] {content}")
+            lines.append(
+                format_labeled_message(
+                    content,
+                    "STUDENT",
+                    speaker_name=msg.get("speaker_name"),
+                )
+            )
             has_student = True
         elif role == "assistant":
-            lines.append(f"[assistant] {content}")
+            lines.append(format_labeled_message(content, "AI"))
         elif role == "teacher":
-            lines.append(f"[teacher] {content}")
+            lines.append(format_labeled_message(content, "TEACHER"))
         elif role == "system":
-            lines.append(f"[system] {content}")
+            lines.append(format_labeled_message(content, "SYSTEM"))
         else:
             continue
 
@@ -263,8 +281,8 @@ def _build_report_prompt(conversation_text: str) -> str:
 
 핵심 판단 원칙:
 - 최종 리포트는 세션 중간의 일시적 오류가 아니라, 세션 종료 시점의 이해 상태를 기준으로 작성하세요.
-- 학생의 이해 상태와 오개념은 반드시 [student] 발화를 중심으로 판단하세요.
-- [assistant]의 설명을 학생이 이해한 것으로 간주하지 마세요.
+- 학생의 이해 상태와 오개념은 반드시 학생 이름 또는 학생 라벨로 표시된 발화를 중심으로 판단하세요.
+- AI 선생님의 설명을 학생이 이해한 것으로 간주하지 마세요.
 - 초반에 오개념이 있었더라도 이후 학생이 스스로 정정했거나 올바르게 이해한 근거가 있으면 최종 오개념·약점으로 분류하지 마세요.
 - 해결된 오개념은 misconception_summary에 넣지 말고, detailed_report에서 이해 변화로 설명하세요.
 - 마지막까지 이해했는지 근거가 부족하면 해결됐다고 단정하지 말고 추가 확인이 필요하다고 표현하세요.
@@ -336,9 +354,9 @@ def _build_chunk_summary_prompt(
 - 줄글 리포트에 반영할 이해 변화, 장점, 약점, 다음 지도 방향
 
 중요:
-- 학생의 이해 상태와 오개념은 반드시 [student] 발화를 중심으로 판단하세요.
-- [assistant]의 설명을 학생이 이해한 것으로 간주하지 마세요.
-- [assistant]가 설명한 내용은 다룬 개념으로 볼 수는 있지만, 학생이 이해한 내용으로 단정하지 마세요.
+- 학생의 이해 상태와 오개념은 반드시 학생 이름 또는 학생 라벨로 표시된 발화를 중심으로 판단하세요.
+- AI 선생님의 설명을 학생이 이해한 것으로 간주하지 마세요.
+- AI 선생님이 설명한 내용은 다룬 개념으로 볼 수는 있지만, 학생이 이해한 내용으로 단정하지 마세요.
 - 반복되는 혼란, 오개념, 풀이 막힘을 중심으로 요약하되, 이 chunk 안에서 해결되었는지도 함께 확인하세요.
 - 세션 초반이나 chunk 초반에 나타난 오개념이라도, 이후 학생 발화에서 정정되거나 이해가 개선된 근거가 있으면 resolved_confusions에 기록하세요.
 - 근거가 부족한 내용은 추측하지 말고 빈 배열 또는 "판단하기 어려움"으로 표시하세요.
@@ -373,15 +391,15 @@ def _build_chunk_summary_prompt(
 - misconceptions: 이 chunk에서 학생 발화에 드러난 잘못된 이해나 오개념 후보를 문장 배열로 작성하세요. 같은 chunk 안에서 이후 해결된 경우에는 resolved_confusions에도 반드시 기록하세요. 확인되지 않으면 []로 작성하세요.
 - weak_steps: 문제 풀이, 개념 적용, 설명 이해 과정에서 학생이 막힌 단계를 문장 배열로 작성하세요. 확인되지 않으면 []로 작성하세요.
 - resolved_confusions: 이 chunk 안에서 초반에는 헷갈렸지만 이후 학생 발화에서 정정되었거나 이해가 개선된 것으로 확인되는 내용을 작성하세요. 확인되지 않으면 []로 작성하세요.
-- evidence_student_utterances: 위 판단의 근거가 되는 핵심 [student] 발화 원문을 그대로 배열로 남기세요. 확인되지 않으면 []로 작성하세요.
+- evidence_student_utterances: 위 판단의 근거가 되는 핵심 학생 이름 또는 학생 라벨로 표시된 발화 원문을 그대로 배열로 남기세요. 확인되지 않으면 []로 작성하세요.
 - positive_observations: 학생이 잘 이해한 부분, 스스로 정정한 부분, 개선된 부분, 적절히 답한 부분을 문장 배열로 작성하세요. 확인되지 않으면 []로 작성하세요.
 - progress: 이 chunk 안에서 보인 이해 변화, 장점, 개선 흐름, 또는 여전히 남은 어려움을 1문장으로 작성하세요. 판단하기 어렵다면 "판단하기 어려움"이라고 작성하세요.
 
 작성 규칙:
 - 해당 항목이 대화에서 확인되지 않으면 빈 배열 []로 출력하세요.
 - 학생 발화에서 직접 확인되지 않는 오개념은 만들지 마세요.
-- [assistant]가 설명한 개념을 main_topics에는 포함할 수 있지만, 학생이 이해했다고 단정하지 마세요.
-- evidence_student_utterances에는 [assistant] 발화를 넣지 마세요.
+- AI 선생님이 설명한 개념을 main_topics에는 포함할 수 있지만, 학생이 이해했다고 단정하지 마세요.
+- evidence_student_utterances에는 AI 선생님 발화를 넣지 마세요.
 - 동일한 의미의 항목은 중복해서 작성하지 마세요.
 - 해결된 오개념이나 정정된 혼란은 misconceptions에만 남기지 말고 resolved_confusions에도 기록하세요.
 - 모든 설명은 한글 한국어로 작성하고, 한자 표기를 사용하지 마세요.

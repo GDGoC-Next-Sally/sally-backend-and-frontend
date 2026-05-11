@@ -13,6 +13,7 @@ from typing import Optional, Any
 from openai import AsyncOpenAI
 
 from ai_server.models import SessionAggregateReport, StudentSessionChat
+from ai_server.services.message_formatting import clean_speaker_label, format_labeled_message
 from ai_server.services.report_builder import (
     CHUNK_MAX_CHARS,
     LANGUAGE_RULE,
@@ -119,11 +120,7 @@ async def _call_session_llm(
 
 
 def _student_label(student: StudentSessionChat, index: int) -> str:
-    if student.student_name:
-        return student.student_name.strip()
-    if student.student_id:
-        return student.student_id.strip()
-    return f"student_{index + 1}"
+    return clean_speaker_label(student.student_name) or f"학생 {index + 1}"
 
 
 def _format_student_conversation(
@@ -132,7 +129,7 @@ def _format_student_conversation(
 ) -> tuple[str, bool]:
     normalized_messages = normalize_chat_messages(student.chat_messages)
     label = _student_label(student, index)
-    lines = [f"[student_context] {label}"]
+    lines = [f"[학생 구분] {label}"]
     has_student_message = False
 
     for msg in normalized_messages:
@@ -143,10 +140,21 @@ def _format_student_conversation(
             continue
 
         if role == "student":
-            lines.append(f"[student] {content}")
+            lines.append(
+                format_labeled_message(
+                    content,
+                    "STUDENT",
+                    default_student_label=label,
+                    speaker_name=msg.get("speaker_name"),
+                )
+            )
             has_student_message = True
         elif role == "assistant":
-            lines.append(f"[assistant] {content}")
+            lines.append(format_labeled_message(content, "AI"))
+        elif role == "teacher":
+            lines.append(format_labeled_message(content, "TEACHER"))
+        elif role == "system":
+            lines.append(format_labeled_message(content, "SYSTEM"))
 
     return "\n".join(lines), has_student_message
 
@@ -266,8 +274,8 @@ def _build_session_report_prompt(conversation_text: str, included_student_count:
 - 여러 학생 발화에서 반복 확인된 취약 개념을 최대 5개로 정리합니다.
 
 핵심 판단 원칙:
-- 학생의 이해 상태와 취약 개념은 반드시 [student] 발화를 중심으로 판단하세요.
-- [assistant]의 설명을 학생들이 이해한 것으로 간주하지 마세요.
+- 학생의 이해 상태와 취약 개념은 반드시 학생 이름 또는 학생 라벨로 표시된 발화를 중심으로 판단하세요.
+- AI 선생님의 설명을 학생들이 이해한 것으로 간주하지 마세요.
 - 한 학생에게만 잠깐 나온 단순 실수는 반 전체 취약 개념처럼 과장하지 마세요.
 - 여러 학생에게 반복되거나, 한 학생이라도 세션 내내 해결되지 않은 핵심 취약점만 우선하세요.
 - 학습과 관련 없는 잡담은 핵심 근거로 사용하지 마세요.
@@ -293,7 +301,7 @@ def _build_session_report_prompt(conversation_text: str, included_student_count:
 2. key_questions = 주요 질문 문장들
 - 학생들이 실제로 묻거나 확인한 핵심 질문을 자연스러운 한국어 질문 문장 배열로 요약하세요.
 - 원문을 그대로 길게 복사하지 말고, 같은 의미의 질문은 하나로 합치세요.
-- [assistant] 설명을 질문처럼 바꾸어 넣지 마세요.
+- AI 선생님 설명을 질문처럼 바꾸어 넣지 마세요.
 - 학생이 "헷갈려요", "모르겠어요"처럼 혼란을 진술한 경우에는 "어떻게 구분하나요?", "왜 그런가요?"처럼 실제 확인하고 싶은 질문으로 재작성하세요.
 - 각 항목은 반드시 질문 문장으로 작성하고, 마침표로 끝나는 설명문은 넣지 마세요.
 - 학습 질문이 명확하지 않으면 ["없음"]으로 작성하세요.
@@ -322,9 +330,9 @@ def _build_session_chunk_summary_prompt(
 이 chunk에서 최종 반 전체 리포트에 필요한 정보만 한국어 JSON으로 요약하세요.
 
 중요:
-- 학생의 이해 상태와 취약 개념은 반드시 [student] 발화 중심으로 판단하세요.
-- [assistant] 설명만 보고 학생이 이해했다고 단정하지 마세요.
-- [assistant] 설명을 주요 질문으로 바꾸지 마세요.
+- 학생의 이해 상태와 취약 개념은 반드시 학생 이름 또는 학생 라벨로 표시된 발화 중심으로 판단하세요.
+- AI 선생님 설명만 보고 학생이 이해했다고 단정하지 마세요.
+- AI 선생님 설명을 주요 질문으로 바꾸지 마세요.
 - 학생의 혼란 진술은 실제 확인하려는 질문 문장으로 재작성할 수 있습니다.
 - 반복 질문, 공통 혼란, 해결되지 않은 취약 개념 후보를 중심으로 요약하세요.
 - 학습과 관련 없는 잡담은 제외하세요.
@@ -376,7 +384,7 @@ def _build_session_synthesis_prompt(chunk_summaries: list[str]) -> str:
 
 필드 작성 기준:
 - class_summary: 반 전체 상태, 반복 질문, 다음 지도 방향을 1~2문장으로 작성하세요.
-- key_questions: 학생 발화에 근거한 주요 질문을 자연스러운 한국어 질문 문장 배열로 요약하세요. 최대 5개까지 작성하고, 같은 개념의 예문별 질문은 더 일반적인 질문 하나로 합치세요. [assistant] 설명을 질문처럼 바꾸지 말고, 학생의 혼란 진술만 질문형으로 재작성하세요. 한 번 나온 곁가지 주제나 다음 단원 예고성 질문은 제외하세요. 없으면 ["없음"]으로 작성하세요.
+- key_questions: 학생 발화에 근거한 주요 질문을 자연스러운 한국어 질문 문장 배열로 요약하세요. 최대 5개까지 작성하고, 같은 개념의 예문별 질문은 더 일반적인 질문 하나로 합치세요. AI 선생님 설명을 질문처럼 바꾸지 말고, 학생의 혼란 진술만 질문형으로 재작성하세요. 한 번 나온 곁가지 주제나 다음 단원 예고성 질문은 제외하세요. 없으면 ["없음"]으로 작성하세요.
 - weak_concepts_top5: 중요도 순으로 최대 5개의 짧은 명사구를 작성하세요. 여러 학생에게 반복되거나 세션 후반까지 남은 핵심 약점만 포함하고, 한 번 나온 곁가지 주제는 제외하세요. 서로 포함 관계인 취약 개념은 더 넓은 개념 하나로 합치세요. 예를 들어 "뒤 절에서 빠진 성분 확인"은 "관계대명사의 주격과 목적격 구분"과 별도 항목으로 중복 나열하지 마세요. 수업 목표가 관계대명사인데 "관계부사"가 한 번만 언급된 경우처럼 인접 단원의 단발성 언급은 제외하세요. 없으면 ["없음"]으로 작성하세요.
 
 파트별 요약:
