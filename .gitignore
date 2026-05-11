@@ -4,6 +4,7 @@ dist/
 .next/
 out/
 build/
+storybook-static/
 *.tsbuildinfo
 
 # --- [ Python ] ---

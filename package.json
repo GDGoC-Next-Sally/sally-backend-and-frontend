@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently \"pnpm -r --parallel dev\" \"pnpm --filter frontend storybook\"",
+    "dev": "concurrently --names \"apps,storybook\" \"pnpm -r --parallel dev\" \"pnpm --filter frontend storybook\"",
     "docker": "docker-compose up -d"
   },
   "keywords": [],
