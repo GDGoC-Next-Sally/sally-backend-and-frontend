@@ -158,8 +158,12 @@ def normalize_chat_messages(raw_messages: list[dict]) -> list[dict]:
             normalized_role = "student"
         elif role_str.upper() == "AI":
             normalized_role = "assistant"
+        elif role_str in {"teacher", "선생님", "admin"} or role_str.upper() == "TEACHER":
+            normalized_role = "teacher"
+        elif role_str in {"system"} or role_str.upper() == "SYSTEM":
+            normalized_role = "system"
         else:
-            # teacher/system/unknown 등은 최종 학생 리포트 근거로 사용하지 않음
+            # unknown 등은 통과
             continue
 
         normalized.append(
@@ -198,6 +202,10 @@ def _format_conversation(chat_messages: list[dict]) -> tuple[str, bool]:
             has_student = True
         elif role == "assistant":
             lines.append(f"[assistant] {content}")
+        elif role == "teacher":
+            lines.append(f"[teacher] {content}")
+        elif role == "system":
+            lines.append(f"[system] {content}")
         else:
             continue
 

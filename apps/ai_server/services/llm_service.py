@@ -84,9 +84,20 @@ async def stream_chat(
     messages.extend(build_chat_few_shot_messages(student_profile))
 
     # 실제 학생과의 대화 기록 이어 붙이기
+    # sender_type이 있으면 발화자 명찰을 텍스트 앞에 붙여 AI가 문맥을 파악할 수 있게 합니다.
     for turn in conversation_history:
-        role = "assistant" if turn.role == "model" else "user"
-        messages.append({"role": role, "content": turn.text})
+        if turn.role == "model":
+            messages.append({"role": "assistant", "content": turn.text})
+        else:
+            # sender_type에 따라 발화자 명찰 부여
+            sender_type = (turn.sender_type or "STUDENT").upper()
+            if sender_type == "TEACHER":
+                labeled_text = f"선생님: {turn.text}"
+            elif sender_type == "SYSTEM":
+                labeled_text = f"시스템: {turn.text}"
+            else:  # STUDENT 또는 기타
+                labeled_text = f"학생: {turn.text}"
+            messages.append({"role": "user", "content": labeled_text})
 
     response = await client.chat.completions.create(
         model=CHAT_MODEL,
@@ -174,7 +185,16 @@ async def analyze_student(
     def _format_turns(turns: list[ConversationTurn]) -> str:
         lines = []
         for turn in turns:
-            speaker = "AI 선생님" if turn.role == "model" else "학생"
+            if turn.role == "model":
+                speaker = "AI 선생님"
+            else:
+                sender_type = (turn.sender_type or "STUDENT").upper()
+                if sender_type == "TEACHER":
+                    speaker = "선생님"
+                elif sender_type == "SYSTEM":
+                    speaker = "시스템"
+                else:
+                    speaker = "학생"
             lines.append(f"{speaker}: {_truncate(turn.text)}")
         return "\n".join(lines) + "\n"
 
