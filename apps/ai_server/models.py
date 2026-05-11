@@ -23,6 +23,7 @@ class StudentProfile(BaseModel):
 class ConversationTurn(BaseModel):
     role: str      # "user" | "model" (JS와 동일)
     text: str
+    sender_type: Optional[str] = None  # "STUDENT" | "TEACHER" | "AI" | "SYSTEM" (백엔드가 명찰로 추가)
 
 
 # ── /chat 및 /analyze API 요청 바디 ─────────────────────────────────────────────

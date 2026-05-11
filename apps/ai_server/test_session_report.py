@@ -24,7 +24,6 @@ from ai_server.services.session_report_builder import (
     _split_session_blocks,
 )
 
-
 SESSION_STUDENTS = [
     StudentSessionChat(
         student_id="student-001",
