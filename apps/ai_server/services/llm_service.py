@@ -23,6 +23,9 @@ CHAT_MODEL = "meta/llama-3.3-70b-instruct"         # 채팅용: 성능이 뛰어
 ANALYZE_MODEL = "meta/llama-3.3-70b-instruct"
 #ANALYZE_MODEL = "nvidia/llama-3.1-nemotron-nano-8b-v1"     # 8B: 너무 단순하여 분석 정확도 낮음
 
+# 한자(중국어 포함) 및 일본어(히라가나, 가타카나) 강제 필터링 정규식
+FOREIGN_CHAR_PATTERN = re.compile(r"[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\u3040-\u309F\u30A0-\u30FF]")
+
 def _get_client() -> AsyncOpenAI:
     """API Key를 런타임에 읽어서 클라이언트를 생성합니다 (lazy init)."""
     api_key = os.getenv("NVIDIA_API_KEY")
@@ -33,6 +36,36 @@ def _get_client() -> AsyncOpenAI:
         api_key=api_key,
         timeout=120.0,  # 대형 모델의 긴 TTFT(첫 토큰 대기)를 위해 120초로 설정
     )
+
+async def _translate_foreign_text(client: AsyncOpenAI, text: str) -> str:
+    """한자나 일본어가 포함된 짧은 텍스트(단어/어구)를 문맥에 맞게 자연스러운 한글로 변환합니다."""
+    prompt = f"""아래 텍스트에 포함된 한자(중국어) 및 일본어 표기를 문맥에 맞는 자연스러운 한국어(한글) 단어나 어구로 변환하세요.
+의미와 품사는 그대로 유지하고, 마크다운이나 부연 설명 없이 변환된 텍스트만 출력하세요.
+입력 텍스트 끝에 공백이나 기호가 있다면 변환 후에도 동일하게 유지하세요.
+절대 결과에 한자, 중국어, 일본어 문자를 남기지 마십시오.
+
+입력:
+{text}
+"""
+    try:
+        response = await client.chat.completions.create(
+            model=CHAT_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0,
+            max_tokens=50,
+        )
+        result = response.choices[0].message.content
+        if result:
+            # LLM이 번역을 시도했으나 여전히 외국어가 남아있다면 강제 제거
+            if FOREIGN_CHAR_PATTERN.search(result):
+                print(f"[WARN] 한글 변환 LLM이 여전히 외국어를 포함함. 강제 제거: {result}")
+                return FOREIGN_CHAR_PATTERN.sub("", result)
+            return result
+    except Exception as e:
+        print(f"[WARN] 한글 변환 LLM 호출 실패: {e}")
+        
+    # 실패 시 원본에서 문제되는 문자만 강제 제거해서 반환 (fallback)
+    return FOREIGN_CHAR_PATTERN.sub("", text)
 
 async def stream_chat(
     conversation_history: list[ConversationTurn],
@@ -65,12 +98,33 @@ async def stream_chat(
         stream=True,
     )
 
+    buffer = ""
     async for chunk in response:
         if not chunk.choices:   # llama 등 일부 모델이 마지막에 빈 chunk를 보냄
             continue
         delta = chunk.choices[0].delta.content
-        if delta:
-            yield delta
+        if not delta:
+            continue
+            
+        buffer += delta
+        
+        # 스트리밍 지연을 최소화하기 위해 공백이나 개행 문자를 기준으로 단어 단위로 버퍼링합니다.
+        # 완성된 단어(공백 이전까지의 텍스트)를 잘라내어 검사합니다.
+        match = re.search(r'([\s\S]*[\s\n])([^\s\n]*)$', buffer)
+        if match:
+            completed_text = match.group(1)
+            buffer = match.group(2)
+            
+            if FOREIGN_CHAR_PATTERN.search(completed_text):
+                completed_text = await _translate_foreign_text(client, completed_text)
+                
+            yield completed_text
+
+    # 남은 버퍼 처리
+    if buffer:
+        if FOREIGN_CHAR_PATTERN.search(buffer):
+            buffer = await _translate_foreign_text(client, buffer)
+        yield buffer
 
 
 async def analyze_student(

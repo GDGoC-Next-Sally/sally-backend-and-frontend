@@ -11,6 +11,7 @@ services/report_builder.py — 최종 수업 리포트 생성 서비스
       5. 길면 chunk summary 생성 후 최종 synthesis
       6. JSON 파싱 및 FinalReport 검증
       7. 파싱 실패 시 JSON repair 1회 재시도
+      8. 한자 포함 시 한글 변환 repair 1회 재시도
   - 출력: FinalReport
       - key_concepts
       - misconception_summary
@@ -46,6 +47,21 @@ CHARS_PER_TOKEN = 4
 
 # 긴 세션 chunk 분할 기준
 CHUNK_MAX_CHARS = 8000
+
+
+# ─────────────────────────────────────────────────────────────
+# 공통 언어 규칙
+# ─────────────────────────────────────────────────────────────
+
+LANGUAGE_RULE = """언어 및 표기 규칙:
+- 모든 설명은 현대 한국어의 한글 문장으로 작성하세요.
+- 한자, 일본어, 중국어 표기를 절대 사용하지 마세요.
+- 중국어식 표현, 일본식 한자어 표기, 한자 혼용 문장을 사용하지 마세요.
+- 예: "學生", "關係代名詞", "目的格", "主格", "理解", "文法", "説明", "質問"처럼 쓰지 마세요.
+- 위 표현은 반드시 "학생", "관계대명사", "목적격", "주격", "이해", "문법", "설명", "질문"처럼 한글로 작성하세요.
+- 영어 예문과 영어 문법 용어 자체는 필요할 때 사용할 수 있지만, 한국어 설명문에는 한자나 일본어, 중국어를 섞지 마세요.
+- JSON key는 지정된 영어 필드명을 그대로 사용하세요.
+- JSON value의 설명 문장은 한글 중심의 한국어로 작성하세요."""
 
 
 # ─────────────────────────────────────────────────────────────
@@ -144,7 +160,6 @@ def normalize_chat_messages(raw_messages: list[dict]) -> list[dict]:
             normalized_role = "assistant"
         else:
             # teacher/system/unknown 등은 최종 학생 리포트 근거로 사용하지 않음
-            # 필요하면 여기에서 teacher를 별도 보존하도록 확장 가능
             continue
 
         normalized.append(
@@ -224,6 +239,7 @@ def _split_into_chunks(text: str, chunk_max_chars: int = CHUNK_MAX_CHARS) -> lis
 # ─────────────────────────────────────────────────────────────
 # Prompt builders
 # ─────────────────────────────────────────────────────────────
+
 def _build_report_prompt(conversation_text: str) -> str:
     """전체 대화 기반 최종 리포트 생성 프롬프트를 생성합니다."""
     return f"""당신은 교사를 돕는 학습 분석 AI입니다.
@@ -252,6 +268,8 @@ def _build_report_prompt(conversation_text: str) -> str:
 - 출력은 반드시 JSON 형식으로만 작성하고, 마크다운/코드블록/설명문은 출력하지 마세요.
 - JSON에는 key_concepts, misconception_summary, session_summary, detailed_report 4개 필드만 포함하세요.
 
+{LANGUAGE_RULE}
+
 출력 형식:
 {{
   "key_concepts": ["string"],
@@ -266,8 +284,7 @@ def _build_report_prompt(conversation_text: str) -> str:
 - 초반에 어려워했더라도 이후 이해한 근거가 있으면 취약 개념으로 분류하지 마세요.
 - 단, 세션의 주요 학습 주제라면 포함할 수 있습니다.
 - 주요 학습 주제나 취약 개념이 모두 명확하지 않으면 ["없음"]으로 작성하세요.
-- 주요 학습 주제와 취약 개념 나눠서 작성하세요.
-- {{ "주요 학습 개념": "", "취약 개념": ""}} 이 형태로 출력하세요. 
+- key_concepts는 반드시 string 배열로만 작성하세요. 객체나 중첩 JSON으로 작성하지 마세요.
 
 2. misconception_summary = 오개념·약점 요약
 - 세션 종료 시점까지 남아 있는 오개념, 해결되지 않은 혼란, 여전히 남은 풀이 약점을 구체적인 문장 배열로 작성하세요.
@@ -285,10 +302,12 @@ def _build_report_prompt(conversation_text: str) -> str:
 - 오개념이나 약점이 확인되지 않았다면 "뚜렷한 오개념은 확인되지 않았습니다"라고 작성하세요.
 - 세션 내용이 복잡하면 6~10문장까지 작성할 수 있습니다.
 - 줄바꿈 없이 하나의 문단으로 작성하세요.
+- 한자 표기를 사용하지 말고, 설명문은 한글 한국어로만 작성하세요.
 
 채팅 기록:
 {conversation_text}
 """
+
 
 def _build_chunk_summary_prompt(
     chunk_text: str,
@@ -314,7 +333,6 @@ def _build_chunk_summary_prompt(
 - [assistant]가 설명한 내용은 다룬 개념으로 볼 수는 있지만, 학생이 이해한 내용으로 단정하지 마세요.
 - 반복되는 혼란, 오개념, 풀이 막힘을 중심으로 요약하되, 이 chunk 안에서 해결되었는지도 함께 확인하세요.
 - 세션 초반이나 chunk 초반에 나타난 오개념이라도, 이후 학생 발화에서 정정되거나 이해가 개선된 근거가 있으면 resolved_confusions에 기록하세요.
-- 근거가 되는 핵심 학생 발화를 함께 남기세요.
 - 근거가 부족한 내용은 추측하지 말고 빈 배열 또는 "판단하기 어려움"으로 표시하세요.
 - 학습과 관련 없는 잡담은 핵심 근거로 사용하지 마세요.
 - 한 번만 나온 단순 실수는 반복 오개념처럼 과장하지 마세요.
@@ -322,6 +340,8 @@ def _build_chunk_summary_prompt(
 - 긍정적 요소와 부정적 요소를 모두 확인하고, 실제 대화의 근거 비율에 맞게 요약하세요.
 - 출력은 반드시 JSON 형식으로만 작성하세요.
 - 마크다운, 코드블록, 설명문, 주석은 출력하지 마세요.
+
+{LANGUAGE_RULE}
 
 출력 형식:
 {{
@@ -342,7 +362,7 @@ def _build_chunk_summary_prompt(
 - total_chunks: 전체 chunk 개수입니다.
 - main_topics: 이 chunk에서 실제로 다룬 주요 학습 개념과 취약 개념 후보를 짧은 명사구 배열로 작성하세요. 확인되지 않으면 []로 작성하세요.
 - student_confusions: 이 chunk에서 학생이 헷갈려 한 부분을 구체적인 문장 배열로 작성하세요. 확인되지 않으면 []로 작성하세요.
-- misconceptions: 이 chunk에서 학생 발화에 드러난 잘못된 이해나 오개념 후보를 문장 배열로 작성하세요. 단, 같은 chunk 안에서 이후 해결된 경우에는 resolved_confusions에도 반드시 기록하세요. 확인되지 않으면 []로 작성하세요.
+- misconceptions: 이 chunk에서 학생 발화에 드러난 잘못된 이해나 오개념 후보를 문장 배열로 작성하세요. 같은 chunk 안에서 이후 해결된 경우에는 resolved_confusions에도 반드시 기록하세요. 확인되지 않으면 []로 작성하세요.
 - weak_steps: 문제 풀이, 개념 적용, 설명 이해 과정에서 학생이 막힌 단계를 문장 배열로 작성하세요. 확인되지 않으면 []로 작성하세요.
 - resolved_confusions: 이 chunk 안에서 초반에는 헷갈렸지만 이후 학생 발화에서 정정되었거나 이해가 개선된 것으로 확인되는 내용을 작성하세요. 확인되지 않으면 []로 작성하세요.
 - evidence_student_utterances: 위 판단의 근거가 되는 핵심 [student] 발화 원문을 그대로 배열로 남기세요. 확인되지 않으면 []로 작성하세요.
@@ -355,13 +375,13 @@ def _build_chunk_summary_prompt(
 - [assistant]가 설명한 개념을 main_topics에는 포함할 수 있지만, 학생이 이해했다고 단정하지 마세요.
 - evidence_student_utterances에는 [assistant] 발화를 넣지 마세요.
 - 동일한 의미의 항목은 중복해서 작성하지 마세요.
-- 긍정적 평가와 부정적 평가는 실제 대화에서 확인된 근거의 비율을 반영하세요.
 - 해결된 오개념이나 정정된 혼란은 misconceptions에만 남기지 말고 resolved_confusions에도 기록하세요.
-- 모든 내용은 한국어로 작성하세요.
+- 모든 설명은 한글 한국어로 작성하고, 한자 표기를 사용하지 마세요.
 
 대화 chunk:
 {chunk_text}
 """
+
 
 def _build_synthesis_prompt(chunk_summaries: list[str]) -> str:
     """chunk 요약들을 합쳐 최종 리포트를 만드는 프롬프트를 생성합니다."""
@@ -393,6 +413,8 @@ def _build_synthesis_prompt(chunk_summaries: list[str]) -> str:
 - 출력은 반드시 JSON 형식으로만 작성하고, 마크다운/코드블록/설명문은 출력하지 마세요.
 - JSON에는 key_concepts, misconception_summary, session_summary, detailed_report 4개 필드만 포함하세요.
 
+{LANGUAGE_RULE}
+
 파트별 요약 활용 기준:
 - main_topics는 key_concepts 후보로 활용하세요.
 - student_confusions, misconceptions, weak_steps는 최종 약점 후보로 보되, 후반부에서 해결되었는지 확인하세요.
@@ -414,8 +436,7 @@ def _build_synthesis_prompt(chunk_summaries: list[str]) -> str:
 - 초반 또는 중간에 어려워했더라도 후반부에서 이해한 근거가 있으면 취약 개념으로 분류하지 마세요.
 - 단, 세션의 주요 학습 주제라면 포함할 수 있습니다.
 - 주요 학습 주제나 취약 개념이 모두 명확하지 않으면 ["없음"]으로 작성하세요.
-- 주요 학습 주제와 취약 개념 나눠서 작성하세요.
-- {{ "주요 학습 개념": "", "취약 개념": ""}} 이 형태로 출력하세요. 
+- key_concepts는 반드시 string 배열로만 작성하세요. 객체나 중첩 JSON으로 작성하지 마세요.
 
 2. misconception_summary = 오개념·약점 요약
 - 세션 종료 시점까지 남아 있는 오개념, 해결되지 않은 혼란, 여전히 남은 풀이 약점을 구체적인 문장 배열로 작성하세요.
@@ -433,6 +454,7 @@ def _build_synthesis_prompt(chunk_summaries: list[str]) -> str:
 - 오개념이나 약점이 확인되지 않았다면 "뚜렷한 오개념은 확인되지 않았습니다"라고 작성하세요.
 - 세션 내용이 복잡하면 6~10문장까지 작성할 수 있습니다.
 - 줄바꿈 없이 하나의 문단으로 작성하세요.
+- 한자 표기를 사용하지 마세요.
 
 파트별 요약:
 {summaries_text}
@@ -452,13 +474,35 @@ def _build_repair_json_prompt(raw_text: str) -> str:
 규칙:
 - 마크다운, 코드블록, 설명문, 주석은 출력하지 마세요.
 - JSON 객체 하나만 출력하세요.
-- 필드가 없거나 판단하기 어려운 경우 key_concepts와 misconception_summary는 빈 배열 []로 두세요.
+- 필드가 없거나 판단하기 어려운 경우 key_concepts와 misconception_summary는 ["없음"]으로 두세요.
 - session_summary와 detailed_report가 없으면 주어진 텍스트를 바탕으로 짧게 생성하세요.
-- 모든 내용은 한국어로 작성하세요.
+- 모든 설명은 현대 한국어의 한글 문장으로 작성하세요.
+- 한자, 일본어, 중국어 표기를 절대 사용하지 마세요.
+- 예: "學生", "關係代名詞", "目的格", "主格", "理解", "文法"처럼 쓰지 말고 "학생", "관계대명사", "목적격", "주격", "이해", "문법"처럼 작성하세요.
+- 영어 예문과 영어 문법 용어 자체는 유지할 수 있지만, 한국어 설명문에는 한자나 일본어, 중국어를 섞지 마세요.
 
 변환할 텍스트:
 {raw_text}
 """
+
+
+def _build_remove_foreign_chars_prompt(report_json: str) -> str:
+    """FinalReport JSON의 한자, 일본어, 중국어 표기를 한글로 바꾸는 프롬프트를 생성합니다."""
+    return f"""아래 JSON의 구조와 의미는 유지하되, 값에 포함된 한자, 일본어, 중국어 표기를 모두 자연스러운 한국어 표현으로 바꾸세요.
+
+규칙:
+- JSON key는 그대로 유지하세요.
+- JSON value의 의미를 바꾸지 마세요.
+- 한자, 일본어, 중국어 표기를 절대 사용하지 마세요.
+- 예: "學生", "關係代名詞", "目的格", "主格", "理解", "文法" 등은 각각 "학생", "관계대명사", "목적격", "주격", "이해", "문법"으로 바꾸세요.
+- 영어 예문과 영어 문법 용어 자체는 유지해도 됩니다.
+- 마크다운, 코드블록, 설명문 없이 JSON 객체만 출력하세요.
+- JSON에는 key_concepts, misconception_summary, session_summary, detailed_report 4개 필드만 포함하세요.
+
+입력 JSON:
+{report_json}
+"""
+
 
 # ─────────────────────────────────────────────────────────────
 # JSON parsing / validation
@@ -498,36 +542,92 @@ def _extract_json_object(raw_text: str) -> str:
     return text[start:end + 1]
 
 
-def _normalize_key_concepts(raw: Any) -> dict:
-    """
-    LLM이 key_concepts를 list로 반환하는 경우를 dict로 정규화합니다.
-
-    기대 형태: {"주요 학습 개념": "...", "취약 개념": "..."}
-    fallback:  LLM이 list를 반환하면 {"주요 학습 개념": ", ".join(raw), "취약 개념": ""} 으로 변환
-    """
-    if isinstance(raw, dict):
-        return raw
-    if isinstance(raw, list):
-        # list인 경우 전체를 "주요 학습 개념"으로 넣고 취약 개념은 빈 문자열
-        return {
-            "주요 학습 개념": ", ".join(str(v) for v in raw),
-            "취약 개념": "",
-        }
-    return {"주요 학습 개념": str(raw) if raw else "", "취약 개념": ""}
-
-
 def _parse_report_json(raw_text: str) -> dict[str, Any]:
     """LLM 응답에서 FinalReport JSON을 추출하고 파싱합니다."""
     json_text = _extract_json_object(raw_text)
-    data = json.loads(json_text)
-
-    # key_concepts 타입 정규화 (LLM이 list로 반환하는 경우 방어)
-    if "key_concepts" in data:
-        data["key_concepts"] = _normalize_key_concepts(data["key_concepts"])
-
-    return data
+    return json.loads(json_text)
 
 
+# ─────────────────────────────────────────────────────────────
+# Foreign Character detection / repair
+# ─────────────────────────────────────────────────────────────
+
+# 한자(중국어 포함) 및 일본어(히라가나, 가타카나) 감지 정규식
+FOREIGN_CHAR_PATTERN = re.compile(r"[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\u3040-\u309F\u30A0-\u30FF]")
+
+
+def _contains_foreign_chars(text: str) -> bool:
+    """문자열에 한자/일본어/중국어 표기가 포함되어 있는지 확인합니다."""
+    return bool(FOREIGN_CHAR_PATTERN.search(text))
+
+
+def _report_contains_foreign_chars(report: FinalReport) -> bool:
+    """FinalReport 전체에 한자/일본어/중국어 표기가 포함되어 있는지 확인합니다."""
+    report_dict = report.model_dump() if hasattr(report, "model_dump") else report.dict()
+    report_json = json.dumps(report_dict, ensure_ascii=False)
+    return _contains_foreign_chars(report_json)
+
+
+async def _remove_foreign_chars_and_parse_report_json(
+    client: AsyncOpenAI,
+    report: FinalReport,
+) -> FinalReport:
+    """FinalReport에 한자/일본어/중국어가 포함된 경우 한글 표기로 변환합니다."""
+    report_dict = report.model_dump() if hasattr(report, "model_dump") else report.dict()
+    report_json = json.dumps(report_dict, ensure_ascii=False)
+
+    prompt = _build_remove_foreign_chars_prompt(report_json)
+
+    response = await client.chat.completions.create(
+        model=REPORT_MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.0,
+        max_tokens=2048,
+    )
+
+    cleaned_text = response.choices[0].message.content or ""
+    cleaned_data = _parse_report_json(cleaned_text)
+    return FinalReport(**cleaned_data)
+
+
+async def _ensure_no_foreign_chars_in_report(
+    client: AsyncOpenAI,
+    report: FinalReport,
+    session_id: Optional[str] = None,
+    student_id: Optional[str] = None,
+) -> FinalReport:
+    """FinalReport에 한자/일본어/중국어가 포함되어 있으면 한글 변환 repair를 1회 시도합니다."""
+    if not _report_contains_foreign_chars(report):
+        return report
+
+    print(
+        "[WARN] 리포트에 한자/일본어/중국어 포함 감지. 한글 변환 repair 재시도 "
+        f"session_id={session_id}, student_id={student_id}"
+    )
+
+    try:
+        cleaned_report = await _remove_foreign_chars_and_parse_report_json(client, report)
+
+        if _report_contains_foreign_chars(cleaned_report):
+            print(
+                "[ERROR] 한자/일본어/중국어 제거 repair 후에도 해당 문자 포함 감지. 원본 report 반환 "
+                f"session_id={session_id}, student_id={student_id}"
+            )
+            return report
+
+        return cleaned_report
+
+    except Exception as repair_error:
+        print(
+            "[ERROR] 한자/일본어/중국어 제거 repair 실패. 원본 report 반환 "
+            f"session_id={session_id}, student_id={student_id}, error={repair_error}"
+        )
+        return report
+
+
+# ─────────────────────────────────────────────────────────────
+# Repair / fallback
+# ─────────────────────────────────────────────────────────────
 
 async def _repair_and_parse_report_json(
     client: AsyncOpenAI,
@@ -554,8 +654,8 @@ async def _repair_and_parse_report_json(
 def _fallback_parse_error_report(raw_text: str) -> FinalReport:
     """파싱 및 repair까지 실패했을 때 반환할 fallback 리포트입니다."""
     return FinalReport(
-        key_concepts={},
-        misconception_summary=[],
+        key_concepts=["없음"],
+        misconception_summary=["없음"],
         session_summary="리포트 파싱 오류",
         detailed_report=(
             raw_text[:1000]
@@ -568,8 +668,8 @@ def _fallback_parse_error_report(raw_text: str) -> FinalReport:
 def _empty_student_report() -> FinalReport:
     """학생 발화가 없을 때 반환할 fallback 리포트입니다."""
     return FinalReport(
-        key_concepts={},
-        misconception_summary=[],
+        key_concepts=["없음"],
+        misconception_summary=["없음"],
         session_summary="학생 발화 기록 없음",
         detailed_report=(
             "이번 세션에서 학생의 학습 관련 발화 기록이 충분하지 않아 "
@@ -577,6 +677,16 @@ def _empty_student_report() -> FinalReport:
             "다음 세션에서는 개념 설명 후 확인 질문이나 짧은 문제 풀이를 통해 "
             "학생의 이해 상태를 확인하는 것이 좋습니다."
         ),
+    )
+
+
+def _llm_call_failed_report() -> FinalReport:
+    """LLM 호출 실패 시 반환할 fallback 리포트입니다."""
+    return FinalReport(
+        key_concepts=["없음"],
+        misconception_summary=["없음"],
+        session_summary="리포트 생성 실패",
+        detailed_report="LLM 호출 중 오류가 발생하여 리포트를 생성하지 못했습니다.",
     )
 
 
@@ -607,6 +717,7 @@ async def _call_llm(
 
 async def generate_final_report(
     chat_messages: list[dict],
+    realtime_summaries: Optional[list[dict]] = None,
     session_id: Optional[str] = None,
     student_id: Optional[str] = None,
 ) -> FinalReport:
@@ -622,8 +733,13 @@ async def generate_final_report(
          긴 세션  → chunk 분할 → 각 chunk 요약 → 최종 synthesis LLM 호출
       5. JSON 파싱 → FinalReport 검증
       6. 파싱 실패 시 repair 1회 재시도
-      7. 최종 실패 시 fallback FinalReport 반환
+      7. 한자 포함 시 한글 변환 repair 1회 재시도
+      8. 최종 실패 시 fallback FinalReport 반환
     """
+
+    # realtime_summaries는 현재 최종 리포트 생성에 직접 사용하지 않지만,
+    # 향후 보조 컨텍스트로 확장할 수 있도록 시그니처에 남겨둡니다.
+    _ = realtime_summaries
 
     # ── Step 0: 메시지 정규화 ───────────────────────────────────────────────
     normalized_messages = normalize_chat_messages(chat_messages)
@@ -703,17 +819,19 @@ async def generate_final_report(
             "[ERROR] LLM 호출 중 오류 발생 "
             f"session_id={session_id}, student_id={student_id}, error={e}"
         )
-        return FinalReport(
-            key_concepts={},
-            misconception_summary=[],
-            session_summary="리포트 생성 실패",
-            detailed_report="LLM 호출 중 오류가 발생하여 리포트를 생성하지 못했습니다.",
-        )
+        return _llm_call_failed_report()
 
-    # ── Step 5~7: JSON 파싱, repair retry, fallback ────────────────────────
+    # ── Step 5~8: JSON 파싱, repair retry, 한자 제거, fallback ─────────────
     try:
         data = _parse_report_json(raw_text)
-        return FinalReport(**data)
+        report = FinalReport(**data)
+        report = await _ensure_no_foreign_chars_in_report(
+            client=client,
+            report=report,
+            session_id=session_id,
+            student_id=student_id,
+        )
+        return report
 
     except (json.JSONDecodeError, ValueError, TypeError) as e:
         print(
@@ -723,7 +841,14 @@ async def generate_final_report(
         )
 
         try:
-            return await _repair_and_parse_report_json(client, raw_text)
+            report = await _repair_and_parse_report_json(client, raw_text)
+            report = await _ensure_no_foreign_chars_in_report(
+                client=client,
+                report=report,
+                session_id=session_id,
+                student_id=student_id,
+            )
+            return report
 
         except Exception as repair_error:
             print(
