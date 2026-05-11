@@ -79,6 +79,10 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
             setMessages(history);
             setStartTime(session.started_at ? new Date(session.started_at) : new Date());
             setPhase('live');
+            // 대화 이력이 없으면 AI 첫인사 요청
+            if (history.length === 0) {
+              fetchGreeting(dialog_id);
+            }
           } catch {
             setPhase('waiting');
           }
@@ -88,6 +92,41 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
       })
       .catch(() => setPhase('waiting'));
   }, [sessionId, classId]);
+
+  // Socket: teacher intervention + session_finished
+  const dialogIdRef = useRef<number | null>(null);
+  useEffect(() => { dialogIdRef.current = dialogId; }, [dialogId]);
+
+  useEffect(() => {
+    let socket: import('socket.io-client').Socket;
+    const init = async () => {
+      const { io } = await import('socket.io-client');
+      const supabase = createClient();
+      const { data: { session: authSession } } = await supabase.auth.getSession();
+      const token = authSession?.access_token;
+      socket = io(BACKEND_URL, { auth: { token }, transports: ['websocket', 'polling'] });
+
+      socket.on('connect', () => {
+        socket.emit('join_room', { room: `session:${sessionId}` });
+      });
+
+      socket.on('teacher_intervention', (msg: ChatMessage) => {
+        if (msg.dialog_id === dialogIdRef.current) {
+          setMessages(prev => [...prev, msg]);
+        }
+      });
+
+      socket.on('session_finished', () => {
+        setIsEndModalOpen(true);
+      });
+
+      socket.on('session_started', () => {
+        setPhase(prev => prev === 'waiting' ? 'waiting' : prev);
+      });
+    };
+    init();
+    return () => { socket?.disconnect(); };
+  }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Elapsed time ticker
   useEffect(() => {
@@ -117,8 +156,67 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
       setMessages(history);
       setStartTime(session.started_at ? new Date(session.started_at) : new Date());
       setPhase('live');
+      if (history.length === 0) {
+        fetchGreeting(dialog_id);
+      }
     } catch {
       setPhase('waiting');
+    }
+  };
+
+  const fetchGreeting = async (dialog_id: number) => {
+    setIsStreaming(true);
+    setStreamingContent('');
+    try {
+      const supabase = createClient();
+      const { data: { session: authSession } } = await supabase.auth.getSession();
+      const token = authSession?.access_token;
+
+      const response = await fetch(`${BACKEND_URL}/livechat/greeting`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ dialog_id }),
+      });
+
+      if (!response.body) return;
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let accumulated = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          try {
+            const parsed = JSON.parse(line.slice(6));
+            accumulated += parsed.chunk ?? '';
+            setStreamingContent(accumulated);
+          } catch { /* ignore */ }
+        }
+      }
+
+      if (accumulated) {
+        setMessages(prev => [...prev, {
+          id: Date.now(),
+          dialog_id,
+          sender_type: 'AI',
+          content: accumulated,
+          created_at: new Date().toISOString(),
+        }]);
+      }
+    } catch (err) {
+      console.error('Greeting error:', err);
+    } finally {
+      setStreamingContent('');
+      setIsStreaming(false);
     }
   };
 

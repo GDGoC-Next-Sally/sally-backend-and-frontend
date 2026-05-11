@@ -109,7 +109,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classe
                 <h2 className={styles.sectionTitle}>AI 학습 피드백 요약</h2>
                 <p className={styles.sectionSubtitle}>최근 7일간 나의 학습 데이터를 분석했어요.</p>
               </div>
-              <button className={styles.detailBtn}>상세 리포트 보기 &gt;</button>
+              <button className={styles.detailBtn} onClick={() => router.push('/s/reports')}>상세 리포트 보기 &gt;</button>
             </div>
 
             <div className={styles.feedbackContent}>

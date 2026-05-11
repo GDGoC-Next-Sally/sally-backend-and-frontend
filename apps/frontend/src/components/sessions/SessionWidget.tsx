@@ -5,11 +5,21 @@ import { useRouter } from 'next/navigation';
 import { SessionSidebar } from './SessionSidebar';
 import { ConfirmModal } from '../common/ConfirmModal';
 import { type AttendanceStudent } from '@/actions/sessions';
-import { getSessionStudents, getStudentDetail, type ChatMessage } from '@/actions/livechat';
+import { getSessionStudents, getStudentDetail, sendIntervention, type ChatMessage } from '@/actions/livechat';
 import { createClient } from '@/utils/supabase/client';
 import styles from './SessionWidget.module.css';
 
 type Phase = 'waiting' | 'active';
+
+export interface StudentAnalysis {
+  understanding_score?: number;
+  current_topic?: string;
+  student_emotion?: string;
+  one_line_summary?: string;
+  need_intervention?: boolean;
+  question_intent?: string;
+  engagement_level?: string;
+}
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
 
@@ -44,6 +54,9 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
   const [isLoadingChat, setIsLoadingChat] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isEndConfirmOpen, setIsEndConfirmOpen] = useState(false);
+  const [interventionInput, setInterventionInput] = useState('');
+  const [isSendingIntervention, setIsSendingIntervention] = useState(false);
+  const [analysisMap, setAnalysisMap] = useState<Map<string, StudentAnalysis>>(new Map());
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Refs for socket handlers (avoids stale closures)
@@ -136,6 +149,20 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
         }
       });
 
+      // Real-time student analysis update
+      socket.on('student_analysis_ready', (data: { dialog_id: number; student_id: string } & StudentAnalysis) => {
+        const { dialog_id: _d, ...analysis } = data;
+        setAnalysisMap(prev => new Map(prev).set(data.student_id, analysis));
+      });
+
+      // Student warning — mark need_intervention
+      socket.on('student_warning', (data: { student_id: string }) => {
+        setAnalysisMap(prev => {
+          const existing = prev.get(data.student_id) ?? {};
+          return new Map(prev).set(data.student_id, { ...existing, need_intervention: true });
+        });
+      });
+
       // Session started/finished by someone else
       socket.on('session_started', () => setPhase('active'));
       socket.on('session_finished', () => router.push(`/t/classes/${classId}`));
@@ -204,6 +231,22 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
 
   const selectedStudent = localStudents.find(s => s.userId === selectedStudentId);
 
+  const handleSendIntervention = async () => {
+    if (!selectedStudentId || !interventionInput.trim() || isSendingIntervention) return;
+    const dialogId = dialogMapRef.current.get(selectedStudentId);
+    if (!dialogId) return;
+    setIsSendingIntervention(true);
+    try {
+      const msg = await sendIntervention(dialogId, interventionInput.trim());
+      setSelectedMessages(prev => [...prev, msg]);
+      setInterventionInput('');
+    } catch (e) {
+      alert(e instanceof Error ? e.message : '개입 메시지 전송에 실패했습니다.');
+    } finally {
+      setIsSendingIntervention(false);
+    }
+  };
+
   return (
     <>
       <div className={styles.layout}>
@@ -213,6 +256,7 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
           selectedId={selectedStudentId}
           onSelect={handleSelectStudent}
           onRefresh={onRefreshStudents}
+          analysisMap={analysisMap}
         />
 
         {phase === 'waiting' ? (
@@ -231,6 +275,10 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
             isLoadingChat={isLoadingChat}
             messagesEndRef={messagesEndRef}
             onEnd={() => setIsEndConfirmOpen(true)}
+            interventionInput={interventionInput}
+            onInterventionChange={setInterventionInput}
+            onSendIntervention={handleSendIntervention}
+            isSendingIntervention={isSendingIntervention}
           />
         )}
       </div>
@@ -306,6 +354,10 @@ interface ActiveProps {
   isLoadingChat: boolean;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
   onEnd: () => void;
+  interventionInput: string;
+  onInterventionChange: (v: string) => void;
+  onSendIntervention: () => void;
+  isSendingIntervention: boolean;
 }
 
 const formatTime = (iso: string) => {
@@ -323,6 +375,10 @@ const ActiveView: React.FC<ActiveProps> = ({
   isLoadingChat,
   messagesEndRef,
   onEnd,
+  interventionInput,
+  onInterventionChange,
+  onSendIntervention,
+  isSendingIntervention,
 }) => (
   <div className={styles.mainContent}>
     <div className={styles.topBar}>
@@ -383,6 +439,30 @@ const ActiveView: React.FC<ActiveProps> = ({
           })
         )}
         <div ref={messagesEndRef} />
+      </div>
+
+      <div className={styles.interventionBar}>
+        <input
+          type="text"
+          className={styles.interventionInput}
+          placeholder="학생에게 개입 메시지를 보내세요..."
+          value={interventionInput}
+          onChange={(e) => onInterventionChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey && interventionInput.trim()) {
+              e.preventDefault();
+              onSendIntervention();
+            }
+          }}
+          disabled={isSendingIntervention}
+        />
+        <button
+          className={styles.interventionSendBtn}
+          onClick={onSendIntervention}
+          disabled={!interventionInput.trim() || isSendingIntervention}
+        >
+          {isSendingIntervention ? '전송 중...' : '개입 전송'}
+        </button>
       </div>
     </div>
   </div>
