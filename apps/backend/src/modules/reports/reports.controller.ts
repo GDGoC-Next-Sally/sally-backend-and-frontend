@@ -1,8 +1,9 @@
-import { Controller, Get, Param, UseGuards, Req, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Req, ParseIntPipe, Query, Headers, UnauthorizedException } from '@nestjs/common';
 import { ReportsService } from './reports.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
+import { Internal } from '../auth/internal.decorator';
 import { user_role as UserRole } from '.prisma/client';
 import { ApiBearerAuth, ApiOperation, ApiTags, ApiQuery } from '@nestjs/swagger';
 
@@ -53,5 +54,37 @@ export class ReportsController {
   @ApiOperation({ summary: '(선생님용) 특정 클래스의 전체 통계 리포트 조회' })
   getClassReport(@Param('classId', ParseIntPipe) classId: number) {
     return this.reportsService.getClassReport(classId);
+  }
+
+  @Post('session-report-callback')
+  @Internal()
+  @ApiOperation({ summary: '(내부 시스템용) AI 서버 세션 전체 리포트 완료 콜백' })
+  async sessionReportCallback(
+    @Headers('x-internal-secret') secret: string,
+    @Body() body: { session_id: number; report: any }
+  ) {
+    console.log('🔥 SESSION REPORT CALLBACK HIT');
+    console.log('Session ID:', body.session_id);
+    if (secret !== process.env.INTERNAL_SECRET_KEY) {
+      throw new UnauthorizedException('내부 요청이 아닙니다.');
+    }
+    await this.reportsService.handleSessionFinalReportCallback(body.session_id, body.report);
+    return { status: 'ok' };
+  }
+
+  @Post('student-report-callback')
+  @Internal()
+  @ApiOperation({ summary: '(내부 시스템용) AI 서버 학생별 리포트 완료 콜백' })
+  async studentReportCallback(
+    @Headers('x-internal-secret') secret: string,
+    @Body() body: { session_id: number; student_id: string; report: any }
+  ) {
+    console.log('🔥 STUDENT REPORT CALLBACK HIT');
+    console.log('Session ID:', body.session_id, 'Student ID:', body.student_id);
+    if (secret !== process.env.INTERNAL_SECRET_KEY) {
+      throw new UnauthorizedException('내부 요청이 아닙니다.');
+    }
+    await this.reportsService.handleStudentFinalReportCallback(body.session_id, body.student_id, body.report);
+    return { status: 'ok' };
   }
 }

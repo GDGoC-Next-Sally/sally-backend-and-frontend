@@ -154,13 +154,11 @@ export class SessionsService {
     this.eventsGateway.sendToRoom(`session:${id}`, 'session_finished', updatedSession);
 
     // 세션에 속한 모든 학생 다이얼로그 조회 후 AI 서버에 최종 리포트 요청 (비동기, fire and forget)
-    this.prisma.dialogs.findMany({
-      where: { session_id: id },
-      select: { student_id: true },
-    }).then(dialogs => {
-      this.reportsService.requestFinalReports(id, teacherId, dialogs);
-    }).catch(err => {
-      console.error(`Failed to fetch dialogs for final report (session ${id}):`, err.message);
+    this.reportsService.requestSessionFinalReport(id, teacherId).catch(err => {
+      console.error(`세션 ${id} 전체 리포트 생성 실패:`, err.message);
+    });
+    this.reportsService.requestStudentFinalReports(id, teacherId).catch(err => {
+      console.error(`세션 ${id} 학생 개별 리포트 생성 실패:`, err.message);
     });
 
     return updatedSession;

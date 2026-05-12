@@ -14,6 +14,8 @@ export class ReportsService {
     private readonly eventsGateway: EventsGateway,
   ) { }
 
+  private 
+
   /**
    * 특정 세션의 모든 학생 리포트를 조회합니다 (선생님용).
    */
@@ -101,43 +103,123 @@ export class ReportsService {
 
 
   // 세션 종료 시 AI 서버에 학생별 최종 리포트 생성을 요청합니다.
-  async requestFinalReports(sessionId: number, teacherId: string, dialogs: { student_id: string; }[],): Promise<void> {
-    // 학생별로 개별 요청 (병렬 처리)
-    const tasks = dialogs.map(async (dialog) => {
-      try {
-        const response = await axios.post(
-          `${AI_SERVER_URL}/api/end-session`,
-          {
-            session_id: sessionId,
-            student_id: dialog.student_id,
-          },
-          { timeout: 180000 },
-        );
-
-        // 실시간 알림 전송 (학생 & 선생님)
-        const reportData = {
-          session_id: sessionId,
-          student_id: dialog.student_id,
-          report: response.data.report,
-        };
-
-        // 1. 학생에게 알림
-        this.eventsGateway.sendToUser(dialog.student_id, 'final_report_ready', reportData);
-        // 2. 선생님에게 알림
-        this.eventsGateway.sendToUser(teacherId, 'final_report_ready', reportData);
-
-        this.logger.log(
-          `세션 ${sessionId}에서 학생 ${dialog.student_id}의 최종 리포트가 생성되었습니다.`,
-        );
-      } catch (err) {
-        // 한 학생 실패해도 나머지는 계속 처리
-        this.logger.error(
-          `세션 ${sessionId}에서 학생 ${dialog.student_id}의 리포트 생성 실패: ${err.message}`,
-        );
+  async requestStudentFinalReports(sessionId: number, teacherId: string): Promise<void> {
+    const session = await this.prisma.sessions.findFirst({
+      where: {
+        id: sessionId,
+        teacher_id: teacherId
       }
     });
+    if (!session) {
+      this.logger.error(`세션 ${sessionId}를 찾을 수 없거나 권한이 없습니다.`);
+      return;
+    }
+    const pendingDialogs = await this.prisma.dialogs.findMany({
+      where: { session_id: sessionId, is_analyzed: false },
+      select: { student_id: true },
+    });
 
-    await Promise.allSettled(tasks);
-    this.logger.log(`세션 ${sessionId}에 대한 모든 최종 리포트 생성을 요청했습니다.`);
+    if (pendingDialogs.length === 0) {
+      this.logger.log(`세션 ${sessionId}의 모든 학생 리포트가 이미 완료되었거나 대상이 없습니다.`);
+      return;
+    }
+
+    pendingDialogs.forEach((dialog) => {
+      axios.post(`${AI_SERVER_URL}/api/end-session`, {
+        session_id: sessionId,
+        student_id: dialog.student_id,
+      }).catch(err => {
+        this.logger.error(`세션 ${sessionId} 학생 ${dialog.student_id} 리포트 요청 실패: ${err.message}`);
+      });
+    });
+
+    this.logger.log(`세션 ${sessionId}의 학생 ${pendingDialogs.length}명에 대한 리포트 생성을 요청했습니다.`);
+  }
+
+  async handleStudentFinalReportCallback(sessionId: number, studentId: string, report: any) {
+    try {
+      const session = await this.prisma.sessions.findUnique({ where: { id: sessionId } });
+      if (!session) return;
+
+      const reportData = {
+        session_id: sessionId,
+        student_id: studentId,
+        report: report,
+      };
+
+      this.eventsGateway.sendToUser(studentId, 'final_report_ready', reportData);
+      this.eventsGateway.sendToUser(session.teacher_id, 'final_report_ready', reportData);
+
+      this.logger.log(`세션 ${sessionId} 학생 ${studentId} 리포트 콜백 처리 및 알림 전송 완료`);
+    } catch (e) {
+      this.logger.error(`학생 리포트 콜백 처리 실패: ${e.message}`);
+    }
+  }
+
+  async requestSessionFinalReport(sessionId: number, teacherId: string) {
+    const session = await this.prisma.sessions.findFirst({
+      where: {
+        id: sessionId,
+        teacher_id: teacherId
+      }
+    });
+    if (!session) {
+      this.logger.error(`세션 ${sessionId}를 찾을 수 없거나 권한이 없습니다.`);
+      return;
+    }
+
+    const dialogs = await this.prisma.dialogs.findMany({
+      where: { session_id: sessionId },
+      select: { id: true, student_id: true, users: { select: { name: true } } },
+    });
+    
+    try {
+      const studentPromises = dialogs.map(async d => {
+        const student_id = d.student_id;
+        const student_name = d.users.name;
+        const chat_messages = await this.prisma.chat_messages.findMany({
+          where: {
+            dialog_id: d.id,
+          },
+          select: {
+            sender_type: true,
+            content: true,
+          },
+          orderBy: { created_at: 'asc' },
+        });
+
+        return { student_id, student_name, chat_messages };
+      });
+
+      const studentsData = await Promise.all(studentPromises);
+
+      axios.post(`${AI_SERVER_URL}/api/session-report`, {
+        session_id: sessionId,
+        students: studentsData
+      }).catch(err => {
+         this.logger.error(`AI 서버 세션 리포트 요청 실패: ${err.message}`);
+      });
+      
+      this.logger.log(`세션 ${sessionId} 전체 리포트 생성을 AI 서버에 요청했습니다.`);
+
+    } catch (err) {
+      this.logger.error(`메시지 조회 실패: ${err.message}`);
+    }
+  }
+
+  async handleSessionFinalReportCallback(sessionId: number, report: any) {
+    try {
+      const session = await this.prisma.sessions.findUnique({ where: { id: sessionId } });
+      if (session) {
+        this.eventsGateway.sendToUser(session.teacher_id, 'session_report_ready', {
+          session_id: sessionId,
+          report: report
+        });
+      }
+
+      this.logger.log(`세션 ${sessionId} 전체 리포트 수신 및 저장 완료`);
+    } catch (e) {
+      this.logger.error(`세션 ${sessionId} 리포트 콜백 처리 실패: ${e.message}`);
+    }
   }
 }
