@@ -31,9 +31,20 @@ function formatDate(dateStr?: string | null) {
   return d.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
 }
 
-function getTimeAgo(dateStr?: string | null) {
-  if (!dateStr) return '1시간 전'; // Dummy
-  return '1시간 전';
+function getTimeAgo(dateStr?: string | null, fallbackStr?: string | null) {
+  const targetDate = dateStr || fallbackStr;
+  if (!targetDate) return '';
+  const now = new Date();
+  const past = new Date(targetDate);
+  const diffMs = now.getTime() - past.getTime();
+  const diffMins = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMins < 1) return '방금 전';
+  if (diffMins < 60) return `${diffMins}분 전`;
+  if (diffHours < 24) return `${diffHours}시간 전`;
+  return `${diffDays}일 전`;
 }
 
 interface Props {
@@ -73,7 +84,13 @@ export const StudentSessionList: React.FC<Props> = ({
   };
 
   const activeSession = sessions.find((s) => computeSessionStatus(s) === 'live');
-  const finishedSessions = sessions.filter((s) => computeSessionStatus(s) === 'finished');
+  const finishedSessions = sessions
+    .filter((s) => computeSessionStatus(s) === 'finished')
+    .sort((a, b) => {
+      const aTime = new Date(a.finished_at || a.scheduled_date || 0).getTime();
+      const bTime = new Date(b.finished_at || b.scheduled_date || 0).getTime();
+      return bTime - aTime;
+    });
 
   const classSubject = classInfo?.subject ?? '수업';
   const classTag = classInfo?.users?.name ? `${classInfo.users.name} 선생님` : '';
@@ -173,7 +190,7 @@ export const StudentSessionList: React.FC<Props> = ({
                 {finishedSessions.length === 0 ? (
                   <p className={styles.emptyText}>지난 세션이 없습니다.</p>
                 ) : (
-                  finishedSessions.slice(0, 3).map((s, idx) => (
+                  finishedSessions.map((s, idx) => (
                     <div key={s.id} className={styles.pastRow}>
                       <div className={styles.pastCircle}>{idx + 1}</div>
                       <div className={styles.pastInfo}>
@@ -187,10 +204,10 @@ export const StudentSessionList: React.FC<Props> = ({
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
                           </svg>
-                          28
+                          완료
                         </div>
                       </div>
-                      <div className={styles.timeAgo}>{getTimeAgo(s.scheduled_date)}</div>
+                      <div className={styles.timeAgo}>{getTimeAgo(s.finished_at, s.scheduled_date)}</div>
                       <button
                         className={styles.reviewBtn}
                         onClick={() => router.push(`/s/classes/${classId}/sessions/${s.id}`)}

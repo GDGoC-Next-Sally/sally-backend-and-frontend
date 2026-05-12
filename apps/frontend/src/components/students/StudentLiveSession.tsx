@@ -27,6 +27,7 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>('loading');
   const [sessionTitle, setSessionTitle] = useState('');
+  const [teacherName, setTeacherName] = useState('');
   const [sessionObjective, setSessionObjective] = useState('');
   const [scheduledStart, setScheduledStart] = useState('');
   const [dialogId, setDialogId] = useState<number | null>(null);
@@ -60,11 +61,12 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
       .then(async ([session, cls]) => {
         const gradeStr = cls.grade ? `${cls.grade}학년 ` : '';
         setSessionTitle(`${gradeStr}${cls.subject} / ${session.session_name}`);
+        setTeacherName(cls.users?.name ? `${cls.users.name} 선생님` : '');
         setSessionObjective(session.objective || '');
 
         if (session.scheduled_start) {
           const d = new Date(session.scheduled_start);
-          const h = d.getHours();
+          const h = d.getHours().toString().padStart(2, '0');
           const m = d.getMinutes().toString().padStart(2, '0');
           setScheduledStart(`${h}:${m}`);
         }
@@ -321,6 +323,7 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
             <button className={styles.backBtn} onClick={() => setIsLeaveModalOpen(true)}>‹</button>
             <div className={styles.headerInfo}>
               <div className={styles.sessionTitle}>{sessionTitle || '세션'}</div>
+              <div className={styles.teacherName}>{teacherName}</div>
             </div>
             <div className={styles.headerRight}>
               {phase === 'waiting' ? (

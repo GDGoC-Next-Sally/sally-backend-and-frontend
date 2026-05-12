@@ -24,9 +24,8 @@ export default function StudentReportsPage() {
   useEffect(() => {
     getStudentSessionList()
       .then(list => {
-        const finished = list.filter(s => s.finishedAt);
-        setSessions(finished);
-        if (finished.length > 0) setSelectedSessionId(finished[0].sessionId);
+        setSessions(list);
+        if (list.length > 0) setSelectedSessionId(list[0].sessionId);
       })
       .catch(() => setSessions([]))
       .finally(() => setIsLoading(false));

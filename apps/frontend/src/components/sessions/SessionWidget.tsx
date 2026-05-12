@@ -255,6 +255,7 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
             loading={loading}
             onStart={handleStart}
             onBack={() => router.push(`/t/classes/${classId}`)}
+            students={students}
           />
         ) : (
           <ActiveView
@@ -298,16 +299,17 @@ interface WaitingProps {
   loading: boolean;
   onStart: () => void;
   onBack: () => void;
+  students: AttendanceStudent[];
 }
 
-const WaitingView: React.FC<WaitingProps> = ({ sessionName, loading, onStart, onBack }) => (
+const WaitingView: React.FC<WaitingProps> = ({ sessionName, loading, onStart, onBack, students }) => (
   <div className={styles.mainContent}>
     <div className={styles.topBar}>
       <div className={styles.topBarLeft}>
         <button className={styles.backBtn} onClick={onBack}>&lt;</button>
         <div>
           <div className={styles.sessionName}>{sessionName ?? '세션'}</div>
-          <div className={styles.sessionDesc}>학생들이 입장 중입니다</div>
+          <div className={styles.sessionDesc}>현재 {students.length}명의 학생이 입장했습니다</div>
         </div>
       </div>
       <div className={styles.topBarRight}>
@@ -329,7 +331,10 @@ const WaitingView: React.FC<WaitingProps> = ({ sessionName, loading, onStart, on
       </div>
       <h2 className={styles.waitTitle}>곧 수업이 시작됩니다!</h2>
       <p className={styles.waitDesc}>
-        학생들이 입장 중입니다.<br />
+        {students.length > 0 
+          ? `현재 ${students.length}명의 학생이 대기 중입니다.` 
+          : '학생들이 입장하기를 기다리고 있습니다.'}
+        <br />
         준비를 마친 뒤 수업을 시작해 주세요.
       </p>
       <button className={styles.startBtn} onClick={onStart} disabled={loading}>

@@ -20,5 +20,12 @@ export async function serverFetch(endpoint: string, options: RequestInit = {}) {
     throw new Error(errorData?.message || `API error: ${response.status}`);
   }
 
-  return response.json();
+  const text = await response.text();
+  if (!text) return null;
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
 }
