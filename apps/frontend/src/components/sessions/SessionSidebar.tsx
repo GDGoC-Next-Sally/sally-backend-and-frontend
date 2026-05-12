@@ -111,34 +111,50 @@ export const SessionSidebar: React.FC<Props> = ({
                       )}
                     </div>
                   </div>
-                  <span className={`${styles.statusDot} ${needsIntervention ? styles.dotRed : styles.dotGreen}`} />
+                  <span className={`${styles.statusDot} ${
+                    needsIntervention || (analysis?.understanding_score && analysis.understanding_score <= 4)
+                      ? styles.dotRed
+                      : (analysis?.understanding_score && analysis.understanding_score <= 7)
+                      ? styles.dotYellow
+                      : styles.dotGreen
+                  }`} />
                 </div>
 
-                {/* 선택된 학생: 3열 스탯 */}
+                {/* 선택된 학생 상세 */}
                 {isSelected && analysis ? (
-                  <div className={styles.statsGrid}>
-                    <div className={styles.statCell}>
-                      <div className={styles.statLabel}>참여도</div>
-                      <div className={styles.statValue}>
-                        {analysis.engagement_level ?? '-'}
+                  <div className={styles.selectedDetails}>
+                    <div className={styles.statsGrid}>
+                      <div className={styles.statCell}>
+                        <div className={styles.statLabel}>참여도</div>
+                        <div className={styles.statValue}>
+                          {analysis.engagement_level ?? '-'}
+                        </div>
+                      </div>
+                      <div className={styles.statDivider} />
+                      <div className={styles.statCell}>
+                        <div className={styles.statLabel}>이해도</div>
+                        <div className={styles.statValue}>
+                          {analysis.understanding_score !== undefined
+                            ? `${analysis.understanding_score * 10}%`
+                            : '-'}
+                        </div>
+                      </div>
+                      <div className={styles.statDivider} />
+                      <div className={styles.statCell}>
+                        <div className={styles.statLabel}>감정 상태</div>
+                        <div className={`${styles.statValue} ${styles.emotionValue}`}>
+                          {analysis.student_emotion ?? '-'}
+                        </div>
                       </div>
                     </div>
-                    <div className={styles.statDivider} />
-                    <div className={styles.statCell}>
-                      <div className={styles.statLabel}>이해도</div>
-                      <div className={styles.statValue}>
-                        {analysis.understanding_score !== undefined
-                          ? `${analysis.understanding_score}%`
-                          : '-'}
+                    
+                    {/* 상태 요약 표시 */}
+                    {analysis.one_line_summary && (
+                      <div className={styles.analysisSummary}>
+                        <span className={styles.analysisIcon}>✨</span>
+                        {analysis.one_line_summary}
                       </div>
-                    </div>
-                    <div className={styles.statDivider} />
-                    <div className={styles.statCell}>
-                      <div className={styles.statLabel}>감정 상태</div>
-                      <div className={`${styles.statValue} ${styles.emotionValue}`}>
-                        {analysis.student_emotion ?? '-'}
-                      </div>
-                    </div>
+                    )}
                   </div>
                 ) : (
                   /* 비선택 학생: 컴팩트 서브 텍스트 */
