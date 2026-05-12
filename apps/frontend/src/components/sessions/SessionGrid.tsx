@@ -105,95 +105,103 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
         ))}
       </div>
 
-      <div className={styles.filterBar}>
-        <div className={styles.searchBox}>
-          <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="세션 검색"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <select className={styles.sortSelect} defaultValue="">
-            <option value="" disabled>정렬</option>
-            <option value="recent">최신순</option>
-            <option value="name">이름순</option>
-          </select>
-          <button className={styles.createBtn} onClick={() => setIsCreateOpen(true)}>
-            + 세션 만들기
-          </button>
-        </div>
-      </div>
-
-      <div className={styles.sessionList} ref={menuRef}>
-        {filtered.length === 0 && (
-          <div className={styles.empty}>
-            {search ? '검색 결과가 없습니다.' : '등록된 세션이 없습니다.'}
-          </div>
-        )}
-        {filtered.map((session) => {
-          const computed = computeSessionStatus(session);
-          const cfg = STATUS_CONFIG[computed];
-          return (
-            <div
-              key={session.id}
-              className={styles.sessionRow}
-              onClick={() => router.push(`/t/classes/${classId}/sessions/${session.id}`)}
-            >
-              <div className={styles.sessionIcon} style={{ backgroundColor: cfg.iconBg }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={cfg.iconColor} strokeWidth="2">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                </svg>
-              </div>
-
-              <div className={styles.sessionInfo}>
-                <div className={styles.sessionTitle}>{session.session_name}</div>
-                <div className={styles.sessionSubject}>{session.explanation ?? ''}</div>
-              </div>
-
-              {session.period && (
-                <div className={styles.sessionMeta}>{session.period}교시</div>
-              )}
-
-              <div className={styles.sessionTime}>{formatDate(session.scheduled_date)}</div>
-
-              <span className={`${styles.badge} ${styles[cfg.badgeClass]}`}>{cfg.label}</span>
-
-              <div className={styles.menuContainer}>
-                <button
-                  className={styles.moreBtn}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setOpenMenuId(openMenuId === session.id ? null : session.id);
-                  }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
-                  </svg>
-                </button>
-                {openMenuId === session.id && (
-                  <div className={styles.dropdownMenu}>
-                    <button className={styles.menuItem} onClick={(e) => { e.stopPropagation(); router.push(`/t/classes/${classId}/sessions/${session.id}`); setOpenMenuId(null); }}>
-                      상세보기
-                    </button>
-                    <button className={styles.menuItem} onClick={(e) => { e.stopPropagation(); setEditTarget(session); setOpenMenuId(null); }}>
-                      정보 수정
-                    </button>
-                    <button className={`${styles.menuItem} ${styles.menuItemDanger}`} onClick={(e) => { e.stopPropagation(); handleDelete(session.id); }}>
-                      삭제
-                    </button>
-                  </div>
-                )}
-              </div>
+      {activeTab !== '과제 & 자료' ? (
+        <>
+          <div className={styles.filterBar}>
+            <div className={styles.searchBox}>
+              <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                className={styles.searchInput}
+                placeholder="세션 검색"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
-          );
-        })}
-      </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <select className={styles.sortSelect} defaultValue="">
+                <option value="" disabled>정렬</option>
+                <option value="recent">최근순</option>
+                <option value="name">이름순</option>
+              </select>
+              <button className={styles.createBtn} onClick={() => setIsCreateOpen(true)}>
+                + 세션 만들기
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.sessionList} ref={menuRef}>
+            {filtered.length === 0 && (
+              <div className={styles.empty}>
+                {search ? '검색 결과가 없습니다.' : '등록된 세션이 없습니다.'}
+              </div>
+            )}
+            {filtered.map((session) => {
+              const computed = computeSessionStatus(session);
+              const cfg = STATUS_CONFIG[computed];
+              return (
+                <div
+                  key={session.id}
+                  className={styles.sessionRow}
+                  onClick={() => router.push(`/t/classes/${classId}/sessions/${session.id}`)}
+                >
+                  <div className={styles.sessionIcon} style={{ backgroundColor: cfg.iconBg }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={cfg.iconColor} strokeWidth="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                  </div>
+
+                  <div className={styles.sessionInfo}>
+                    <div className={styles.sessionTitle}>{session.session_name}</div>
+                    <div className={styles.sessionSubject}>{session.explanation ?? ''}</div>
+                  </div>
+
+                  {session.period && (
+                    <div className={styles.sessionMeta}>{session.period}교시</div>
+                  )}
+
+                  <div className={styles.sessionTime}>{formatDate(session.scheduled_date)}</div>
+
+                  <span className={`${styles.badge} ${styles[cfg.badgeClass]}`}>{cfg.label}</span>
+
+                  <div className={styles.menuContainer}>
+                    <button
+                      className={styles.moreBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(openMenuId === session.id ? null : session.id);
+                      }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
+                      </svg>
+                    </button>
+                    {openMenuId === session.id && (
+                      <div className={styles.dropdownMenu}>
+                        <button className={styles.menuItem} onClick={(e) => { e.stopPropagation(); router.push(`/t/classes/${classId}/sessions/${session.id}`); setOpenMenuId(null); }}>
+                          상세보기
+                        </button>
+                        <button className={styles.menuItem} onClick={(e) => { e.stopPropagation(); setEditTarget(session); setOpenMenuId(null); }}>
+                          정보 수정
+                        </button>
+                        <button className={`${styles.menuItem} ${styles.menuItemDanger}`} onClick={(e) => { e.stopPropagation(); handleDelete(session.id); }}>
+                          삭제
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      ) : (
+        <div className={styles.empty} style={{ marginTop: '40px' }}>
+          등록된 과제 및 자료가 없습니다.
+        </div>
+      )}
 
       {isCreateOpen && (
         <CreateSessionModal
