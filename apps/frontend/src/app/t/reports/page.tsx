@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { getTeacherClasses, type ClassItem } from '@/actions/classes';
 import { getSessionsByClass, type Session } from '@/actions/sessions';
 import { getSessionStudentReports, getSessionSummaryReport } from '@/actions/reports';
+import styles from './reports.module.css';
 
 interface SessionEntry {
   session: Session;
@@ -21,56 +21,73 @@ interface StudentReport {
   engagement_level?: string;
 }
 
+interface KeyQuestion {
+  topic?: string;
+  question: string;
+}
+
 interface SummaryReport {
   average_understanding?: number;
   top_weak_concepts?: string[];
-  key_questions?: string[];
+  key_questions?: string[] | KeyQuestion[];
   overall_summary?: string;
+  ai_report?: string;
   total_students?: number;
 }
 
+function parseQuestion(raw: string | KeyQuestion): KeyQuestion {
+  if (typeof raw === 'object') return raw;
+  // "주제: 질문" 형식 파싱 시도
+  const colonIdx = raw.indexOf(':');
+  if (colonIdx > 0 && colonIdx < 20) {
+    return { topic: raw.slice(0, colonIdx).trim(), question: raw.slice(colonIdx + 1).trim() };
+  }
+  return { question: raw };
+}
+
 export default function TeacherReportsPage() {
-  const router = useRouter();
+  const [classes, setClasses] = useState<ClassItem[]>([]);
   const [sessions, setSessions] = useState<SessionEntry[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
   const [studentReports, setStudentReports] = useState<StudentReport[]>([]);
   const [summaryReport, setSummaryReport] = useState<SummaryReport | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingReport, setIsLoadingReport] = useState(false);
   const [activeTab, setActiveTab] = useState<'summary' | 'students'>('summary');
+  const [aiReportExpanded, setAiReportExpanded] = useState(false);
 
+  // 클래스 목록 로드
   useEffect(() => {
-    const load = async () => {
-      try {
-        const classes = await getTeacherClasses();
-        const results = await Promise.allSettled(
-          classes.map(cls => getSessionsByClass(cls.id).then(ss => ss.map(s => ({ session: s, cls }))))
-        );
-        const all: SessionEntry[] = [];
-        for (const r of results) {
-          if (r.status === 'fulfilled') all.push(...r.value);
-        }
-        // Sort by most recent first
-        all.sort((a, b) => {
-          const da = a.session.started_at ?? a.session.scheduled_date ?? '';
-          const db = b.session.started_at ?? b.session.scheduled_date ?? '';
-          return db.localeCompare(da);
-        });
-        // Only finished sessions have reports
-        const finished = all.filter(e => e.session.finished_at);
-        setSessions(finished);
-        if (finished.length > 0) {
-          setSelectedSessionId(finished[0].session.id);
-        }
-      } catch {
-        setSessions([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    load();
+    getTeacherClasses()
+      .then(cls => {
+        setClasses(cls);
+        if (cls.length > 0) setSelectedClassId(cls[0].id);
+      })
+      .catch(() => setClasses([]))
+      .finally(() => setIsLoading(false));
   }, []);
 
+  // 선택된 클래스의 세션 로드
+  useEffect(() => {
+    if (!selectedClassId) return;
+    setSelectedSessionId(null);
+    setSummaryReport(null);
+    setStudentReports([]);
+    getSessionsByClass(selectedClassId)
+      .then(ss => {
+        const finished = ss
+          .filter(s => s.finished_at)
+          .sort((a, b) => (b.finished_at ?? '').localeCompare(a.finished_at ?? ''));
+        const cls = classes.find(c => c.id === selectedClassId)!;
+        const entries = finished.map(s => ({ session: s, cls }));
+        setSessions(entries);
+        if (entries.length > 0) setSelectedSessionId(entries[0].session.id);
+      })
+      .catch(() => setSessions([]));
+  }, [selectedClassId, classes]);
+
+  // 리포트 로드
   useEffect(() => {
     if (!selectedSessionId) return;
     setIsLoadingReport(true);
@@ -82,213 +99,193 @@ export default function TeacherReportsPage() {
         setStudentReports(students as StudentReport[]);
         setSummaryReport(summary as SummaryReport);
       })
-      .catch(() => {
-        setStudentReports([]);
-        setSummaryReport(null);
-      })
+      .catch(() => { setStudentReports([]); setSummaryReport(null); })
       .finally(() => setIsLoadingReport(false));
   }, [selectedSessionId]);
 
-  const selectedEntry = sessions.find(e => e.session.id === selectedSessionId);
+  const keyQuestions: KeyQuestion[] = (summaryReport?.key_questions ?? []).map(parseQuestion);
 
   return (
-    <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto' }}>
-      <div style={{ marginBottom: 24 }}>
-        <button
-          onClick={() => router.back()}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B6B6B', fontSize: 14, display: 'flex', alignItems: 'center', gap: 4 }}
-        >
-          ‹ 뒤로
+    <div className={styles.page}>
+      {/* 페이지 헤더 */}
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>AI 분석 리포트</h1>
+        <button className={styles.exportBtn}>
+          내보내기
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
         </button>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: '#1A1A1A', margin: '8px 0 4px' }}>AI 분석 리포트</h1>
-        <p style={{ fontSize: 14, color: '#6B6B6B', margin: 0 }}>종료된 세션의 AI 분석 결과를 확인합니다.</p>
       </div>
 
-      <div style={{ display: 'flex', gap: 20 }}>
-        {/* Session list sidebar */}
-        <div style={{ width: 280, flexShrink: 0 }}>
-          <div style={{ background: 'white', borderRadius: 12, padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#6B6B6B', marginBottom: 12 }}>세션 목록</div>
-            {isLoading ? (
-              <div style={{ fontSize: 13, color: '#ABABAB', textAlign: 'center', padding: '20px 0' }}>불러오는 중...</div>
-            ) : sessions.length === 0 ? (
-              <div style={{ fontSize: 13, color: '#ABABAB', textAlign: 'center', padding: '20px 0' }}>종료된 세션이 없습니다.</div>
-            ) : (
-              <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {sessions.map(entry => {
-                  const isSelected = entry.session.id === selectedSessionId;
-                  const date = entry.session.finished_at ? new Date(entry.session.finished_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) : '';
-                  const label = `${entry.cls.grade ? `${entry.cls.grade}학년 ` : ''}${entry.cls.subject}`;
-                  return (
-                    <li
-                      key={entry.session.id}
-                      onClick={() => setSelectedSessionId(entry.session.id)}
-                      style={{
-                        padding: '10px 12px',
-                        borderRadius: 8,
-                        cursor: 'pointer',
-                        background: isSelected ? '#ECFDF5' : 'transparent',
-                        border: `1.5px solid ${isSelected ? '#22CB84' : 'transparent'}`,
-                        transition: 'all 0.15s',
-                      }}
-                    >
-                      <div style={{ fontSize: 13, fontWeight: 600, color: '#1A1A1A' }}>{entry.session.session_name}</div>
-                      <div style={{ fontSize: 11, color: '#6B6B6B', marginTop: 2 }}>{label} · {date}</div>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
-        </div>
+      {/* 탭 */}
+      <div className={styles.tabs}>
+        <button
+          className={`${styles.tab} ${activeTab === 'summary' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('summary')}
+        >
+          전체보기
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'students' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('students')}
+        >
+          학생 목록
+        </button>
+      </div>
 
-        {/* Report content */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {!selectedSessionId ? (
-            <div style={{ background: 'white', borderRadius: 12, padding: 40, textAlign: 'center', color: '#ABABAB', fontSize: 14 }}>
-              세션을 선택해 리포트를 확인하세요.
-            </div>
-          ) : isLoadingReport ? (
-            <div style={{ background: 'white', borderRadius: 12, padding: 40, textAlign: 'center', color: '#ABABAB', fontSize: 14 }}>
-              리포트 불러오는 중...
-            </div>
-          ) : (
-            <>
-              {/* Session header */}
-              {selectedEntry && (
-                <div style={{ background: 'white', borderRadius: 12, padding: '16px 24px', marginBottom: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <div style={{ fontSize: 18, fontWeight: 700, color: '#1A1A1A' }}>{selectedEntry.session.session_name}</div>
-                    <div style={{ fontSize: 13, color: '#6B6B6B', marginTop: 2 }}>
-                      {selectedEntry.cls.grade ? `${selectedEntry.cls.grade}학년 ` : ''}{selectedEntry.cls.subject}
-                      {selectedEntry.session.finished_at && ` · ${new Date(selectedEntry.session.finished_at).toLocaleDateString('ko-KR')}`}
-                    </div>
-                  </div>
-                  {summaryReport?.total_students !== undefined && (
-                    <div style={{ background: '#ECFDF5', color: '#22CB84', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600 }}>
-                      참여 학생 {summaryReport.total_students}명
-                    </div>
-                  )}
-                </div>
-              )}
+      {/* 필터 드롭다운 */}
+      <div className={styles.filterRow}>
+        <select
+          className={styles.filterSelect}
+          value={selectedClassId ?? ''}
+          onChange={e => setSelectedClassId(Number(e.target.value))}
+          disabled={isLoading}
+        >
+          {classes.length === 0 && <option value="">클래스 없음</option>}
+          {classes.map(cls => (
+            <option key={cls.id} value={cls.id}>
+              {cls.grade ? `${cls.grade}학년 ` : ''}{cls.homeroom ?? ''} {cls.subject}
+            </option>
+          ))}
+        </select>
 
-              {/* Tabs */}
-              <div style={{ display: 'flex', gap: 0, marginBottom: 16, background: 'white', borderRadius: 10, padding: 4, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', width: 'fit-content' }}>
-                {(['summary', 'students'] as const).map(tab => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    style={{
-                      padding: '8px 20px',
-                      borderRadius: 8,
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: 13,
-                      fontWeight: 600,
-                      background: activeTab === tab ? '#22CB84' : 'transparent',
-                      color: activeTab === tab ? 'white' : '#6B6B6B',
-                      transition: 'all 0.15s',
-                    }}
-                  >
-                    {tab === 'summary' ? '전체 요약' : '학생별 리포트'}
-                  </button>
-                ))}
+        <select
+          className={styles.filterSelect}
+          value={selectedSessionId ?? ''}
+          onChange={e => setSelectedSessionId(Number(e.target.value))}
+          disabled={sessions.length === 0}
+        >
+          {sessions.length === 0 && <option value="">종료된 세션 없음</option>}
+          {sessions.map(e => {
+            const d = e.session.started_at ? new Date(e.session.started_at) : null;
+            const label = d
+              ? `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일${e.session.period ? ` ${e.session.period}교시` : ''}`
+              : e.session.session_name;
+            return <option key={e.session.id} value={e.session.id}>{label}</option>;
+          })}
+        </select>
+      </div>
+
+      {/* 컨텐츠 */}
+      {isLoadingReport ? (
+        <div className={styles.emptyState}>리포트 불러오는 중...</div>
+      ) : !selectedSessionId ? (
+        <div className={styles.emptyState}>세션을 선택해 리포트를 확인하세요.</div>
+      ) : activeTab === 'summary' ? (
+        <div className={styles.summaryLayout}>
+          {/* AI 요약 */}
+          {summaryReport?.overall_summary && (
+            <div className={styles.aiSummaryCard}>
+              <div className={styles.aiSummaryTitle}>
+                <span className={styles.aiArrow}>→</span>
+                AI 요약
               </div>
+              <p className={styles.aiSummaryText}>{summaryReport.overall_summary}</p>
+            </div>
+          )}
 
-              {activeTab === 'summary' && summaryReport && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {summaryReport.overall_summary && (
-                    <ReportCard title="AI 종합 요약">
-                      <p style={{ fontSize: 14, color: '#374151', lineHeight: 1.7, margin: 0 }}>{summaryReport.overall_summary}</p>
-                    </ReportCard>
-                  )}
-
-                  {summaryReport.average_understanding !== undefined && (
-                    <ReportCard title="평균 이해도">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                        <div style={{ fontSize: 40, fontWeight: 800, color: '#22CB84' }}>{summaryReport.average_understanding}%</div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ height: 10, background: '#E5E7EB', borderRadius: 5, overflow: 'hidden' }}>
-                            <div style={{ height: '100%', width: `${summaryReport.average_understanding}%`, background: '#22CB84', borderRadius: 5 }} />
-                          </div>
-                        </div>
-                      </div>
-                    </ReportCard>
-                  )}
-
-                  {summaryReport.top_weak_concepts && summaryReport.top_weak_concepts.length > 0 && (
-                    <ReportCard title="취약 개념 Top 5">
-                      <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {summaryReport.top_weak_concepts.slice(0, 5).map((concept, i) => (
-                          <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <span style={{ width: 24, height: 24, borderRadius: '50%', background: '#FEF3C7', color: '#B45309', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{i + 1}</span>
-                            <span style={{ fontSize: 14, color: '#374151' }}>{concept}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </ReportCard>
-                  )}
-
-                  {summaryReport.key_questions && summaryReport.key_questions.length > 0 && (
-                    <ReportCard title="주요 질문">
-                      <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                        {summaryReport.key_questions.map((q, i) => (
-                          <li key={i} style={{ fontSize: 14, color: '#374151', paddingLeft: 16, borderLeft: '3px solid #22CB84', lineHeight: 1.6 }}>{q}</li>
-                        ))}
-                      </ul>
-                    </ReportCard>
+          {/* 주요질문 + 취약개념 2열 */}
+          {(keyQuestions.length > 0 || (summaryReport?.top_weak_concepts ?? []).length > 0) && (
+            <div className={styles.twoCol}>
+              {/* 주요 질문 */}
+              <div className={styles.questionCard}>
+                <div className={styles.sectionHeader}>
+                  <span className={styles.sectionTitle}>주요 질문</span>
+                  {keyQuestions.length > 0 && (
+                    <span className={styles.questionCount}>{keyQuestions.length}</span>
                   )}
                 </div>
-              )}
-
-              {activeTab === 'students' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {studentReports.length === 0 ? (
-                    <div style={{ background: 'white', borderRadius: 12, padding: 40, textAlign: 'center', color: '#ABABAB', fontSize: 14 }}>
-                      학생 리포트가 없습니다.
-                    </div>
-                  ) : studentReports.map((report, i) => (
-                    <div key={i} style={{ background: 'white', borderRadius: 12, padding: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                        <div style={{ fontWeight: 600, fontSize: 15, color: '#1A1A1A' }}>{report.studentName}</div>
-                        {report.understanding_score !== undefined && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span style={{ fontSize: 12, color: '#6B6B6B' }}>이해도</span>
-                            <span style={{ fontSize: 16, fontWeight: 700, color: '#22CB84' }}>{report.understanding_score}%</span>
-                          </div>
-                        )}
-                      </div>
-                      {report.summary && <p style={{ fontSize: 13, color: '#6B6B6B', margin: '0 0 10px', lineHeight: 1.6 }}>{report.summary}</p>}
-                      {report.weak_concepts && report.weak_concepts.length > 0 && (
-                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                          {report.weak_concepts.map((c, j) => (
-                            <span key={j} style={{ background: '#FEF3C7', color: '#B45309', fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 6 }}>{c}</span>
-                          ))}
-                        </div>
+                <div className={styles.questionList}>
+                  {keyQuestions.length === 0 ? (
+                    <div className={styles.emptyInner}>질문 데이터가 없습니다.</div>
+                  ) : keyQuestions.map((kq, i) => (
+                    <div key={i} className={styles.questionRow}>
+                      {kq.topic && (
+                        <span className={styles.questionTopic}>{kq.topic}</span>
                       )}
+                      <span className={styles.questionText}>{kq.question}</span>
                     </div>
                   ))}
                 </div>
-              )}
+              </div>
 
-              {activeTab === 'summary' && !summaryReport && (
-                <div style={{ background: 'white', borderRadius: 12, padding: 40, textAlign: 'center', color: '#ABABAB', fontSize: 14 }}>
-                  아직 리포트가 생성되지 않았습니다.
+              {/* 취약개념 Top 5 */}
+              <div className={styles.weakCard}>
+                <div className={styles.sectionHeader}>
+                  <span className={styles.sectionTitle}>취약개념 top5</span>
                 </div>
-              )}
-            </>
+                <div className={styles.weakList}>
+                  {(summaryReport?.top_weak_concepts ?? []).length === 0 ? (
+                    <div className={styles.emptyInner}>데이터가 없습니다.</div>
+                  ) : (summaryReport?.top_weak_concepts ?? []).slice(0, 5).map((concept, i) => (
+                    <div key={i} className={styles.weakItem}>
+                      <span className={`${styles.weakRank} ${i < 3 ? styles.weakRankTop : ''}`}>
+                        {i + 1}
+                      </span>
+                      <span className={styles.weakLabel}>{concept}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* AI 리포트 */}
+          {summaryReport?.ai_report && (
+            <div className={styles.aiReportCard}>
+              <div className={styles.aiReportTitle}>AI 리포트</div>
+              <p className={`${styles.aiReportText} ${aiReportExpanded ? styles.aiReportExpanded : styles.aiReportCollapsed}`}>
+                {summaryReport.ai_report}
+              </p>
+              <button
+                className={styles.viewMoreBtn}
+                onClick={() => setAiReportExpanded(v => !v)}
+              >
+                {aiReportExpanded ? '접기' : '자세히 보기'}
+              </button>
+            </div>
+          )}
+
+          {!summaryReport && (
+            <div className={styles.emptyState}>아직 리포트가 생성되지 않았습니다.</div>
           )}
         </div>
-      </div>
-    </div>
-  );
-}
-
-function ReportCard({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div style={{ background: 'white', borderRadius: 12, padding: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-      <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid #F3F4F6' }}>{title}</div>
-      {children}
+      ) : (
+        /* 학생 목록 탭 */
+        <div className={styles.studentList}>
+          {studentReports.length === 0 ? (
+            <div className={styles.emptyState}>학생 리포트가 없습니다.</div>
+          ) : studentReports.map((report, i) => (
+            <div key={i} className={styles.studentCard}>
+              <div className={styles.studentCardHeader}>
+                <div className={styles.studentAvatar} />
+                <div>
+                  <div className={styles.studentName}>{report.studentName}</div>
+                  {report.summary && (
+                    <div className={styles.studentSummary}>{report.summary}</div>
+                  )}
+                </div>
+                {report.understanding_score !== undefined && (
+                  <div className={styles.studentScore}>
+                    <div className={styles.scoreValue}>{report.understanding_score}%</div>
+                    <div className={styles.scoreLabel}>이해도</div>
+                  </div>
+                )}
+              </div>
+              {report.weak_concepts && report.weak_concepts.length > 0 && (
+                <div className={styles.weakChips}>
+                  {report.weak_concepts.map((c, j) => (
+                    <span key={j} className={styles.weakChip}>{c}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

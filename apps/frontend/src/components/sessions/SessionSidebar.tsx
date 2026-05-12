@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './SessionSidebar.module.css';
 import type { AttendanceStudent } from '@/actions/sessions';
 import type { StudentAnalysis } from './SessionWidget';
@@ -11,7 +11,26 @@ interface Props {
   selectedId?: string;
   onSelect?: (id: string) => void;
   onRefresh?: () => void;
+  onEnd?: () => void;
   analysisMap?: Map<string, StudentAnalysis>;
+  sessionStartTime?: Date | null;
+}
+
+function useElapsed(startTime: Date | null | undefined): string {
+  const [elapsed, setElapsed] = useState('');
+  useEffect(() => {
+    if (!startTime) return;
+    const update = () => {
+      const diff = Math.max(0, Math.floor((Date.now() - startTime.getTime()) / 1000));
+      const m = Math.floor(diff / 60).toString().padStart(2, '0');
+      const s = (diff % 60).toString().padStart(2, '0');
+      setElapsed(`${m}:${s}`);
+    };
+    update();
+    const t = setInterval(update, 1000);
+    return () => clearInterval(t);
+  }, [startTime]);
+  return elapsed;
 }
 
 export const SessionSidebar: React.FC<Props> = ({
@@ -20,22 +39,47 @@ export const SessionSidebar: React.FC<Props> = ({
   selectedId,
   onSelect,
   onRefresh,
+  onEnd,
   analysisMap,
+  sessionStartTime,
 }) => {
+  const elapsed = useElapsed(sessionStartTime);
+
+  // Collect unique current topics from all students for the unit chips
+  const unitTopics = Array.from(
+    new Set(
+      Array.from(analysisMap?.values() ?? [])
+        .map(a => a.current_topic)
+        .filter((t): t is string => !!t)
+    )
+  );
+
   return (
     <aside className={styles.sidebar}>
+      {/* 수업 종료 버튼 (active 상태에서만) */}
+      {phase === 'active' && (
+        <button className={styles.endBtn} onClick={onEnd} type="button">
+          <span>수업 종료 하기</span>
+          {elapsed && <span className={styles.endBtnTime}>{elapsed}</span>}
+        </button>
+      )}
+
+      {/* 헤더 */}
       <div className={styles.header}>
         <h2 className={styles.title}>
-          접속 중인 학생 <span className={styles.count}>{students.length}</span>
+          학생 목록 <span className={styles.count}>{students.length}</span>
         </h2>
-        <button className={styles.refreshBtn} type="button" onClick={onRefresh}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 2v6h-6" /><path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
-            <path d="M3 22v-6h6" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
-          </svg>
-        </button>
+        {phase === 'waiting' && (
+          <button className={styles.refreshBtn} type="button" onClick={onRefresh}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 2v6h-6" /><path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+              <path d="M3 22v-6h6" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+            </svg>
+          </button>
+        )}
       </div>
 
+      {/* 학생 목록 */}
       {students.length === 0 ? (
         <p className={styles.empty}>아직 입장한 학생이 없습니다.</p>
       ) : (
@@ -44,65 +88,78 @@ export const SessionSidebar: React.FC<Props> = ({
             const isSelected = phase === 'active' && student.userId === selectedId;
             const analysis = analysisMap?.get(student.userId);
             const needsIntervention = analysis?.need_intervention;
+
             return (
               <li
                 key={student.userId ?? `student-${idx}`}
-                className={`${styles.item} ${isSelected ? styles.itemSelected : ''} ${phase === 'active' ? styles.itemClickable : ''} ${needsIntervention ? styles.itemWarning : ''}`}
+                className={[
+                  styles.item,
+                  isSelected ? styles.itemSelected : '',
+                  phase === 'active' ? styles.itemClickable : '',
+                  needsIntervention ? styles.itemWarning : '',
+                ].join(' ')}
                 onClick={() => phase === 'active' && onSelect?.(student.userId)}
               >
+                {/* 학생 이름 행 */}
                 <div className={styles.itemHeader}>
                   <div className={styles.studentInfo}>
-                    <span className={`${styles.dot} ${styles.dotOnline}`} />
-                    <span className={styles.name}>{student.name}</span>
-                    {needsIntervention && (
-                      <span className={styles.warningBadge}>개입 필요</span>
-                    )}
+                    <div className={styles.avatar} />
+                    <div className={styles.nameBlock}>
+                      <span className={styles.name}>{student.name}</span>
+                      {analysis?.current_topic && (
+                        <span className={styles.topicSub}>{analysis.current_topic}</span>
+                      )}
+                    </div>
                   </div>
-                  <button className={styles.moreBtn} type="button" onClick={(e) => e.stopPropagation()}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
-                    </svg>
-                  </button>
+                  <span className={`${styles.statusDot} ${needsIntervention ? styles.dotRed : styles.dotGreen}`} />
                 </div>
-                <div className={styles.summary}>
-                  {analysis ? (
-                    <>
-                      {analysis.understanding_score !== undefined && (
-                        <div className={styles.analysisRow}>
-                          <span className={styles.analysisLabel}>이해도</span>
-                          <div className={styles.scoreTrack}>
-                            <div
-                              className={styles.scoreFill}
-                              style={{ width: `${analysis.understanding_score}%` }}
-                            />
-                          </div>
-                          <span className={styles.scoreValue}>{analysis.understanding_score}%</span>
-                        </div>
-                      )}
-                      {analysis.current_topic && (
-                        <div className={styles.analysisRow}>
-                          <span className={styles.analysisLabel}>주제</span>
-                          <span className={styles.analysisValue}>{analysis.current_topic}</span>
-                        </div>
-                      )}
-                      {analysis.student_emotion && (
-                        <div className={styles.analysisRow}>
-                          <span className={styles.analysisLabel}>감정</span>
-                          <span className={styles.analysisValue}>{analysis.student_emotion}</span>
-                        </div>
-                      )}
-                      {analysis.one_line_summary && (
-                        <div className={styles.analysisSummary}>{analysis.one_line_summary}</div>
-                      )}
-                    </>
-                  ) : (
-                    <span>입장 시간: {new Date(student.joinedAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
-                  )}
-                </div>
+
+                {/* 선택된 학생: 3열 스탯 */}
+                {isSelected && analysis ? (
+                  <div className={styles.statsGrid}>
+                    <div className={styles.statCell}>
+                      <div className={styles.statLabel}>참여도</div>
+                      <div className={styles.statValue}>
+                        {analysis.engagement_level ?? '-'}
+                      </div>
+                    </div>
+                    <div className={styles.statDivider} />
+                    <div className={styles.statCell}>
+                      <div className={styles.statLabel}>이해도</div>
+                      <div className={styles.statValue}>
+                        {analysis.understanding_score !== undefined
+                          ? `${analysis.understanding_score}%`
+                          : '-'}
+                      </div>
+                    </div>
+                    <div className={styles.statDivider} />
+                    <div className={styles.statCell}>
+                      <div className={styles.statLabel}>감정 상태</div>
+                      <div className={`${styles.statValue} ${styles.emotionValue}`}>
+                        {analysis.student_emotion ?? '-'}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* 비선택 학생: 컴팩트 서브 텍스트 */
+                  <div className={styles.compactSub}>수업중인 개념</div>
+                )}
               </li>
             );
           })}
         </ul>
+      )}
+
+      {/* 단원 칩 섹션 */}
+      {phase === 'active' && unitTopics.length > 0 && (
+        <div className={styles.unitSection}>
+          <div className={styles.unitTitle}>수업 단원</div>
+          <div className={styles.unitChips}>
+            {unitTopics.map((topic, i) => (
+              <span key={i} className={styles.unitChip}>{topic}</span>
+            ))}
+          </div>
+        </div>
       )}
     </aside>
   );

@@ -57,20 +57,20 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
   const [interventionInput, setInterventionInput] = useState('');
   const [isSendingIntervention, setIsSendingIntervention] = useState(false);
   const [analysisMap, setAnalysisMap] = useState<Map<string, StudentAnalysis>>(new Map());
+  const [sessionActiveTime, setSessionActiveTime] = useState<Date | null>(
+    initialPhase === 'active' ? new Date() : null
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Refs for socket handlers (avoids stale closures)
-  const revDialogMapRef = useRef<Map<number, string>>(new Map()); // dialog_id → student_id
-  const dialogMapRef = useRef<Map<string, number>>(new Map());    // student_id → dialog_id
+  const revDialogMapRef = useRef<Map<number, string>>(new Map());
+  const dialogMapRef = useRef<Map<string, number>>(new Map());
   const selectedStudentIdRef = useRef<string | undefined>(selectedStudentId);
   const socketRef = useRef<import('socket.io-client').Socket | null>(null);
 
-  // Keep selectedStudentIdRef in sync
   useEffect(() => {
     selectedStudentIdRef.current = selectedStudentId;
   }, [selectedStudentId]);
 
-  // Sync parent students prop into local state (merge, don't overwrite socket-added students)
   useEffect(() => {
     setLocalStudents(prev => {
       const merged = [...students];
@@ -84,26 +84,23 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
     }
   }, [students]);
 
-  // Auto-scroll messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [selectedMessages]);
 
-  // Load dialog map via monitoring API, then immediately load chat for selected student
   useEffect(() => {
     getSessionStudents(sessionId).then(students => {
       students.forEach(({ studentId, dialogId }) => {
         dialogMapRef.current.set(studentId, dialogId);
         revDialogMapRef.current.set(dialogId, studentId);
       });
-      // Dialog map is now ready — load chat if already in active phase
       if (selectedStudentIdRef.current && initialPhase === 'active') {
         loadChat(selectedStudentIdRef.current);
       }
     }).catch(() => {});
   }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Connect socket
+  // Socket
   useEffect(() => {
     let socket: import('socket.io-client').Socket;
 
@@ -117,11 +114,9 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
       socketRef.current = socket;
 
       socket.on('connect', () => {
-        // Join session room to receive student_joined events
         socket.emit('join_room', { room: `session:${sessionId}` });
       });
 
-      // New student joins → update sidebar + dialog map
       socket.on('student_joined', (data: { student_id: string; student_name: string; dialog_id: number }) => {
         dialogMapRef.current.set(data.student_id, data.dialog_id);
         revDialogMapRef.current.set(data.dialog_id, data.student_id);
@@ -129,11 +124,9 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
           if (prev.some(s => s.userId === data.student_id)) return prev;
           return [...prev, { userId: data.student_id, name: data.student_name, joinedAt: new Date().toISOString() }];
         });
-        // Auto-select first student if none selected
         setSelectedStudentId(prev => prev ?? data.student_id);
       });
 
-      // Student sends a message → append if that student is selected
       socket.on('student_message', (msg: ChatMessage) => {
         const studentId = revDialogMapRef.current.get(msg.dialog_id);
         if (studentId && studentId === selectedStudentIdRef.current) {
@@ -141,7 +134,6 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
         }
       });
 
-      // AI responds → append if that student is selected
       socket.on('ai_message', (msg: ChatMessage) => {
         const studentId = revDialogMapRef.current.get(msg.dialog_id);
         if (studentId && studentId === selectedStudentIdRef.current) {
@@ -149,13 +141,11 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
         }
       });
 
-      // Real-time student analysis update
       socket.on('student_analysis_ready', (data: { dialog_id: number; student_id: string } & StudentAnalysis) => {
         const { dialog_id: _d, ...analysis } = data;
         setAnalysisMap(prev => new Map(prev).set(data.student_id, analysis));
       });
 
-      // Student warning — mark need_intervention
       socket.on('student_warning', (data: { student_id: string }) => {
         setAnalysisMap(prev => {
           const existing = prev.get(data.student_id) ?? {};
@@ -163,7 +153,6 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
         });
       });
 
-      // Session started/finished by someone else
       socket.on('session_started', () => setPhase('active'));
       socket.on('session_finished', () => router.push(`/t/classes/${classId}`));
     };
@@ -172,7 +161,6 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
     return () => { socket?.disconnect(); };
   }, [sessionId, classId, router]);
 
-  // Load chat history when selected student changes
   const loadChat = useCallback(async (studentId: string) => {
     const dialogId = dialogMapRef.current.get(studentId);
     if (!dialogId) {
@@ -195,8 +183,6 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
     loadChat(id);
   }, [loadChat]);
 
-  // When session starts (waiting → active), load chat for selected student
-  // Dialog map is already populated by the time teacher clicks "start"
   useEffect(() => {
     if (phase === 'active' && selectedStudentId) {
       loadChat(selectedStudentId);
@@ -209,6 +195,7 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
       await onStart();
       await onRefreshStudents();
       setPhase('active');
+      setSessionActiveTime(new Date());
     } catch (e) {
       alert(e instanceof Error ? e.message : '세션 시작에 실패했습니다.');
     } finally {
@@ -230,6 +217,7 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
   };
 
   const selectedStudent = localStudents.find(s => s.userId === selectedStudentId);
+  const selectedAnalysis = selectedStudentId ? analysisMap.get(selectedStudentId) : undefined;
 
   const handleSendIntervention = async () => {
     if (!selectedStudentId || !interventionInput.trim() || isSendingIntervention) return;
@@ -256,7 +244,9 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
           selectedId={selectedStudentId}
           onSelect={handleSelectStudent}
           onRefresh={onRefreshStudents}
+          onEnd={() => setIsEndConfirmOpen(true)}
           analysisMap={analysisMap}
+          sessionStartTime={sessionActiveTime}
         />
 
         {phase === 'waiting' ? (
@@ -268,13 +258,18 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
           />
         ) : (
           <ActiveView
-            sessionName={sessionName}
             loading={loading}
             studentName={selectedStudent?.name ?? '학생'}
+            currentTopic={selectedAnalysis?.current_topic}
+            warningText={
+              selectedAnalysis?.need_intervention && selectedAnalysis?.one_line_summary
+                ? selectedAnalysis.one_line_summary
+                : undefined
+            }
             messages={selectedMessages}
             isLoadingChat={isLoadingChat}
             messagesEndRef={messagesEndRef}
-            onEnd={() => setIsEndConfirmOpen(true)}
+            onBack={() => router.push(`/t/classes/${classId}`)}
             interventionInput={interventionInput}
             onInterventionChange={setInterventionInput}
             onSendIntervention={handleSendIntervention}
@@ -347,13 +342,14 @@ const WaitingView: React.FC<WaitingProps> = ({ sessionName, loading, onStart, on
 /* ── Active ──────────────────────────────────────────────────────────────────── */
 
 interface ActiveProps {
-  sessionName?: string;
   loading: boolean;
   studentName: string;
+  currentTopic?: string;
+  warningText?: string;
   messages: ChatMessage[];
   isLoadingChat: boolean;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
-  onEnd: () => void;
+  onBack: () => void;
   interventionInput: string;
   onInterventionChange: (v: string) => void;
   onSendIntervention: () => void;
@@ -368,45 +364,41 @@ const formatTime = (iso: string) => {
 };
 
 const ActiveView: React.FC<ActiveProps> = ({
-  sessionName,
-  loading,
   studentName,
+  currentTopic,
+  warningText,
   messages,
   isLoadingChat,
   messagesEndRef,
-  onEnd,
+  onBack,
   interventionInput,
   onInterventionChange,
   onSendIntervention,
   isSendingIntervention,
 }) => (
   <div className={styles.mainContent}>
-    <div className={styles.topBar}>
-      <div className={styles.topBarLeft}>
-        <div>
-          <div className={styles.sessionName}>{sessionName ?? '세션'}</div>
-          <div className={styles.sessionDesc}>진행 중</div>
-        </div>
-      </div>
-      <div className={styles.topBarRight}>
-        <span className={`${styles.statusBadge} ${styles.statusBadgeActive}`}>진행 중</span>
-        <button className={styles.leaveBtn} onClick={onEnd} disabled={loading}>
-          {loading ? '종료 중...' : '세션 종료'}
-        </button>
-      </div>
-    </div>
-
     <div className={styles.chatCard}>
+      {/* 채팅 헤더 */}
       <div className={styles.chatHeader}>
+        <button className={styles.chatBackBtn} onClick={onBack}>‹</button>
+        <div className={styles.chatAvatar} />
         <div className={styles.chatTitleBlock}>
-          <div className={styles.chatAvatar} />
-          <div>
-            <h2 className={styles.chatTitle}>{studentName} 학생 · AI 코치 대화</h2>
-            <span className={styles.chatSub}>학생이 AI와 나누는 대화를 실시간으로 확인합니다</span>
-          </div>
+          <h2 className={styles.chatTitle}>{studentName} 학생과 AI 코치</h2>
+          {currentTopic && (
+            <span className={styles.chatSub}>{currentTopic} 학습 중</span>
+          )}
         </div>
       </div>
 
+      {/* 경고 배너 */}
+      {warningText && (
+        <div className={styles.warningBanner}>
+          <span className={styles.warningArrow}>→</span>
+          {warningText}
+        </div>
+      )}
+
+      {/* 메시지 영역 */}
       <div className={styles.chatMessages}>
         {isLoadingChat ? (
           <div className={styles.chatEmpty}>채팅 기록을 불러오는 중...</div>
@@ -441,11 +433,12 @@ const ActiveView: React.FC<ActiveProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
+      {/* 개입 입력바 */}
       <div className={styles.interventionBar}>
         <input
           type="text"
           className={styles.interventionInput}
-          placeholder="학생에게 개입 메시지를 보내세요..."
+          placeholder="메시지를 입력하세요..."
           value={interventionInput}
           onChange={(e) => onInterventionChange(e.target.value)}
           onKeyDown={(e) => {
@@ -456,12 +449,17 @@ const ActiveView: React.FC<ActiveProps> = ({
           }}
           disabled={isSendingIntervention}
         />
+        <button className={styles.attachBtn} type="button" title="파일 첨부">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+          </svg>
+        </button>
         <button
-          className={styles.interventionSendBtn}
+          className={styles.sendBtn}
           onClick={onSendIntervention}
           disabled={!interventionInput.trim() || isSendingIntervention}
         >
-          {isSendingIntervention ? '전송 중...' : '개입 전송'}
+          {isSendingIntervention ? '전송 중...' : '전송'}
         </button>
       </div>
     </div>

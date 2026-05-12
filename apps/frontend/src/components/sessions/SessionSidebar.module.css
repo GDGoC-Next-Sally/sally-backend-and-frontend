@@ -1,15 +1,52 @@
 .sidebar {
-  width: 300px;
+  width: 280px;
   flex-shrink: 0;
   background-color: #FFFFFF;
   border-radius: 12px;
-  padding: 20px;
+  padding: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   overflow: hidden;
 }
+
+/* ── 수업 종료 버튼 ───────────────────────────────────────────────────────────── */
+
+.endBtn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 10px 14px;
+  background: white;
+  border: 1.5px solid #E0DED8;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.endBtn:hover {
+  background: #FEF2F2;
+  border-color: #FCA5A5;
+  color: #DC2626;
+}
+
+.endBtnTime {
+  font-size: 13px;
+  font-weight: 700;
+  color: #6B7280;
+  font-variant-numeric: tabular-nums;
+}
+
+.endBtn:hover .endBtnTime {
+  color: #DC2626;
+}
+
+/* ── 헤더 ────────────────────────────────────────────────────────────────────── */
 
 .header {
   display: flex;
@@ -18,13 +55,14 @@
 }
 
 .title {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
-  color: #1A1A1A;
+  color: #6B7280;
+  margin: 0;
 }
 
 .count {
-  color: #E8593C;
+  color: #22CB84;
 }
 
 .refreshBtn {
@@ -40,16 +78,17 @@
   color: #1A1A1A;
 }
 
+/* ── 학생 목록 ───────────────────────────────────────────────────────────────── */
+
 .list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   overflow-y: auto;
   flex: 1;
-  padding-right: 4px;
 }
 
 .list::-webkit-scrollbar { width: 4px; }
@@ -61,7 +100,8 @@
   gap: 8px;
   padding: 12px;
   border-radius: 10px;
-  border: 1.5px solid transparent;
+  border: 1.5px solid #F3F4F6;
+  background: #FAFAFA;
   transition: background-color 0.15s, border-color 0.15s;
 }
 
@@ -70,61 +110,131 @@
 }
 
 .itemClickable:hover {
-  background-color: var(--color-bg);
+  background-color: #F0FDF4;
+  border-color: #BBF7D0;
 }
 
 .itemSelected {
-  background-color: #FDF0ED;
-  border-color: #E8593C;
+  background-color: #F0FDF4;
+  border-color: #22CB84;
 }
+
+.itemWarning {
+  border-color: #FB923C !important;
+}
+
+/* ── 학생 카드 헤더 행 ───────────────────────────────────────────────────────── */
 
 .itemHeader {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .studentInfo {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
+  flex: 1;
+  min-width: 0;
 }
 
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 9999px;
-  background-color: #D0CEC8;
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #E5E7EB;
   flex-shrink: 0;
 }
 
-.dotOnline {
-  background-color: var(--color-live);
+.nameBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .name {
   font-size: 14px;
   font-weight: 600;
   color: #1A1A1A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.badge {
-  background-color: var(--color-live-light);
-  color: var(--color-live);
-  padding: 2px 8px;
-  border-radius: 9999px;
-  font-size: 10px;
-  font-weight: 600;
+.topicSub {
+  font-size: 11px;
+  color: #6B7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.moreBtn {
-  background: none;
-  border: none;
-  color: #6B6B6B;
-  cursor: pointer;
-  padding: 2px;
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.dotGreen { background-color: #22CB84; }
+.dotRed   { background-color: #EF4444; }
+.dotYellow { background-color: #F59E0B; }
+
+/* ── 3열 스탯 (선택된 학생) ──────────────────────────────────────────────────── */
+
+.statsGrid {
   display: flex;
+  align-items: stretch;
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  overflow: hidden;
 }
+
+.statCell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  gap: 4px;
+}
+
+.statLabel {
+  font-size: 10px;
+  color: #9CA3AF;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.statValue {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1A1A1A;
+}
+
+.emotionValue {
+  font-size: 12px;
+}
+
+.statDivider {
+  width: 1px;
+  background-color: #E5E7EB;
+  align-self: stretch;
+}
+
+/* ── 컴팩트 서브텍스트 (비선택 학생) ────────────────────────────────────────── */
+
+.compactSub {
+  font-size: 11px;
+  color: #9CA3AF;
+  padding-left: 40px;
+}
+
+/* ── 비어있음 ────────────────────────────────────────────────────────────────── */
 
 .empty {
   font-size: 13px;
@@ -133,86 +243,34 @@
   padding: 24px 0;
 }
 
-.summary {
-  background-color: var(--color-bg);
-  border: 1px solid #EBEBEA;
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 12px;
-  color: #6B6B6B;
-  line-height: 1.6;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+/* ── 단원 칩 섹션 ────────────────────────────────────────────────────────────── */
 
-/* Warning state */
-.itemWarning {
-  border-color: #F97316 !important;
-}
-
-.warningBadge {
-  background-color: #FEF3C7;
-  color: #B45309;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-/* Analysis rows */
-.analysisRow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.analysisLabel {
-  font-size: 11px;
-  color: #9CA3AF;
-  width: 28px;
-  flex-shrink: 0;
-}
-
-.analysisValue {
-  font-size: 12px;
-  color: #374151;
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.scoreTrack {
-  flex: 1;
-  height: 4px;
-  background-color: #E5E7EB;
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.scoreFill {
-  height: 100%;
-  background-color: var(--color-live);
-  border-radius: 2px;
-  transition: width 0.4s ease;
-}
-
-.scoreValue {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-live);
-  width: 28px;
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.analysisSummary {
-  font-size: 11px;
-  color: #6B7280;
-  line-height: 1.5;
-  font-style: italic;
+.unitSection {
   border-top: 1px solid #F3F4F6;
-  padding-top: 4px;
-  margin-top: 2px;
+  padding-top: 12px;
+}
+
+.unitTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9CA3AF;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.unitChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.unitChip {
+  background: #F0FDF4;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
 }

@@ -1,0 +1,421 @@
+/* ── 페이지 레이아웃 ─────────────────────────────────────────────────────────── */
+
+.page {
+  padding: 28px 32px;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── 헤더 ────────────────────────────────────────────────────────────────────── */
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pageTitle {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1A1A1A;
+  margin: 0;
+}
+
+.exportBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #22CB84;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.exportBtn:hover {
+  background-color: #1aad6e;
+}
+
+/* ── 탭 ──────────────────────────────────────────────────────────────────────── */
+
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #E5E7EB;
+}
+
+.tab {
+  background: none;
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #9CA3AF;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.15s;
+}
+
+.tab:hover {
+  color: #374151;
+}
+
+.tabActive {
+  color: #22CB84;
+}
+
+.tabActive::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #22CB84;
+  border-radius: 2px 2px 0 0;
+}
+
+/* ── 필터 드롭다운 행 ────────────────────────────────────────────────────────── */
+
+.filterRow {
+  display: flex;
+  gap: 12px;
+}
+
+.filterSelect {
+  border: 1.5px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 10px 36px 10px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  background-color: white;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  cursor: pointer;
+  outline: none;
+  min-width: 200px;
+}
+
+.filterSelect:focus {
+  border-color: #22CB84;
+}
+
+/* ── 빈 상태 ─────────────────────────────────────────────────────────────────── */
+
+.emptyState {
+  background: white;
+  border-radius: 12px;
+  padding: 48px;
+  text-align: center;
+  color: #9CA3AF;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.emptyInner {
+  font-size: 13px;
+  color: #9CA3AF;
+  padding: 16px 0;
+  text-align: center;
+}
+
+/* ── 전체보기 레이아웃 ───────────────────────────────────────────────────────── */
+
+.summaryLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── AI 요약 카드 ────────────────────────────────────────────────────────────── */
+
+.aiSummaryCard {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.aiSummaryTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1A1A1A;
+  margin-bottom: 12px;
+}
+
+.aiArrow {
+  color: #22CB84;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.aiSummaryText {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.8;
+  margin: 0;
+}
+
+/* ── 2열 섹션 (주요질문 + 취약개념) ─────────────────────────────────────────── */
+
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 16px;
+}
+
+/* 주요 질문 카드 */
+.questionCard {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sectionTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1A1A1A;
+}
+
+.questionCount {
+  background: #22CB84;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.questionList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.questionRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #F9FAFB;
+  border: 1px solid #F3F4F6;
+}
+
+.questionTopic {
+  background: #E5E7EB;
+  color: #374151;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.questionText {
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.5;
+}
+
+/* 취약개념 카드 */
+.weakCard {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.weakList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.weakItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.weakRank {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #E5E7EB;
+  color: #6B7280;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.weakRankTop {
+  background: #22CB84;
+  color: white;
+}
+
+.weakLabel {
+  font-size: 14px;
+  color: #374151;
+}
+
+/* ── AI 리포트 카드 ──────────────────────────────────────────────────────────── */
+
+.aiReportCard {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.aiReportTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1A1A1A;
+  margin-bottom: 12px;
+}
+
+.aiReportText {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.8;
+  margin: 0 0 14px;
+  overflow: hidden;
+}
+
+.aiReportCollapsed {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.aiReportExpanded {
+  display: block;
+}
+
+.viewMoreBtn {
+  background: none;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.viewMoreBtn:hover {
+  border-color: #22CB84;
+  color: #22CB84;
+}
+
+/* ── 학생 목록 탭 ────────────────────────────────────────────────────────────── */
+
+.studentList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.studentCard {
+  background: white;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.studentCardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.studentAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #E5E7EB;
+  flex-shrink: 0;
+}
+
+.studentName {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1A1A1A;
+}
+
+.studentSummary {
+  font-size: 13px;
+  color: #6B7280;
+  margin-top: 3px;
+  line-height: 1.5;
+}
+
+.studentScore {
+  margin-left: auto;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.scoreValue {
+  font-size: 22px;
+  font-weight: 800;
+  color: #22CB84;
+  line-height: 1;
+}
+
+.scoreLabel {
+  font-size: 11px;
+  color: #9CA3AF;
+  margin-top: 3px;
+}
+
+.weakChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.weakChip {
+  background: #FEF3C7;
+  color: #B45309;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
