@@ -4,10 +4,13 @@ routers/chat.py — AI 서버 API 엔드포인트 모음
 import asyncio
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-from ai_server.models import ChatRequest, TeacherSummary, EndSessionRequest, EndSessionResponse, UpdateRealtimeRequest, RealtimeAnalysis, SessionReportRequest, SessionReportResponse
+from ai_server.models import ChatRequest, EndSessionRequest, EndSessionResponse, UpdateRealtimeRequest, RealtimeAnalysis, SessionReportRequest, SessionReportResponse
 from ai_server.services.llm_service import stream_chat, analyze_student
-from ai_server.services.storage_client import upload_report
-from ai_server.services.callback_client import notify_backend_analytics_callback
+from ai_server.services.callback_client import (
+    notify_backend_analytics_callback,
+    notify_backend_session_report_callback,
+    notify_backend_student_report_callback,
+)
 
 from ai_server.services.report_builder import (
     generate_final_report,
@@ -16,10 +19,8 @@ from ai_server.services.report_builder import (
 from ai_server.services.session_report_builder import generate_session_report
 from ai_server.services.db_client import (
     get_dialog,
+    get_chat_messages,
     mark_dialog_analyzed,
-    save_session_report,
-    save_student_report,
-    update_real_time_analysis,
     append_real_time_analysis,
     get_real_time_analyses,
 )
@@ -161,9 +162,11 @@ async def session_report(request: SessionReportRequest):
         - students: 학생별 채팅 기록 목록
 
     응답:
-        - class_summary: 반 전체 상태 요약
-        - key_questions: 주요 질문 문장들
-        - weak_concepts_top5: 취약개념 TOP 5
+        - 기존 호환용 SessionReportResponse
+
+    사이드이펙트:
+        - 생성된 세션 리포트를 NestJS 백엔드의
+          POST /reports/session-report-callback 으로 전송합니다.
     """
     if request.session_id is None:
         raise HTTPException(status_code=400, detail="session_id가 필요합니다.")
@@ -182,16 +185,15 @@ async def session_report(request: SessionReportRequest):
             detail=f"세션 전체 리포트 생성 실패: {str(e)}",
         )
 
-    try:
-        report_dict = report.model_dump() if hasattr(report, "model_dump") else report.dict()
-        await save_session_report(
-            session_id=request.session_id,
-            content=report_dict,
-        )
-    except Exception as e:
+    report_dict = report.model_dump() if hasattr(report, "model_dump") else report.dict()
+    callback_ok = await notify_backend_session_report_callback(
+        session_id=request.session_id,
+        report=report_dict,
+    )
+    if not callback_ok:
         raise HTTPException(
-            status_code=500,
-            detail=f"세션 전체 리포트 저장 실패: {str(e)}",
+            status_code=502,
+            detail="세션 전체 리포트 백엔드 콜백 전송 실패",
         )
 
     return SessionReportResponse(
@@ -212,9 +214,9 @@ async def end_session(request: EndSessionRequest):
       4. 학생 메시지 존재 여부 확인
       5. optional real_time_analysis 조회
       6. 토큰 수 추정 및 짧은 세션/긴 세션 분기 처리하여 FinalReport 생성
-      7. student_reports 테이블에 리포트 저장
+      7. NestJS 백엔드의 POST /reports/student-report-callback 으로 리포트 전송
       8. dialogs.is_analyzed = true 업데이트
-      9. FinalReport 반환
+      9. 기존 호환용 EndSessionResponse 반환
     """
 
     # Step 0. request 검증
@@ -276,7 +278,7 @@ async def end_session(request: EndSessionRequest):
     # Step 4. optional realtime summaries 조회
     realtime_summaries = None
     try:
-        realtime_summaries = await get_realtime_summaries(
+        realtime_summaries = await get_real_time_analyses(
             dialog_id=dialog_id
         )
     except Exception as e:
@@ -296,18 +298,18 @@ async def end_session(request: EndSessionRequest):
             detail=f"리포트 생성 실패: {str(e)}"
         )
 
-    # Step 6. student_reports 저장
-    try:
-        report_dict = report.model_dump() if hasattr(report, "model_dump") else report.dict()
-
-        await save_student_report(
-            student_id=request.student_id,
-            session_id=request.session_id,
-            dialog_id=dialog_id,
-            content=report_dict,
+    # Step 6. 백엔드 학생 리포트 콜백 전송
+    report_dict = report.model_dump() if hasattr(report, "model_dump") else report.dict()
+    callback_ok = await notify_backend_student_report_callback(
+        session_id=request.session_id,
+        student_id=request.student_id,
+        report=report_dict,
+    )
+    if not callback_ok:
+        raise HTTPException(
+            status_code=502,
+            detail="학생별 리포트 백엔드 콜백 전송 실패",
         )
-    except Exception as e:
-        print(f"[WARN] student_reports 저장 실패: {e}")
 
     # Step 7. dialog 분석 완료 처리
     try:
