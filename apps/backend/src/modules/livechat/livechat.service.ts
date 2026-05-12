@@ -65,14 +65,14 @@ export class LivechatService {
     this.eventsGateway.sendToUser(dialog.sessions.teacher_id, 'student_message', userMessage);
 
     return {
-      userMessage,
       dialog,
+      need_intervention: dto.need_intervention,
     };
   }
 
   getAiResponseStream(studentId: string, dto: SendChatMessageDto): Observable<any> {
     return new Observable((subscriber) => {
-      this.sendMessage(studentId, dto).then(async ({ userMessage, dialog }) => {
+      this.sendMessage(studentId, dto).then(async ({ dialog, need_intervention }) => {
         try {
           // 1. 과거 대화 내역 조회 (AI 서버용 conversation_history 구성)
           const pastMessages = await this.prisma.chat_messages.findMany({
@@ -104,7 +104,8 @@ export class LivechatService {
           // 3. AI 서버 스트리밍 요청
           const response = await axios.post(`${AI_SERVER_URL}/api/chat`, {
             conversation_history,
-            student_profile
+            student_profile,
+            need_intervention
           }, { responseType: 'stream' });
 
           let aiFullContent = '';
