@@ -97,7 +97,7 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
       if (selectedStudentIdRef.current && initialPhase === 'active') {
         loadChat(selectedStudentIdRef.current);
       }
-    }).catch(() => {});
+    }).catch(() => { });
   }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Socket

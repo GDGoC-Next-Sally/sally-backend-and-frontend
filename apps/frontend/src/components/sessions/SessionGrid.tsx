@@ -74,9 +74,21 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
     setDeleteTargetId(null);
   };
 
-  const filtered = sessions.filter((s) =>
-    s.session_name.includes(search) || (s.explanation ?? '').includes(search)
-  );
+  const filtered = sessions
+    .filter((s) =>
+      s.session_name.includes(search) || (s.explanation ?? '').includes(search)
+    )
+    .sort((a, b) => {
+      const statusOrder = { live: 0, upcoming: 1, finished: 2 };
+      const aOrder = statusOrder[computeSessionStatus(a)];
+      const bOrder = statusOrder[computeSessionStatus(b)];
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      
+      // 같은 상태면 최신순(날짜 내림차순)으로 정렬
+      const aDate = new Date(a.scheduled_date || 0).getTime();
+      const bDate = new Date(b.scheduled_date || 0).getTime();
+      return bDate - aDate;
+    });
 
   const classTitle = classInfo
     ? `${classInfo.grade ? `${classInfo.grade}학년 ` : ''}${classInfo.homeroom ?? ''}`

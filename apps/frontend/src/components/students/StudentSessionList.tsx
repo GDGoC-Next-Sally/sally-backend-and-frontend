@@ -20,9 +20,9 @@ interface ClassInfo {
 type Tab = 'overview' | 'sessions' | 'materials';
 
 const STATUS_CONFIG: Record<ComputedStatus, { label: string; badgeClass: string; iconColor: string; iconBg: string }> = {
-  live:     { label: '진행중', badgeClass: styles.badgeActive,   iconColor: '#0ca678', iconBg: '#e6fcf5' },
-  upcoming: { label: '예정',   badgeClass: styles.badgePlanning, iconColor: '#ff922b', iconBg: '#fff4e6' },
-  finished: { label: '종료',   badgeClass: styles.badgeDone,     iconColor: '#868e96', iconBg: '#f1f3f5' },
+  live: { label: '진행중', badgeClass: styles.badgeActive, iconColor: '#0ca678', iconBg: '#e6fcf5' },
+  upcoming: { label: '예정', badgeClass: styles.badgePlanning, iconColor: '#ff922b', iconBg: '#fff4e6' },
+  finished: { label: '종료', badgeClass: styles.badgeDone, iconColor: '#868e96', iconBg: '#f1f3f5' },
 };
 
 function formatDate(dateStr?: string | null) {
@@ -74,14 +74,25 @@ export const StudentSessionList: React.FC<Props> = ({
 
   const activeSession = sessions.find((s) => computeSessionStatus(s) === 'live');
   const finishedSessions = sessions.filter((s) => computeSessionStatus(s) === 'finished');
-  
+
   const classSubject = classInfo?.subject ?? '수업';
   const classTag = classInfo?.users?.name ? `${classInfo.users.name} 선생님` : '';
 
-  const filteredSessions = sessions.filter((s) =>
-    s.session_name.toLowerCase().includes(search.toLowerCase()) ||
-    (s.explanation ?? '').toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredSessions = sessions
+    .filter((s) =>
+      s.session_name.toLowerCase().includes(search.toLowerCase()) ||
+      (s.explanation ?? '').toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) => {
+      const statusOrder = { live: 0, upcoming: 1, finished: 2 };
+      const aOrder = statusOrder[computeSessionStatus(a)];
+      const bOrder = statusOrder[computeSessionStatus(b)];
+      if (aOrder !== bOrder) return aOrder - bOrder;
+
+      const aDate = new Date(a.scheduled_date || 0).getTime();
+      const bDate = new Date(b.scheduled_date || 0).getTime();
+      return bDate - aDate;
+    });
 
   return (
     <div className={styles.container}>
@@ -143,7 +154,7 @@ export const StudentSessionList: React.FC<Props> = ({
                   >
                     {joining === activeSession.id ? '참여 중...' : '세션 참여하기'}
                   </button>
-                  <button 
+                  <button
                     className={styles.detailBtn}
                     onClick={() => router.push(`/s/classes/${classId}/sessions/${activeSession.id}`)}
                   >
@@ -180,7 +191,7 @@ export const StudentSessionList: React.FC<Props> = ({
                         </div>
                       </div>
                       <div className={styles.timeAgo}>{getTimeAgo(s.scheduled_date)}</div>
-                      <button 
+                      <button
                         className={styles.reviewBtn}
                         onClick={() => router.push(`/s/classes/${classId}/sessions/${s.id}`)}
                       >

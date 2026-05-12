@@ -111,13 +111,12 @@ export const SessionSidebar: React.FC<Props> = ({
                       )}
                     </div>
                   </div>
-                  <span className={`${styles.statusDot} ${
-                    needsIntervention || (analysis?.understanding_score && analysis.understanding_score <= 4)
+                  <span className={`${styles.statusDot} ${needsIntervention || (analysis?.understanding_score && analysis.understanding_score <= 4)
                       ? styles.dotRed
                       : (analysis?.understanding_score && analysis.understanding_score <= 7)
-                      ? styles.dotYellow
-                      : styles.dotGreen
-                  }`} />
+                        ? styles.dotYellow
+                        : styles.dotGreen
+                    }`} />
                 </div>
 
                 {/* 선택된 학생 상세 */}
@@ -147,7 +146,7 @@ export const SessionSidebar: React.FC<Props> = ({
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* 상태 요약 표시 */}
                     {analysis.one_line_summary && (
                       <div className={styles.analysisSummary}>

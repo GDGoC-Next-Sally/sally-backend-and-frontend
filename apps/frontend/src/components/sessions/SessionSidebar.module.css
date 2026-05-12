@@ -91,8 +91,14 @@
   flex: 1;
 }
 
-.list::-webkit-scrollbar { width: 4px; }
-.list::-webkit-scrollbar-thumb { background-color: #E0DED8; border-radius: 4px; }
+.list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.list::-webkit-scrollbar-thumb {
+  background-color: #E0DED8;
+  border-radius: 4px;
+}
 
 .item {
   display: flex;
@@ -179,9 +185,17 @@
   margin-top: 4px;
 }
 
-.dotGreen { background-color: #22CB84; }
-.dotRed   { background-color: #EF4444; }
-.dotYellow { background-color: #F59E0B; }
+.dotGreen {
+  background-color: #22CB84;
+}
+
+.dotRed {
+  background-color: #EF4444;
+}
+
+.dotYellow {
+  background-color: #F59E0B;
+}
 
 /* ── 3열 스탯 (선택된 학생) ──────────────────────────────────────────────────── */
 
