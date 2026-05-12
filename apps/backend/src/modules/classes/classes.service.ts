@@ -107,7 +107,8 @@ export class ClassesService {
 
   async findOne(classId: number, userId: string, role?: string) {
     const classEntity = await this.prisma.classes.findFirst({
-      where: { id: classId }
+      where: { id: classId },
+      include: { users: { select: { name: true } } }
     });
     if (!classEntity) {
       throw new NotFoundException(`클래스 #${classId}를 찾을 수 없습니다.`);
