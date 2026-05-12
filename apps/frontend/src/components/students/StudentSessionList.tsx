@@ -11,21 +11,29 @@ interface ClassInfo {
   subject: string;
   grade: number | null;
   homeroom: string | null;
+  users?: {
+    id: string;
+    name: string;
+  };
 }
 
 type Tab = 'overview' | 'sessions' | 'materials';
 
 const STATUS_CONFIG: Record<ComputedStatus, { label: string; badgeClass: string; iconColor: string; iconBg: string }> = {
-  live:     { label: '진행중', badgeClass: styles.badgeActive,   iconColor: 'var(--color-live)',              iconBg: 'var(--color-live-light)' },
-  upcoming: { label: '예정',   badgeClass: styles.badgePlanning, iconColor: '#ff922b',                        iconBg: '#fff4e6' },
-  finished: { label: '종료',   badgeClass: styles.badgeDone,     iconColor: 'var(--color-text-secondary)',    iconBg: 'var(--color-border-light)' },
+  live:     { label: '진행중', badgeClass: styles.badgeActive,   iconColor: '#0ca678', iconBg: '#e6fcf5' },
+  upcoming: { label: '예정',   badgeClass: styles.badgePlanning, iconColor: '#ff922b', iconBg: '#fff4e6' },
+  finished: { label: '종료',   badgeClass: styles.badgeDone,     iconColor: '#868e96', iconBg: '#f1f3f5' },
 };
 
 function formatDate(dateStr?: string | null) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
-  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
-    .toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+  return d.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
+}
+
+function getTimeAgo(dateStr?: string | null) {
+  if (!dateStr) return '1시간 전'; // Dummy
+  return '1시간 전';
 }
 
 interface Props {
@@ -65,11 +73,10 @@ export const StudentSessionList: React.FC<Props> = ({
   };
 
   const activeSession = sessions.find((s) => computeSessionStatus(s) === 'live');
-  const upcomingSessions = sessions.filter((s) => computeSessionStatus(s) === 'upcoming');
   const finishedSessions = sessions.filter((s) => computeSessionStatus(s) === 'finished');
-  const displayTitle = classInfo
-    ? `${classInfo.grade ? `${classInfo.grade}학년 ` : ''}${classInfo.homeroom ?? ''}`
-    : '';
+  
+  const classSubject = classInfo?.subject ?? '수업';
+  const classTag = classInfo?.users?.name ? `${classInfo.users.name} 선생님` : '';
 
   const filteredSessions = sessions.filter((s) =>
     s.session_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -84,8 +91,13 @@ export const StudentSessionList: React.FC<Props> = ({
         </button>
 
         <div className={styles.pageHeader}>
-          <h1 className={styles.classTitle}>{displayTitle || '—'}</h1>
-          {classInfo?.subject && <span className={styles.tag}>{classInfo.subject}</span>}
+          <h1 className={styles.classTitle}>{classSubject}</h1>
+          {classTag && (
+            <span className={styles.tag}>
+              <span className={styles.tagDot} />
+              {classTag}
+            </span>
+          )}
         </div>
 
         <div className={styles.tabs}>
@@ -109,13 +121,85 @@ export const StudentSessionList: React.FC<Props> = ({
           </button>
         </div>
 
-        {(tab === 'overview' || tab === 'sessions') && (
+        {tab === 'overview' && (
+          <div className={styles.overviewContent}>
+            {activeSession && (
+              <div className={styles.liveBanner}>
+                <div className={styles.liveBannerInfo}>
+                  <div className={styles.liveBadgeRow}>
+                    <span className={styles.liveBadge}>LIVE</span>
+                    <span className={styles.liveStatusText}>진행 중인 세션</span>
+                  </div>
+                  <div className={styles.liveTitle}>{activeSession.session_name}</div>
+                  <div className={styles.liveObjective}>
+                    오늘의 목표 : {activeSession.objective || activeSession.explanation || '알맞은 문장 완성하기'}
+                  </div>
+                </div>
+                <div className={styles.liveActions}>
+                  <button
+                    className={styles.joinBtn}
+                    onClick={() => handleJoin(activeSession.id)}
+                    disabled={joining === activeSession.id}
+                  >
+                    {joining === activeSession.id ? '참여 중...' : '세션 참여하기'}
+                  </button>
+                  <button 
+                    className={styles.detailBtn}
+                    onClick={() => router.push(`/s/classes/${classId}/sessions/${activeSession.id}`)}
+                  >
+                    자세히 보기
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className={styles.section}>
+              <div className={styles.sectionHeader}>
+                <span className={styles.sectionTitle}>지난 수업 복습</span>
+                <span className={styles.viewAll} onClick={() => setTab('sessions')}>전체보기</span>
+              </div>
+              <div className={styles.pastList}>
+                {finishedSessions.length === 0 ? (
+                  <p className={styles.emptyText}>지난 세션이 없습니다.</p>
+                ) : (
+                  finishedSessions.slice(0, 3).map((s, idx) => (
+                    <div key={s.id} className={styles.pastRow}>
+                      <div className={styles.pastCircle}>{idx + 1}</div>
+                      <div className={styles.pastInfo}>
+                        <div className={styles.pastMeta}>
+                          {formatDate(s.scheduled_date)} {s.period ? `${s.period}교시` : ''}
+                        </div>
+                        <div className={styles.pastTitle}>{s.session_name}</div>
+                      </div>
+                      <div className={styles.pastStats}>
+                        <div className={styles.statItem}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                          </svg>
+                          28
+                        </div>
+                      </div>
+                      <div className={styles.timeAgo}>{getTimeAgo(s.scheduled_date)}</div>
+                      <button 
+                        className={styles.reviewBtn}
+                        onClick={() => router.push(`/s/classes/${classId}/sessions/${s.id}`)}
+                      >
+                        복습하기
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === 'sessions' && (
           <div className={styles.sessionsContent}>
             <div className={styles.sessionsFilterBar}>
               <div className={styles.searchBox}>
                 <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
                 <input
                   type="text"
@@ -189,19 +273,6 @@ export const StudentSessionList: React.FC<Props> = ({
                             >
                               상세보기
                             </button>
-                            {computed === 'live' && (
-                              <button
-                                className={styles.menuItem}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleJoin(session.id);
-                                  setOpenMenuId(null);
-                                }}
-                                disabled={joining === session.id}
-                              >
-                                {joining === session.id ? '참여 중...' : '세션 참여하기'}
-                              </button>
-                            )}
                           </div>
                         )}
                       </div>

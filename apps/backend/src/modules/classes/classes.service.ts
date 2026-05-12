@@ -33,24 +33,24 @@ export class ClassesService {
 
   async create(userId: string, createClassDto: CreateClassDto) {
     const inviteCode = await this.generateInviteCode();
-    
+
     // DTO에서 schedule을 분리하고 나머지만 spread 합니다.
     const { schedule, ...rest } = createClassDto;
-  
+
     const createdClass = await this.prisma.classes.create({
       data: {
         ...rest,
-        schedule: schedule as any, 
+        schedule: schedule as any,
         teacher_id: userId,
         invite_code: inviteCode,
       }
     });
-  
+
     this.eventsGateway.forceJoinRoom(userId, `class:${createdClass.id}`);
-  
+
     return createdClass;
   }
-  
+
 
   async reissueInviteCode(userId: string, classId: number) {
     const classEntity = await this.prisma.classes.findFirst({ where: { id: classId, teacher_id: userId } });
@@ -106,7 +106,7 @@ export class ClassesService {
   }
 
   async findOne(classId: number, userId: string, role?: string) {
-    const classEntity = await this.prisma.classes.findFirst({ 
+    const classEntity = await this.prisma.classes.findFirst({
       where: { id: classId }
     });
     if (!classEntity) {
@@ -134,24 +134,24 @@ export class ClassesService {
     }
   }
 
-async update(id: number, updateClassDto: UpdateClassDto, teacherId: string) {
-  const { schedule, ...rest } = updateClassDto;
+  async update(id: number, updateClassDto: UpdateClassDto, teacherId: string) {
+    const { schedule, ...rest } = updateClassDto;
 
-  const result = await this.prisma.classes.update({
-    where: { id, teacher_id: teacherId },
-    data: {
-      ...rest,
-      schedule: schedule as any // Json 타입 호환성 해결
+    const result = await this.prisma.classes.update({
+      where: { id, teacher_id: teacherId },
+      data: {
+        ...rest,
+        schedule: schedule as any // Json 타입 호환성 해결
+      }
+    });
+
+    if (!result) {
+      throw new NotFoundException(`클래스 #${id}를 찾을 수 없거나 해당 클래스의 선생님이 아닙니다.`);
     }
-  });
 
-  if (!result) {
-    throw new NotFoundException(`클래스 #${id}를 찾을 수 없거나 해당 클래스의 선생님이 아닙니다.`);
+    this.eventsGateway.sendToRoom(`class:${id}`, 'class_updated', result);
+    return result;
   }
-
-  this.eventsGateway.sendToRoom(`class:${id}`, 'class_updated', result);
-  return result;
-}
 
 
   async remove(id: number, teacherId: string) {
@@ -177,10 +177,10 @@ async update(id: number, updateClassDto: UpdateClassDto, teacherId: string) {
 
     const enrollments = await this.prisma.takes.findMany({
       where: { class_id: classId },
-      include: { 
-        users: { 
-          select: { id: true, name: true, email: true } 
-        } 
+      include: {
+        users: {
+          select: { id: true, name: true, email: true }
+        }
       },
       orderBy: { student_id: 'asc' }
     });
@@ -221,7 +221,7 @@ async update(id: number, updateClassDto: UpdateClassDto, teacherId: string) {
         student_id: studentId
       }
     });
-    
+
     this.eventsGateway.forceJoinRoom(studentId, `class:${classId}`);
 
     const teacherId = classEntity.teacher_id;

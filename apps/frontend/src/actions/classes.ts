@@ -14,6 +14,10 @@ export interface ClassItem {
   registerable?: boolean;
   schedule?: string | null;
   created_at?: string;
+  users?: {
+    id: string;
+    name: string;
+  };
 }
 
 export interface CreateClassBody {
