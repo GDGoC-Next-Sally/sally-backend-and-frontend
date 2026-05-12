@@ -26,17 +26,47 @@ export interface RecentSessionInfo {
   scheduled_end?: string | null;
 }
 
+export interface TodayClassData {
+  status: 'upcoming' | 'live' | 'completed';
+  className: string;
+  subject: string;
+  period: number;
+  sessionId: number;
+  classId: number;
+}
+
 type Entry = { cls: ClassItem; session: Session };
 
+function findNearestSession(entries: Entry[]): TodayClassData | undefined {
+  const valid = entries
+    .map((e) => ({ ...e, computed: computeSessionStatus(e.session) }))
+    .filter((e) => e.computed !== 'finished');
+
+  valid.sort((a, b) => {
+    if (a.computed === 'live' && b.computed !== 'live') return -1;
+    if (b.computed === 'live' && a.computed !== 'live') return 1;
+    const da = a.session.scheduled_start ?? a.session.scheduled_date ?? '';
+    const db = b.session.scheduled_start ?? b.session.scheduled_date ?? '';
+    return da.localeCompare(db);
+  });
+
+  if (valid.length === 0) return undefined;
+
+  const { cls, session, computed } = valid[0];
+  return {
+    status: computed === 'live' ? 'live' : 'upcoming',
+    className: `${cls.grade ? `${cls.grade}학년 ` : ''}${cls.homeroom ?? ''}`.trim(),
+    subject: cls.subject,
+    period: session.period ?? 0,
+    sessionId: session.id,
+    classId: cls.id,
+  };
+}
+
 function buildDashboardData(entries: Entry[]) {
-  let foundActive: ActiveSessionInfo | null = null;
   const visited: RecentSessionInfo[] = [];
 
   for (const { cls, session: s } of entries) {
-    const computed = computeSessionStatus(s);
-    if (computed === 'live' && !foundActive) {
-      foundActive = { id: s.id, classId: cls.id, subject: cls.subject, period: s.period };
-    }
     visited.push({
       id: s.id,
       classId: cls.id,
@@ -59,13 +89,13 @@ function buildDashboardData(entries: Entry[]) {
     return b.id - a.id;
   });
 
-  return { foundActive, recent: visited.slice(0, 3) };
+  return { todayClass: findNearestSession(entries), recent: visited.slice(0, 3) };
 }
 
 export default function StudentHomePage() {
   const user = useUser();
   const [classes, setClasses] = useState<ClassItem[]>([]);
-  const [activeSession, setActiveSession] = useState<ActiveSessionInfo | null>(null);
+  const [todayClass, setTodayClass] = useState<TodayClassData | undefined>(undefined);
   const [recentSessions, setRecentSessions] = useState<RecentSessionInfo[]>([]);
   const entriesRef = useRef<Entry[]>([]);
 
@@ -84,8 +114,8 @@ export default function StudentHomePage() {
           }
         }
         entriesRef.current = entries;
-        const { foundActive, recent } = buildDashboardData(entries);
-        setActiveSession(foundActive);
+        const { todayClass: tc, recent } = buildDashboardData(entries);
+        setTodayClass(tc);
         setRecentSessions(recent);
       });
   }, [classes]);
@@ -93,8 +123,8 @@ export default function StudentHomePage() {
   // 60초마다 시간 기반 상태 재계산
   useEffect(() => {
     const timer = setInterval(() => {
-      const { foundActive, recent } = buildDashboardData(entriesRef.current);
-      setActiveSession(foundActive);
+      const { todayClass: tc, recent } = buildDashboardData(entriesRef.current);
+      setTodayClass(tc);
       setRecentSessions(recent);
     }, 60_000);
     return () => clearInterval(timer);
@@ -106,7 +136,7 @@ export default function StudentHomePage() {
     <StudentDashboard
       user={dashboardUser}
       classes={classes}
-      activeSession={activeSession}
+      todayClass={todayClass}
       recentSessions={recentSessions}
     />
   );

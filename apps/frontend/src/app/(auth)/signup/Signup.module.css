@@ -110,5 +110,42 @@
 }
 
 .link:hover {
+  text-decoration: underline;
   color: var(--color-live-hover);
+}
+
+.roleContainer {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.roleOption {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  background-color: white;
+  color: #6B7280;
+}
+
+.roleOption:hover {
+  background-color: #F9FAFB;
+}
+
+.roleOption.active {
+  border-color: #22CB84;
+  background-color: #F0FDF4;
+  color: #22CB84;
+  font-weight: 600;
+}
+
+.radioHidden {
+  display: none;
 }

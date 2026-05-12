@@ -11,6 +11,8 @@ export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
+  const [role, setRole] = useState<'STUDENT' | 'TEACHER'>('STUDENT');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,7 +24,7 @@ export default function SignupPage() {
 
     setLoading(true);
 
-    const { data, error } = await signupWithEmail(email, password);
+    const { data, error } = await signupWithEmail(email, password, name, role);
 
     setLoading(false);
 
@@ -41,6 +43,46 @@ export default function SignupPage() {
         <p className={styles.subheading}>Sally AI Coach와 함께 성장을 시작하세요.</p>
 
         <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={styles.inputGroup}>
+            <label className={styles.label}>이름</label>
+            <input
+              type="text"
+              required
+              className={styles.input}
+              placeholder="홍길동"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+
+          <div className={styles.inputGroup}>
+            <label className={styles.label}>역할 선택</label>
+            <div className={styles.roleContainer}>
+              <label className={`${styles.roleOption} ${role === 'STUDENT' ? styles.active : ''}`}>
+                <input
+                  type="radio"
+                  name="role"
+                  value="STUDENT"
+                  checked={role === 'STUDENT'}
+                  onChange={() => setRole('STUDENT')}
+                  className={styles.radioHidden}
+                />
+                학생
+              </label>
+              <label className={`${styles.roleOption} ${role === 'TEACHER' ? styles.active : ''}`}>
+                <input
+                  type="radio"
+                  name="role"
+                  value="TEACHER"
+                  checked={role === 'TEACHER'}
+                  onChange={() => setRole('TEACHER')}
+                  className={styles.radioHidden}
+                />
+                선생님
+              </label>
+            </div>
+          </div>
+
           <div className={styles.inputGroup}>
             <label className={styles.label}>이메일 주소</label>
             <input

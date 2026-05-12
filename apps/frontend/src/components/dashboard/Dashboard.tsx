@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from './Dashboard.module.css';
+import type { RecentSessionInfo } from '@/app/t/home/page';
+import { computeSessionStatus } from '@/utils/sessionStatus';
 
 const NOTICES = [
   { text: '3월 학습 리포트 업데이트 안내\n새로운 분석 항목이 추가되었어요.', date: '2026.03.04' },
@@ -40,6 +42,7 @@ interface TodayClass {
 interface DashboardProps {
   classes: ClassItem[];
   todayClass?: TodayClass;
+  recentSessions?: RecentSessionInfo[];
 }
 
 /* ── 상태별 설정 맵 ──────────────────────────────────────── */
@@ -135,7 +138,7 @@ function TodayClassContent({ todayClass }: { todayClass?: TodayClass }) {
   );
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass, recentSessions = [] }) => {
   const [noticeIdx, setNoticeIdx] = useState(0);
   const [alertIdx, setAlertIdx] = useState(0);
 
@@ -152,8 +155,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass }) => 
   const notice = NOTICES[noticeIdx];
   const alert = STUDENT_ALERTS[alertIdx];
 
+  const router = useRouter();
+
   return (
     <div className={styles.container}>
+      {/* ... keeping the existing JSX for topSection and leftColumn ... */}
       <div className={styles.topSection}>
         <div className={styles.topCard}>
           <div className={styles.topCardContent}>
@@ -268,7 +274,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass }) => 
           <div className={styles.quickLinksCard}>
             <h3 className={styles.listTitle}>바로가기</h3>
             <div className={styles.quickLinksGrid}>
-              {/* Actual connected classes */}
               {classes.slice(0, 5).map((cls) => (
                 <Link href={`/t/classes/${cls.id}`} key={cls.id} style={{ textDecoration: 'none' }}>
                   <div className={styles.quickLinkItem}>
@@ -316,6 +321,43 @@ export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass }) => 
               <span className={styles.classDate}>5월 8일 목요일</span>
             </div>
             <TodayClassContent todayClass={todayClass} />
+          </div>
+
+          <div className={styles.recentCard}>
+            <div className={styles.recentHeader}>
+              <h2 className={styles.sectionTitle} style={{ fontSize: '16px' }}>최근 방문한 세션</h2>
+            </div>
+            <div className={styles.recentList}>
+              {recentSessions.length > 0 ? recentSessions.map((item) => {
+                const computed = computeSessionStatus(item);
+                const badgeType = computed === 'live' ? 'live' : computed === 'upcoming' ? 'wait' : 'done';
+                const badgeLabel = computed === 'live' ? '진행 중' : computed === 'upcoming' ? '대기 중' : '종료';
+                return (
+                  <div
+                    key={item.id}
+                    className={styles.recentItem}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => router.push(`/t/classes/${item.classId}/sessions/${item.id}`)}
+                  >
+                    <div className={styles.recentAvatar} />
+                    <div className={styles.recentInfo}>
+                      <div className={styles.recentTitle}>{item.sessionName}</div>
+                      <div className={styles.recentTeacher}>
+                        {item.subject}{item.period ? ` | ${item.period}교시` : ''}
+                      </div>
+                    </div>
+                    <span className={`${styles.recentBadge} ${styles[`badge_${badgeType}`]}`}>
+                      {badgeLabel}
+                    </span>
+                  </div>
+                );
+              }) : (
+                <p className={styles.emptySubtitle}>최근 방문한 세션이 없어요.</p>
+              )}
+            </div>
+            <button className={styles.viewAllBtn} onClick={() => router.push('/t/classes')}>
+              전체 보기 &nbsp;→
+            </button>
           </div>
         </div>
       </div>

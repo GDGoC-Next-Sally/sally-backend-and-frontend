@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import styles from './StudentDashboard.module.css';
-import type { RecentSessionInfo } from '@/app/s/home/page';
+import type { RecentSessionInfo, TodayClassData } from '@/app/s/home/page';
 import { computeSessionStatus } from '@/utils/sessionStatus';
 
 interface ClassItem {
@@ -14,20 +15,12 @@ interface ClassItem {
   status: 'PLANNING' | 'ACTIVE' | 'COMPLETED';
 }
 
-interface ActiveSessionInfo {
-  id: number;
-  classId: number;
-  subject: string;
-  period?: number | null;
-}
-
 interface StudentDashboardProps {
   user: { name: string } | null;
   classes: ClassItem[];
-  activeSession?: ActiveSessionInfo | null;
+  todayClass?: TodayClassData;
   recentSessions?: RecentSessionInfo[];
 }
-
 
 const FEEDBACK_ITEMS = [
   '영어 수업 참여도가 지난주보다 12% 향상되었어요.',
@@ -35,16 +28,101 @@ const FEEDBACK_ITEMS = [
   '국어 토론 참여 빈도가 꾸준히 증가하고 있어요.',
 ];
 
-export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classes, activeSession, recentSessions = [] }) => {
+const PROGRESS_ALERTS = [
+  { count: '78%', desc: '지난주 대비 6%p 상승했어요.' },
+  { count: '82%', desc: '영어 단어 퀴즈 정답률이 많이 올랐어요.' },
+  { count: '100%', desc: '이번 주 과제를 모두 제출했어요!' },
+];
+
+/* ── 상태별 설정 맵 ──────────────────────────────────────── */
+type TodayClassStatus = 'upcoming' | 'live' | 'completed';
+
+const STATUS_CONFIG: Record<
+  TodayClassStatus,
+  { tag: string; getLabel: (period: number) => string; btnText: string }
+> = {
+  upcoming:  { tag: '예정',  getLabel: (p) => `${p}교시 수업 예정`, btnText: '수업 준비하기' },
+  live:      { tag: 'LIVE', getLabel: ()  => '진행중',              btnText: '실시간 참여하기' },
+  completed: { tag: '완료',  getLabel: ()  => '오늘 수업 완료',      btnText: '내 리포트 보기' },
+};
+
+const ChevronRight = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+);
+
+function StudentTodayClassContent({ todayClass }: { todayClass?: TodayClassData }) {
   const router = useRouter();
+  if (!todayClass) {
+    return (
+      <div className={styles.emptyBody}>
+        <div className={styles.emptyIcon}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+          </svg>
+        </div>
+        <p className={styles.emptyTitle}>오늘은 예정된 수업이 없어요.</p>
+        <p className={styles.emptySubtitle}>선생님이 클래스를 열면 여기에 표시돼요.</p>
+        <Link href="/s/classes" className={styles.secondaryBtn}>클래스 관리하기</Link>
+      </div>
+    );
+  }
+
+  const cfg = STATUS_CONFIG[todayClass.status];
+
+  return (
+    <>
+      <div className={styles.todayClassBox} data-status={todayClass.status}>
+        <div className={styles.statusRow}>
+          <span className={styles.statusTag}>{cfg.tag}</span>
+          <span className={styles.statusLabel}>{cfg.getLabel(todayClass.period)}</span>
+        </div>
+
+        <h3 className={styles.className}>
+          {todayClass.className} {todayClass.subject}
+        </h3>
+
+        <div className={styles.classStats}>
+          <div className={styles.statItem}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span>{todayClass.period}교시</span>
+          </div>
+        </div>
+
+        <button
+          className={styles.cardActionBtn}
+          onClick={() => {
+            if (todayClass.sessionId && todayClass.classId) {
+              router.push(`/s/classes/${todayClass.classId}/sessions/${todayClass.sessionId}`);
+            }
+          }}
+        >
+          <span style={{ width: 18 }} />
+          <span>{cfg.btnText}</span>
+          <ChevronRight />
+        </button>
+      </div>
+    </>
+  );
+}
+
+export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classes, todayClass, recentSessions = [] }) => {
+  const router = useRouter();
+  const [alertIdx, setAlertIdx] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setAlertIdx((i) => (i + 1) % PROGRESS_ALERTS.length), 5000);
+    return () => clearInterval(t);
+  }, []);
+
+  const progressAlert = PROGRESS_ALERTS[alertIdx];
 
   return (
     <div className={styles.container}>
-
-      {/* ── Top Section ───────────────────────────────────────────────────── */}
       <div className={styles.topSection}>
-
-        {/* 공지사항 */}
         <div className={styles.topCard}>
           <div className={styles.topCardContent}>
             <div className={styles.iconCircle}>
@@ -64,7 +142,6 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classe
           </div>
         </div>
 
-        {/* 나의 학습 진도 */}
         <div className={styles.topCard}>
           <div className={styles.topCardContent}>
             <div className={styles.iconCircle}>
@@ -73,108 +150,113 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classe
               </svg>
             </div>
             <div>
-              <h3 className={styles.cardTitle}>나의 학습 진도</h3>
-              <div className={styles.progressTopRow}>
-                <div className={styles.progressValue}>78<span className={styles.pct}>%</span></div>
-                <div className={styles.progressDelta}>
-                  지난주 대비&nbsp;
-                  <span className={styles.up}>
-                    <svg width="9" height="9" viewBox="0 0 24 24" fill="#22C55E" style={{ verticalAlign: 'middle', marginRight: '2px' }}>
-                      <path d="M12 3l9 18H3z" />
-                    </svg>
-                    6%p
-                  </span>
-                </div>
-              </div>
+              <h3 className={styles.cardTitle}>나의 학습 진도 <span className={styles.highlightCount}>{progressAlert.count}</span></h3>
+              <p className={styles.cardSubtitle}>{progressAlert.desc}</p>
             </div>
           </div>
-          <svg viewBox="0 0 36 36" width="64" height="64">
-            <circle cx="18" cy="18" r="15.9" fill="none" stroke="#EBEBEA" strokeWidth="3" />
-            <circle cx="18" cy="18" r="15.9" fill="none" stroke="#22C55E" strokeWidth="3"
-              strokeDasharray="78 22" strokeDashoffset="25" strokeLinecap="round" />
-          </svg>
+          <div className={styles.dotRow}>
+            {PROGRESS_ALERTS.map((_, i) => <span key={i} className={i === alertIdx ? styles.dotActive : styles.dot} />)}
+          </div>
         </div>
       </div>
 
-      {/* ── Main Grid ─────────────────────────────────────────────────────── */}
       <div className={styles.mainGrid}>
-
-        {/* Left column */}
         <div className={styles.leftColumn}>
-
-          {/* AI 피드백 요약 */}
-          <div className={styles.aiFeedbackCard}>
+          <div className={styles.aiInsightCard}>
             <div className={styles.sectionHeader}>
               <div>
-                <h2 className={styles.sectionTitle}>AI 학습 피드백 요약</h2>
+                <h2 className={styles.sectionTitle}>주간 AI 인사이트 요약</h2>
                 <p className={styles.sectionSubtitle}>최근 7일간 나의 학습 데이터를 분석했어요.</p>
               </div>
-              <button className={styles.detailBtn} onClick={() => router.push('/s/reports')}>상세 리포트 보기 &gt;</button>
+              <button className={styles.reportBtn} onClick={() => router.push('/s/reports')}>전체 분석 리포트로 이동 &gt;</button>
             </div>
 
-            <div className={styles.feedbackContent}>
-              <div className={styles.feedbackChartArea}>
-                <h3 className={styles.feedbackChartTitle}>종합 학습 참여도</h3>
+            <div className={styles.aiContent}>
+              <div className={styles.chartArea}>
+                <h3 className={styles.chartTitle}>나의 종합 참여도</h3>
                 <div className={styles.donutWrapper}>
-                  <div className={styles.donutCircle} />
+                  <div className={styles.donutCircle}></div>
                   <div className={styles.donutText}>78<span className={styles.donutSmall}>%</span></div>
                 </div>
+                <div className={styles.chartFooter}></div>
               </div>
 
-              <div className={styles.feedbackListArea}>
-                <h3 className={styles.feedbackListTitle}>이번 주 피드백</h3>
-                {FEEDBACK_ITEMS.map((item, i) => (
-                  <div key={i} className={styles.feedbackItem}>
-                    <span className={styles.feedbackDot} />
-                    <span>{item}</span>
+              <div className={styles.listsArea}>
+                <div>
+                  <h3 className={styles.listTitle}>이번 주 피드백</h3>
+                  {FEEDBACK_ITEMS.map((item, i) => (
+                    <div className={styles.listItem} key={i}>
+                      <span className={styles.listRank}>{i + 1}</span>
+                      <span className={styles.listName}>{item}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ marginTop: '16px' }}>
+                  <h3 className={styles.listTitle}>도움이 필요한 과목 Top 3</h3>
+                  <div className={styles.listItem}>
+                    <span className={styles.listRank}>1</span>
+                    <span className={styles.listName}>수학</span>
+                    <span className={styles.listReason}>퀴즈 정답률 낮음</span>
+                    <span className={styles.badge}>관심필요</span>
                   </div>
-                ))}
-                <div className={styles.feedbackItem}>
-                  <span className={styles.feedbackDot} style={{ background: '#ff6f6f' }} />
-                  <span>수학 퀴즈 오답률 주의&nbsp;</span>
-                  <span className={styles.feedbackBadge}>관심필요</span>
+                  <div className={styles.listItem}>
+                    <span className={styles.listRank}>2</span>
+                    <span className={styles.listName}>과학</span>
+                    <span className={styles.listReason}>실험 보고서 미제출</span>
+                    <span className={styles.badge}>관심필요</span>
+                  </div>
+                  <div className={styles.listItem}>
+                    <span className={styles.listRank}>3</span>
+                    <span className={styles.listName}>역사</span>
+                    <span className={styles.listReason}>참여도 저조</span>
+                    <span className={styles.badge}>관심필요</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* 바로가기 */}
           <div className={styles.quickLinksCard}>
-            <h3 className={styles.quickLinksTitle}>바로가기</h3>
-            <div className={styles.shortcutGrid}>
+            <h3 className={styles.listTitle}>바로가기</h3>
+            <div className={styles.quickLinksGrid}>
               {classes.slice(0, 5).map((cls) => (
-                <button
-                  key={cls.id}
-                  className={styles.shortcutItem}
-                  onClick={() => router.push(`/s/classes/${cls.id}`)}
-                >
-                  <div className={styles.shortcutIcon}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
-                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                    </svg>
+                <Link href={`/s/classes/${cls.id}`} key={cls.id} style={{ textDecoration: 'none' }}>
+                  <div className={styles.quickLinkItem}>
+                    <div className={styles.quickLinkIcon}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                      </svg>
+                    </div>
+                    <div className={styles.quickLinkText}>
+                      <span className={styles.quickLinkTitle}>{cls.subject}</span>
+                      <span className={styles.quickLinkSub}>
+                        {cls.grade ? `${cls.grade}학년 ` : ''}{cls.homeroom ?? ''}
+                      </span>
+                    </div>
                   </div>
-                  <span className={styles.shortcutLabel}>{cls.subject}</span>
-                  <span className={styles.shortcutSub}>
-                    {cls.grade ? `${cls.grade}학년 ` : ''}{cls.homeroom ?? ''}
-                  </span>
-                </button>
+                </Link>
               ))}
               {classes.length === 0 && (
-                <button className={styles.shortcutItem} onClick={() => router.push('/s/classes')}>
-                  <div className={styles.shortcutIcon} />
-                  <span className={styles.shortcutLabel}>클래스 참여하기</span>
-                  <span className={styles.shortcutSub}>초대 코드로 입장</span>
-                </button>
+                <Link href="/s/classes" style={{ textDecoration: 'none' }}>
+                  <div className={styles.quickLinkItem}>
+                    <div className={styles.quickLinkIcon}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2">
+                        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+                      </svg>
+                    </div>
+                    <div className={styles.quickLinkText}>
+                      <span className={styles.quickLinkTitle}>클래스 참여하기</span>
+                      <span className={styles.quickLinkSub}>초대 코드로 입장</span>
+                    </div>
+                  </div>
+                </Link>
               )}
             </div>
           </div>
         </div>
 
-        {/* Right column */}
         <div className={styles.rightColumn}>
-
-          {/* 오늘의 클래스 */}
           <div className={styles.classCard}>
             <div className={styles.classHeader}>
               <div>
@@ -182,40 +264,9 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classe
                 <p className={styles.sectionSubtitle}>실시간 현황 및 예정 수업</p>
               </div>
             </div>
-            {activeSession ? (
-              <>
-                <div className={styles.liveCard}>
-                  <div className={styles.liveBadgeRow}>
-                    <span className={styles.liveBadge}>LIVE</span>
-                    <span className={styles.liveSubLabel}>진행 중인 수업</span>
-                  </div>
-                  <div className={styles.liveTitle}>{activeSession.subject}</div>
-                  {activeSession.period && (
-                    <div className={styles.liveMeta}>
-                      <span>⏱ {activeSession.period}교시</span>
-                    </div>
-                  )}
-                  <button
-                    className={styles.joinBtn}
-                    onClick={() => router.push(`/s/classes/${activeSession.classId}/sessions/${activeSession.id}`)}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="15 18 9 12 15 6" />
-                    </svg>
-                    참여하기
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                  </button>
-                </div>
-                <p className={styles.motivationText}>✦ 오늘도 즐거운 배움의 하루가 되세요!</p>
-              </>
-            ) : (
-              <p className={styles.noSessionText}>현재 진행 중인 수업이 없어요.</p>
-            )}
+            <StudentTodayClassContent todayClass={todayClass} />
           </div>
 
-          {/* 최근 방문한 세션 */}
           <div className={styles.recentCard}>
             <div className={styles.recentHeader}>
               <h2 className={styles.sectionTitle} style={{ fontSize: '16px' }}>최근 방문한 세션</h2>
@@ -257,3 +308,4 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classe
     </div>
   );
 };
+
