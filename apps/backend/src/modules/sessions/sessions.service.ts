@@ -121,7 +121,10 @@ export class SessionsService {
       }
     });
 
+    const classId = updatedSession.class_id;
+
     this.eventsGateway.sendToRoom(`session:${id}`, 'session_started', updatedSession);
+    this.eventsGateway.sendToRoom(`class:${classId}`, 'session_started_in_class', { session_id: id });
     return updatedSession;
   }
 
