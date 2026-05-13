@@ -9,7 +9,7 @@ RUN corepack enable && corepack prepare pnpm@9.11.0 --activate
 
 WORKDIR /app
 
-# pnpm이 가짜 링크(심볼릭 링크)를 쓰지 않고 모든 패키지를 플랫하게 설치하도록 강제 (중요!)
+# pnpm이 가짜 링크(심볼릭 링크)를 쓰지 않고 모든 패키지를 플랫하게 설치하도록 강제
 RUN echo "shamefully-hoist=true" > .npmrc
 
 # 모노레포 모든 설정 파일 및 package.json 복사
@@ -23,6 +23,9 @@ RUN pnpm install
 
 # 소스 코드 복사
 COPY apps/backend ./apps/backend
+
+# [추가] dev-chat.html 경로 에러 해결을 위해 파일 복사
+RUN mkdir -p /app/src/modules/dev && cp /app/apps/backend/src/modules/dev/dev-chat.html /app/src/modules/dev/dev-chat.html
 
 # Prisma Client 생성
 RUN cd apps/backend && npx prisma generate
