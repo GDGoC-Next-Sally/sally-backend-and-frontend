@@ -31,6 +31,7 @@ class ConversationTurn(BaseModel):
 class ChatRequest(BaseModel):
     conversation_history: List[ConversationTurn]
     student_profile: Optional[StudentProfile] = None
+    conversation_summary: Optional[str] = None  # 긴 대화에서 최근 원문 앞에 붙일 이전 대화 요약 메모리
     # 아래 두 필드는 /analyze 엔드포인트에서 백엔드 콜백 전송에 사용됩니다.
     # NestJS가 호출할 때 함께 전달하면 분석 완료 후 자동으로 콜백이 발송됩니다.
     session_id: Optional[int] = None    # 수업 세션 ID (dialogs 테이블 조회용)

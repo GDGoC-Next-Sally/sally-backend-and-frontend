@@ -48,6 +48,7 @@ async def chat(request: ChatRequest):
             conversation_history=request.conversation_history,
             student_profile=request.student_profile,
             need_intervention=request.need_intervention or False,  # 방향 B: 시스템 개입 필요 신호 전달
+            conversation_summary=request.conversation_summary,
         )
         return StreamingResponse(generator, media_type="text/event-stream")
     except Exception as e:

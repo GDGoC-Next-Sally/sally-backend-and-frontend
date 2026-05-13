@@ -19,11 +19,11 @@ async def test_stream_chat():
     )
 
     history = [
-        ConversationTurn(role="model", text="안녕하세요! 오늘은 관계대명사에 대해 배워볼 거예요. 준비됐나요?"),
+        ConversationTurn(role="model", text="안녕하세요! 오늘은 관계대명사에 대해 배워볼 거예요. 준비됐나요?", sender_type="AI"),
         ConversationTurn(role="user", text="네 준비됐어요!", sender_type="STUDENT", student_name="지연"),
-        ConversationTurn(role="model", text="좋아요! 먼저, 두 문장을 연결할 때 쓰는 말이 무엇인지 아나요?"),
+        ConversationTurn(role="model", text="좋아요! 먼저, 두 문장을 연결할 때 쓰는 말이 무엇인지 아나요?", sender_type="AI"),
         ConversationTurn(role="user", text="접속사요?", sender_type="STUDENT", student_name="지연"),
-        ConversationTurn(role="user", text="학생이 관계대명사를 접속사로만 이해하고 있습니다. 대명사 역할까지 같이 한다는 점을 짚고, 정답을 바로 주기보다 짧은 예문으로 유도해주세요.", sender_type="TEACHER", sender_name="김선생님"),
+        ConversationTurn(role="user", text="학생이 관계대명사를 접속사로만 이해하고 있습니다. 대명사 역할까지 같이 한다는 점을 짚고, 정답을 바로 주기보다 짧은 예문으로 유도해주세요.", sender_type="TEACHER"),
     ]
 
     request = ChatRequest(
@@ -36,7 +36,7 @@ async def test_stream_chat():
     print("======================================================================\n")
 
     for turn in history:
-        speaker = "🤖 Sally" if turn.role == "model" else (f"👩‍🏫 {turn.sender_name}" if turn.sender_type == "TEACHER" else f"👱 {turn.student_name}")
+        speaker = "🤖 Sally" if turn.role == "model" else ("👩‍🏫 선생님" if turn.sender_type == "TEACHER" else f"👱 {turn.student_name}")
         print(f"{speaker}: {turn.text}")
 
     print("\n[INFO] Sally 응답 스트리밍 시작...\n")

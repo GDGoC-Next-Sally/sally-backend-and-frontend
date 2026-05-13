@@ -20,14 +20,47 @@ from ai_server.services.prompt_builder import build_chat_system_prompt, build_re
 env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
+
+def _env_int(name: str, default: int) -> int:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        print(f"[WARN] {name} 환경변수 값이 정수가 아닙니다. 기본값 {default}를 사용합니다: {raw}")
+        return default
+
+
+def _env_str(name: str, default: str) -> str:
+    value = os.getenv(name)
+    return value.strip() if value and value.strip() else default
+
 # ── 모델 설정 (채팅용 / 분석용 분리) ──────────────────────────────────────────
-CHAT_MODEL = "meta/llama-3.3-70b-instruct"         # 채팅용: 성능이 뛰어난 70B 모델
+NVIDIA_BASE_URL = _env_str("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
+CHAT_MODEL = _env_str("NVIDIA_CHAT_MODEL", "meta/llama-3.3-70b-instruct")
 #ANALYZE_MODEL = "nvidia/llama-3.3-nemotron-super-49b-v1.5"  # 분석용: 추론 능력이 뛰어난 무거운 모델
-ANALYZE_MODEL = "meta/llama-3.3-70b-instruct"
+ANALYZE_MODEL = _env_str("NVIDIA_ANALYZE_MODEL", "meta/llama-3.3-70b-instruct")
 #ANALYZE_MODEL = "nvidia/llama-3.1-nemotron-nano-8b-v1"     # 8B: 너무 단순하여 분석 정확도 낮음
 
-# 한자(중국어 포함) 및 일본어(히라가나, 가타카나) 강제 필터링 정규식
-FOREIGN_CHAR_PATTERN = re.compile(r"[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\u3040-\u309F\u30A0-\u30FF]")
+CHAT_HISTORY_MAX_TURNS = _env_int("CHAT_HISTORY_MAX_TURNS", 12)
+CHAT_HISTORY_MAX_CHARS = _env_int("CHAT_HISTORY_MAX_CHARS", 6000)
+CHAT_SUMMARY_MAX_CHARS = _env_int("CHAT_SUMMARY_MAX_CHARS", 1200)
+
+# 한국어, 영어, 숫자, 기본 문장부호 외 문자를 강제 필터링합니다.
+# 라틴 확장 문자(vẫn, thường, relação 등)와 한자/일본어/중국어 조각을 모두 잡습니다.
+SUPPORTED_OUTPUT_CHARS = (
+    r"\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318F"
+    r"A-Za-z0-9\s"
+    r"""!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~"""
+    r"“”‘’…·–—"
+)
+FOREIGN_CHAR_PATTERN = re.compile(rf"[^{SUPPORTED_OUTPUT_CHARS}]")
+FOREIGN_TOKEN_PATTERN = re.compile(rf"[A-Za-z]*[^{SUPPORTED_OUTPUT_CHARS}][A-Za-z]*")
+CHAT_MEMORY_SIGNAL_KEYWORDS = (
+    "모르", "헷갈", "어렵", "안 돼", "안돼", "이해 안", "틀",
+    "못하", "포기", "왜", "어떻게", "차이", "구분", "다시", "설명",
+)
 
 def _get_client() -> AsyncOpenAI:
     """API Key를 런타임에 읽어서 클라이언트를 생성합니다 (lazy init)."""
@@ -35,17 +68,148 @@ def _get_client() -> AsyncOpenAI:
     if not api_key:
         raise RuntimeError(".env 파일에 NVIDIA_API_KEY가 설정되어 있지 않습니다.")
     return AsyncOpenAI(
-        base_url="https://integrate.api.nvidia.com/v1",
+        base_url=NVIDIA_BASE_URL,
         api_key=api_key,
         timeout=120.0,  # 대형 모델의 긴 TTFT(첫 토큰 대기)를 위해 120초로 설정
     )
 
+
+def _select_recent_chat_history(
+    conversation_history: list[ConversationTurn],
+) -> list[ConversationTurn]:
+    """
+    채팅 응답 생성에는 최근 대화만 사용합니다.
+    고정 system/few-shot prefix는 매 요청 동일하게 유지하고, 변하는 suffix를 제한하면
+    NIM prefix/KV cache가 재사용되기 쉽고 대화가 길어질수록 커지는 prefill 비용도 줄어듭니다.
+    """
+    if not conversation_history:
+        return []
+
+    if CHAT_HISTORY_MAX_TURNS <= 0 and CHAT_HISTORY_MAX_CHARS <= 0:
+        return conversation_history
+
+    max_turns = CHAT_HISTORY_MAX_TURNS if CHAT_HISTORY_MAX_TURNS > 0 else len(conversation_history)
+    max_chars = CHAT_HISTORY_MAX_CHARS if CHAT_HISTORY_MAX_CHARS > 0 else sum(len(turn.text or "") for turn in conversation_history)
+    selected_reversed: list[ConversationTurn] = []
+    total_chars = 0
+
+    for turn in reversed(conversation_history):
+        turn_chars = len(turn.text or "") + len(turn.sender_type or "") + len(turn.student_name or "")
+        would_exceed_turns = len(selected_reversed) >= max_turns
+        would_exceed_chars = selected_reversed and (total_chars + turn_chars > max_chars)
+        if would_exceed_turns or would_exceed_chars:
+            break
+
+        selected_reversed.append(turn)
+        total_chars += turn_chars
+
+    return list(reversed(selected_reversed))
+
+
+def _clip_text(text: str, max_chars: int) -> str:
+    normalized = " ".join((text or "").split())
+    if len(normalized) <= max_chars:
+        return normalized
+    return normalized[: max_chars - 1].rstrip() + "…"
+
+
+def _clip_block(text: str, max_chars: int) -> str:
+    normalized = "\n".join(
+        " ".join(line.split())
+        for line in (text or "").splitlines()
+        if line.strip()
+    )
+    if len(normalized) <= max_chars:
+        return normalized
+    return normalized[: max_chars - 1].rstrip() + "…"
+
+
+def _is_student_memory_turn(turn: ConversationTurn) -> bool:
+    return turn.role != "model" and (turn.sender_type or "").upper() == "STUDENT"
+
+
+def _is_teacher_memory_turn(turn: ConversationTurn) -> bool:
+    return turn.role != "model" and (turn.sender_type or "").upper() in {"TEACHER", "SYSTEM"}
+
+
+def _build_extract_summary_from_old_history(
+    old_history: list[ConversationTurn],
+) -> str | None:
+    if not old_history:
+        return None
+
+    teacher_directives: list[str] = []
+    student_signals: list[str] = []
+    student_context: list[str] = []
+    ai_checkpoints: list[str] = []
+
+    for turn in old_history:
+        text = _clip_text(turn.text, 180)
+        if not text:
+            continue
+
+        if _is_teacher_memory_turn(turn):
+            label = speaker_label(turn.sender_type, student_name=turn.student_name)
+            teacher_directives.append(f"{label}: {text}")
+            continue
+
+        if _is_student_memory_turn(turn):
+            label = speaker_label(turn.sender_type, student_name=turn.student_name)
+            line = f"{label}: {text}"
+            if any(keyword in text for keyword in CHAT_MEMORY_SIGNAL_KEYWORDS):
+                student_signals.append(line)
+            elif len(text) >= 8:
+                student_context.append(line)
+            continue
+
+        if turn.role == "model" and any(marker in text for marker in ("?", "정리", "핵심", "확인", "퀴즈", "다음")):
+            ai_checkpoints.append(f"Sally: {text}")
+
+    lines: list[str] = []
+    if teacher_directives:
+        lines.append("이전 선생님/시스템 지시: " + " / ".join(teacher_directives[-2:]))
+    if student_signals:
+        lines.append("이전 학생 어려움 신호: " + " / ".join(student_signals[-3:]))
+    if student_context:
+        lines.append("이전 학생 맥락: " + " / ".join(student_context[-2:]))
+    if ai_checkpoints:
+        lines.append("이전 수업 진행 단서: " + " / ".join(ai_checkpoints[-2:]))
+
+    if not lines:
+        fallback = [
+            f"{'Sally' if turn.role == 'model' else speaker_label(turn.sender_type, student_name=turn.student_name)}: {_clip_text(turn.text, 140)}"
+            for turn in old_history[-3:]
+            if _clip_text(turn.text, 140)
+        ]
+        lines.append("이전 대화 흐름: " + " / ".join(fallback))
+
+    summary = "\n".join(f"- {line}" for line in lines if line)
+    return _clip_block(summary, CHAT_SUMMARY_MAX_CHARS)
+
+
+def _build_chat_memory_summary(
+    provided_summary: str | None,
+    old_history: list[ConversationTurn],
+) -> str | None:
+    if provided_summary and provided_summary.strip():
+        return _clip_block(provided_summary, CHAT_SUMMARY_MAX_CHARS)
+    return _build_extract_summary_from_old_history(old_history)
+
+
+def _remove_foreign_text(text: str) -> str:
+    cleaned = FOREIGN_TOKEN_PATTERN.sub("", text)
+    cleaned = re.sub(r"[ \t]{2,}", " ", cleaned)
+    cleaned = re.sub(r" +([,.!?;:])", r"\1", cleaned)
+    return cleaned
+
+
 async def _translate_foreign_text(client: AsyncOpenAI, text: str) -> str:
-    """한자나 일본어가 포함된 짧은 텍스트(단어/어구)를 문맥에 맞게 자연스러운 한글로 변환합니다."""
-    prompt = f"""아래 텍스트에 포함된 한자(중국어) 및 일본어 표기를 문맥에 맞는 자연스러운 한국어(한글) 단어나 어구로 변환하세요.
+    """한국어/영어 범위를 벗어난 짧은 텍스트를 문맥에 맞게 자연스러운 한글로 변환합니다."""
+    prompt = f"""아래 텍스트에 포함된 한국어/영어가 아닌 표기를 문맥에 맞는 자연스러운 한국어(한글) 단어나 어구로 변환하세요.
 의미와 품사는 그대로 유지하고, 마크다운이나 부연 설명 없이 변환된 텍스트만 출력하세요.
 입력 텍스트 끝에 공백이나 기호가 있다면 변환 후에도 동일하게 유지하세요.
-절대 결과에 한자, 중국어, 일본어 문자를 남기지 마십시오.
+영어 예문과 영어 문법 용어는 그대로 둘 수 있습니다.
+절대 결과에 한자, 중국어, 일본어, 베트남어, 포르투갈어, 라틴 확장 문자 등 한국어/영어 밖의 문자를 남기지 마십시오.
 
 입력:
 {text}
@@ -59,21 +223,22 @@ async def _translate_foreign_text(client: AsyncOpenAI, text: str) -> str:
         )
         result = response.choices[0].message.content
         if result:
-            # LLM이 번역을 시도했으나 여전히 외국어가 남아있다면 강제 제거
+            # LLM이 번역을 시도했으나 여전히 허용 범위 밖 문자가 남아있다면 강제 제거
             if FOREIGN_CHAR_PATTERN.search(result):
                 print(f"[WARN] 한글 변환 LLM이 여전히 외국어를 포함함. 강제 제거: {result}")
-                return FOREIGN_CHAR_PATTERN.sub("", result)
+                return _remove_foreign_text(result)
             return result
     except Exception as e:
         print(f"[WARN] 한글 변환 LLM 호출 실패: {e}")
         
     # 실패 시 원본에서 문제되는 문자만 강제 제거해서 반환 (fallback)
-    return FOREIGN_CHAR_PATTERN.sub("", text)
+    return _remove_foreign_text(text)
 
 async def stream_chat(
     conversation_history: list[ConversationTurn],
     student_profile: StudentProfile | None = None,
     need_intervention: bool = False,
+    conversation_summary: str | None = None,
 ) -> AsyncGenerator[str, None]:
     """
     학생과의 채팅 응답을 생성하여 스트리밍(AsyncGenerator)으로 반환합니다.
@@ -98,9 +263,22 @@ async def stream_chat(
     # few-shot 예시: AI가 실제 대화 패턴을 '보고' 따라 하도록 삽입 (리허설)
     messages.extend(build_chat_few_shot_messages(student_profile))
 
+    recent_history = _select_recent_chat_history(conversation_history)
+    old_history = conversation_history[: max(len(conversation_history) - len(recent_history), 0)]
+    memory_summary = _build_chat_memory_summary(conversation_summary, old_history)
+    if memory_summary:
+        messages.append({
+            "role": "user",
+            "content": (
+                "시스템: 아래는 최근 원문 대화에서 생략된 이전 대화의 압축 메모리입니다. "
+                "학생에게 직접 언급하지 말고, 설명 방식과 다음 질문 전략에만 참고하십시오.\n"
+                f"{memory_summary}"
+            ),
+        })
+
     # 실제 대화 기록 이어 붙이기
     # TEACHER는 학생에게 보인 발화가 아니라 AI용 비공개 지도 방향으로 라벨링합니다. (방향 A)
-    for turn in conversation_history:
+    for turn in recent_history:
         if turn.role == "model":
             messages.append({"role": "assistant", "content": turn.text})
         else:
