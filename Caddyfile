@@ -1,0 +1,14 @@
+main.sallycoach.kro.kr {
+    # 소켓 통신을 위한 라우팅
+    reverse_proxy /socket.io* backend:3001
+
+    # API 요청 라우팅 (/api를 떼고 백엔드로 전달)
+    handle_path /api* {
+        reverse_proxy backend:3001
+    }
+
+    # 나머지 모든 요청은 프론트엔드로 전달
+    handle {
+        reverse_proxy frontend:3000
+    }
+}
