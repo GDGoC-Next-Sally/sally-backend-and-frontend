@@ -21,10 +21,10 @@ RUN cd apps/backend && pnpm add -D @types/multer
 # Prisma Client 생성 (중요!)
 RUN cd apps/backend && npx prisma generate
 
-# 빌드 (명시적으로 폴더로 이동해서 빌드)
+# 빌드
 RUN cd apps/backend && npx nest build
 
 EXPOSE 3001
 
-# 실행 (절대 경로로 명시적 실행)
-CMD ["node", "apps/backend/dist/main"]
+# 실행 (dist/src/main.js가 있으면 실행하고, 없으면 dist/main.js 실행)
+CMD ["sh", "-c", "if [ -f apps/backend/dist/src/main.js ]; then node apps/backend/dist/src/main.js; else node apps/backend/dist/main.js; fi"]
