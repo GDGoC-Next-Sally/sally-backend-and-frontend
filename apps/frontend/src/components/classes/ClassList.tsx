@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CreateClassModal } from './CreateClassModal';
 import { SessionCodeModal } from '../sessions/SessionCodeModal';
 import { ConfirmModal } from '../common/ConfirmModal';
+import { DropdownMenu } from '../common/DropdownMenu';
 import styles from './ClassList.module.css';
 import type { CreateClassBody, ClassItem, ClassStudent } from '@/actions/classes';
 import { getClassStudents } from '@/actions/classes';
@@ -34,7 +35,6 @@ export const ClassList: React.FC<ClassListProps> = ({
 }) => {
   const router = useRouter();
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [showDropdown, setShowDropdown] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
@@ -42,17 +42,6 @@ export const ClassList: React.FC<ClassListProps> = ({
   const [search, setSearch] = useState('');
   const [students, setStudents] = useState<ClassStudent[]>([]);
   const [studentsLoading, setStudentsLoading] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   useEffect(() => {
     if (selectedId === null) { setStudents([]); return; }
@@ -72,7 +61,6 @@ export const ClassList: React.FC<ClassListProps> = ({
 
   const handleDelete = () => {
     if (!selectedId) return;
-    setShowDropdown(false);
     setIsDeleteConfirmOpen(true);
   };
 
@@ -99,40 +87,22 @@ export const ClassList: React.FC<ClassListProps> = ({
               <button className={styles.btnCreate} onClick={() => setIsCreateModalOpen(true)}>
                 클래스 만들기
               </button>
-              <div className={styles.moreWrapper} ref={dropdownRef}>
-                <button
-                  className={`${styles.btnMore} ${selectedId ? styles.btnMoreActive : ''}`}
-                  onClick={() => selectedId && setShowDropdown((v) => !v)}
-                  disabled={!selectedId}
-                >
-                  더보기
-                </button>
-                {showDropdown && selectedClass && (
-                  <div className={styles.dropdownMenu}>
-                    <button
-                      className={styles.menuItem}
-                      onClick={() => { setIsCodeModalOpen(true); setShowDropdown(false); }}
-                    >
-                      입장 코드 관리
-                    </button>
-                    <button
-                      className={styles.menuItem}
-                      onClick={() => { setIsEditModalOpen(true); setShowDropdown(false); }}
-                    >
-                      정보 수정
-                    </button>
-                    <button className={`${styles.menuItem} ${styles.menuItemDisabled}`} disabled>
-                      분석 리포트
-                    </button>
-                    <button
-                      className={`${styles.menuItem} ${styles.menuItemDanger}`}
-                      onClick={handleDelete}
-                    >
-                      삭제
-                    </button>
-                  </div>
-                )}
-              </div>
+              <DropdownMenu
+                trigger={
+                  <button
+                    className={`${styles.btnMore} ${selectedId ? styles.btnMoreActive : ''}`}
+                    disabled={!selectedId}
+                  >
+                    더보기
+                  </button>
+                }
+                items={[
+                  { label: '입장 코드 관리', onClick: () => setIsCodeModalOpen(true), disabled: !selectedId },
+                  { label: '정보 수정', onClick: () => setIsEditModalOpen(true), disabled: !selectedId },
+                  { label: '분석 리포트', disabled: true },
+                  { label: '삭제', danger: true, onClick: handleDelete, disabled: !selectedId },
+                ]}
+              />
             </div>
           </div>
 

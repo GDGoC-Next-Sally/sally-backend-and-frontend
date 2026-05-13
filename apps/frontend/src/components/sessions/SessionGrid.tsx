@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { type Session } from '@/actions/sessions';
@@ -8,6 +8,7 @@ import { type ClassItem } from '@/actions/classes';
 import { SessionModal } from './SessionModal';
 import { CreateSessionModal } from './CreateSessionModal';
 import { ConfirmModal } from '../common/ConfirmModal';
+import { DropdownMenu } from '../common/DropdownMenu';
 import styles from './SessionGrid.module.css';
 import type { CreateSessionBody } from '@/actions/sessions';
 import { computeSessionStatus, type ComputedStatus } from '@/utils/sessionStatus';
@@ -57,25 +58,12 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
   onRefresh,
 }) => {
   const router = useRouter();
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [search, setSearch] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Session | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpenMenuId(null);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
 
   const handleDelete = (id: number) => {
-    setOpenMenuId(null);
     setDeleteTargetId(id);
   };
 
@@ -148,7 +136,7 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
         </div>
       </div>
 
-      <div className={styles.sessionList} ref={menuRef}>
+      <div className={styles.sessionList}>
         {filtered.length === 0 && (
           <div className={styles.empty}>
             {search ? '검색 결과가 없습니다.' : '등록된 세션이 없습니다.'}
@@ -188,31 +176,24 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
 
               <span className={`${styles.badge} ${styles[cfg.badgeClass]}`}>{cfg.label}</span>
 
-              <div className={styles.menuContainer}>
-                <button
-                  className={styles.moreBtn}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setOpenMenuId(openMenuId === session.id ? null : session.id);
-                  }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#626664">
-                    <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
-                  </svg>
-                </button>
-                {openMenuId === session.id && (
-                  <div className={styles.dropdownMenu}>
-                    <button className={styles.menuItem} onClick={(e) => { e.stopPropagation(); router.push(`/t/classes/${classId}/sessions/${session.id}`); setOpenMenuId(null); }}>
-                      상세보기
+              <div
+                className={styles.menuContainer}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <DropdownMenu
+                  trigger={
+                    <button className={styles.moreBtn}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="#626664">
+                        <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
+                      </svg>
                     </button>
-                    <button className={styles.menuItem} onClick={(e) => { e.stopPropagation(); setEditTarget(session); setOpenMenuId(null); }}>
-                      정보 수정
-                    </button>
-                    <button className={`${styles.menuItem} ${styles.menuItemDanger}`} onClick={(e) => { e.stopPropagation(); handleDelete(session.id); }}>
-                      삭제
-                    </button>
-                  </div>
-                )}
+                  }
+                  items={[
+                    { label: '상세보기', onClick: () => router.push(`/t/classes/${classId}/sessions/${session.id}`) },
+                    { label: '정보 수정', onClick: () => setEditTarget(session) },
+                    { label: '삭제', danger: true, onClick: () => handleDelete(session.id) },
+                  ]}
+                />
               </div>
             </div>
           );

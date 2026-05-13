@@ -1,0 +1,62 @@
+.triggerWrapper {
+  display: inline-flex;
+  align-items: center;
+}
+
+.content {
+  background-color: #fefefe;
+  border: 1px solid #E0DED8;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  padding: 8px 0;
+  min-width: 140px;
+  z-index: 50;
+  animation: slideDown 0.1s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 24px;
+  background: none;
+  border: none;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: #626664;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+  border-radius: 0;
+}
+
+.item[data-highlighted] {
+  background-color: #f8f9fa;
+  color: #1A1A1A;
+}
+
+.itemDanger {
+  color: #ff6f6f;
+}
+
+.itemDanger[data-highlighted] {
+  background-color: #fff0f0;
+  color: #e53e3e;
+}
+
+.itemDisabled {
+  color: #adb5bd;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.separator {
+  height: 1px;
+  background-color: #E0DED8;
+  margin: 4px 0;
+}
