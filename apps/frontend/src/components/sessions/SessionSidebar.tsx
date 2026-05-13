@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { RefreshCw, MoreHorizontal } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import styles from './SessionSidebar.module.css';
 import type { AttendanceStudent } from '@/actions/sessions';
 import type { StudentAnalysis } from './SessionWidget';
@@ -83,9 +83,16 @@ export const SessionSidebar: React.FC<Props> = ({
             const isSelected = phase === 'active' && student.userId === selectedId;
             const analysis = analysisMap?.get(student.userId);
             const needsIntervention = analysis?.need_intervention;
-            const progressPct = analysis?.understanding_score != null
-              ? analysis.understanding_score * 10
-              : null;
+            const emotion = analysis?.student_emotion;
+            const positiveEmotions = new Set(['행복', '집중', '흥미']);
+            const negativeEmotions = new Set(['불안', '혼란', '지루', '피곤']);
+            const dotColor = !emotion
+              ? '#E0DED8'
+              : positiveEmotions.has(emotion)
+              ? '#22c55e'
+              : negativeEmotions.has(emotion)
+              ? '#ef4444'
+              : '#E0DED8';
 
             return (
               <li
@@ -105,25 +112,15 @@ export const SessionSidebar: React.FC<Props> = ({
                     </div>
                     <span className={styles.name}>{student.name}</span>
                   </div>
-                  <div className={styles.itemActions}>
-                    {progressPct != null && (
-                      <span className={styles.progressBadge}>진행률 {progressPct}%</span>
-                    )}
-                    <button
-                      className={styles.moreBtn}
-                      onClick={(e) => e.stopPropagation()}
-                      type="button"
-                    >
-                      <MoreHorizontal size={16} color="#9ca3af" />
-                    </button>
-                  </div>
+                  <div
+                    className={styles.statusDot}
+                    style={{ backgroundColor: dotColor }}
+                  />
                 </div>
 
-                {analysis?.one_line_summary ? (
-                  <div className={styles.summaryText}>{analysis.one_line_summary}</div>
-                ) : (
-                  <div className={styles.summaryText}>수업중인 개념</div>
-                )}
+                <div className={styles.summaryText}>
+                  {analysis?.current_topic ?? '수업중인 개념'}
+                </div>
 
                 {isSelected && analysis && (
                   <div className={styles.statsGrid}>
