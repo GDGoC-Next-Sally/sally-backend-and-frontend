@@ -84,8 +84,8 @@ export const SessionSidebar: React.FC<Props> = ({
             const analysis = analysisMap?.get(student.userId);
             const needsIntervention = analysis?.need_intervention;
             const emotion = analysis?.student_emotion;
-            const positiveEmotions = new Set(['행복', '집중', '흥미']);
-            const negativeEmotions = new Set(['불안', '혼란', '지루', '피곤']);
+            const positiveEmotions = new Set(['집중', '흥미', '자신감']);
+            const negativeEmotions = new Set(['혼란', '좌절', '불안', '지루함', '무기력', '짜증', '무반응']);
             const dotColor = !emotion
               ? '#E0DED8'
               : positiveEmotions.has(emotion)

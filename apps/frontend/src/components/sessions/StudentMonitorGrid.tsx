@@ -21,8 +21,8 @@ const EMOTION_EMOJI: Record<string, string> = {
   피곤: '😴',
 };
 
-const POSITIVE_EMOTIONS = new Set(['행복', '집중', '흥미']);
-const NEGATIVE_EMOTIONS = new Set(['불안', '혼란', '지루', '피곤']);
+const POSITIVE_EMOTIONS = new Set(['집중', '흥미', '자신감']);
+const NEGATIVE_EMOTIONS = new Set(['혼란', '좌절', '불안', '지루함', '무기력', '짜증', '무반응']);
 
 function emotionDotColor(emotion?: string): string {
   if (!emotion) return '#E0DED8';

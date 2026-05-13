@@ -131,6 +131,19 @@ export class ReportsService {
       const session = await this.prisma.sessions.findUnique({ where: { id: sessionId } });
       if (!session) return;
 
+      const dialog = await this.prisma.dialogs.findFirst({
+        where: { session_id: sessionId, student_id: studentId },
+        select: { id: true },
+      });
+
+      if (dialog) {
+        await this.prisma.student_reports.upsert({
+          where: { session_id_student_id: { session_id: sessionId, student_id: studentId } },
+          create: { session_id: sessionId, student_id: studentId, dialog_id: dialog.id, content: report },
+          update: { content: report },
+        });
+      }
+
       const reportData = {
         session_id: sessionId,
         student_id: studentId,
@@ -191,12 +204,18 @@ export class ReportsService {
   async handleSessionFinalReportCallback(sessionId: number, report: any) {
     try {
       const session = await this.prisma.sessions.findUnique({ where: { id: sessionId } });
-      if (session) {
-        this.eventsGateway.sendToUser(session.teacher_id, 'session_report_ready', {
-          session_id: sessionId,
-          report: report
-        });
-      }
+      if (!session) return;
+
+      await this.prisma.session_reports.upsert({
+        where: { session_id: sessionId },
+        create: { session_id: sessionId, content: report },
+        update: { content: report },
+      });
+
+      this.eventsGateway.sendToUser(session.teacher_id, 'session_report_ready', {
+        session_id: sessionId,
+        report: report
+      });
 
       this.logger.log(`세션 ${sessionId} 전체 리포트 수신 및 저장 완료`);
     } catch (e) {
