@@ -51,7 +51,7 @@
   gap: 4px;
   height: 40px;
   padding: 0 16px;
-  border-radius: 38px;
+  border-radius: var(--radius-pill);
   text-decoration: none;
   font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
   font-weight: var(--font-weight-semibold);
@@ -100,7 +100,7 @@
 .avatarImage {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   object-fit: cover;
   background-color: #ededed;
   flex-shrink: 0;

@@ -5,7 +5,7 @@
 .inner {
   flex: 1;
   background-color: #ffffff;
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   padding: 32px 36px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
   display: flex;
@@ -48,7 +48,7 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   padding: 4px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -123,7 +123,7 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-live-badge);
 }
 
 .liveStatusText {
@@ -334,7 +334,7 @@
 
 .statusBadge {
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   white-space: nowrap;

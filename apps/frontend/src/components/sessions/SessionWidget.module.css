@@ -74,7 +74,7 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   padding: 5px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
 }
 
 .statusBadgeActive {
@@ -101,7 +101,7 @@
 
 .waitCard {
   background-color: var(--color-surface);
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   padding: 40px 32px 32px;
   display: flex;
   flex-direction: column;
@@ -133,7 +133,7 @@
   background-color: var(--color-live);
   color: var(--color-surface);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-button);
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   padding: 14px 60px;
@@ -227,7 +227,7 @@
 .chatAvatar {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   background-color: #E5E7EB;
   flex-shrink: 0;
 }
@@ -305,7 +305,7 @@
 .messageAvatar {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   background-color: #E5E7EB;
   flex-shrink: 0;
 }

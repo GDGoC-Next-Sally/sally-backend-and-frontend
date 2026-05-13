@@ -203,7 +203,7 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   padding: 2px 8px;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
 }
 
 .questionList {
@@ -228,7 +228,7 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   padding: 3px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -424,7 +424,7 @@
 .tableAvatar {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   background: #E5E7EB;
   flex-shrink: 0;
 }
@@ -464,7 +464,7 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   padding: 3px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
 }
 
 .tableBadgeOk {
@@ -475,7 +475,7 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   padding: 3px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
 }
 
 .tableSummaryCell {
@@ -563,7 +563,7 @@
 .studentDetailAvatar {
   width: 52px;
   height: 52px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   background: #E5E7EB;
   flex-shrink: 0;
 }
@@ -609,7 +609,7 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   padding: 3px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
   white-space: nowrap;
   flex-shrink: 0;
 }

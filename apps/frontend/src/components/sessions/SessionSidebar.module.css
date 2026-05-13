@@ -105,7 +105,7 @@
   flex-direction: column;
   gap: 8px;
   padding: 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-button);
   border: 1.5px solid #F3F4F6;
   background: #FAFAFA;
   transition: background-color 0.15s, border-color 0.15s;
@@ -149,7 +149,7 @@
 .avatar {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   background: #e5f9f0;
   flex-shrink: 0;
   overflow: hidden;
@@ -185,7 +185,7 @@
   font-weight: var(--font-weight-semibold);
   color: #22cb84;
   background: #e5f9f0;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
   padding: 2px 8px;
   white-space: nowrap;
 }
@@ -317,7 +317,7 @@
   background: #F0FDF4;
   color: #15803D;
   border: 1px solid #BBF7D0;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   padding: 3px 10px;
