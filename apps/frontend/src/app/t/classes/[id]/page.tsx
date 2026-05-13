@@ -66,7 +66,7 @@ export default function ClassDetailPage() {
     <div style={{
       display: 'flex',
       padding: '24px',
-      backgroundColor: '#F5F4F0',
+      backgroundColor: 'var(--color-bg)',
       minHeight: 'calc(100vh - 60px)',
       maxWidth: '1400px',
       margin: '0 auto',

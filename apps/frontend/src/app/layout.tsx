@@ -14,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className="h-full antialiased">
-      <body className="min-h-full flex flex-col bg-[#f8f9fa]">
+      <body className="min-h-full flex flex-col bg-[var(--color-bg)]">
         <TopNavWrapper />
         {children}
       </body>

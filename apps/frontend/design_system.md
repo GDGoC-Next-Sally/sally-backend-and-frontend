@@ -12,7 +12,7 @@ originSessionId: 3b4a5895-6136-4bad-a72d-eb76e87faf24
 | Primary light | #FDF0ED | Light bg for primary elements |
 | Secondary/Lavender | #D4C9F0 | Secondary accents |
 | Surface/White | #FFFFFF | Cards, modals, inputs |
-| Background/Page | #F5F4F0 | Page background (replaces #f8f9fa) |
+| Background/Page | #F5F6F8 | Page background (`--color-bg`) |
 | Text/Primary | #1A1A1A | Main text (replaces #212529, #343a40) |
 | Text/Secondary | #6B6B6B | Secondary text (replaces #495057, #868e96) |
 | Semantic/Live | #22C55E | 진행중 badge, active status dot, toggle ON |
@@ -95,7 +95,7 @@ CSS Module에서 `composes: t-section from global;` 으로 사용.
 ## How to apply
 - Replace #20c997 (teal) with #E8593C for CTA buttons
 - Replace #20c997 with #22C55E for live/active status indicators  
-- Replace #f8f9fa with #F5F4F0 for page backgrounds
+- Replace #f8f9fa, #F5F4F0 with `var(--color-bg)` (#F5F6F8) for page backgrounds
 - Replace #212529, #343a40 with #1A1A1A for primary text
 - Replace #495057, #868e96 with #6B6B6B for secondary text
 - Replace #dee2e6, #e9ecef with #E0DED8 for borders
