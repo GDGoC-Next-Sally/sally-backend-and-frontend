@@ -81,17 +81,11 @@ export class LivechatService {
           });
 
           const conversation_history = pastMessages
-            .filter(msg => msg.sender_type !== 'TEACHER')
             .map(msg => ({
               role: msg.sender_type === 'AI' ? 'model' : 'user',
               text: msg.content,
               sender_type: msg.sender_type,
             }));
-
-          // 선생님의 개입 메시지(TEACHER)를 시간순으로 topic_hints에 반영
-          const teacherHints = pastMessages
-            .filter(msg => msg.sender_type === 'TEACHER')
-            .map(msg => msg.content);
 
           // 2. 학생 프로필(수업 컨텍스트) 구성
           const student_profile = {
@@ -99,7 +93,10 @@ export class LivechatService {
             scope: dialog.sessions.session_name,
             learning_objectives: dialog.sessions.objective || "미설정",
             key_concepts: dialog.sessions.explanation || "미설정",
-            topic_hints: teacherHints,  // 선생님 개입 내용을 AI 힌트로 제공
+            forbidden_topics: "미설정",
+            learning_style: "미설정",
+            topic_hints: [],
+            misconception_tag_hints: [],
           };
 
           // 3. AI 서버 스트리밍 요청
