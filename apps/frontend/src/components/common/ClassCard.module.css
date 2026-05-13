@@ -1,0 +1,139 @@
+.card {
+  background: var(--color-surface);
+  border-radius: 8px;
+  border: 1px solid #d9d9d9;
+  padding: 16px;
+  min-height: 218px;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.cardClickable {
+  cursor: pointer;
+}
+
+.cardClickable:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(232, 89, 60, 0.08);
+}
+
+/* ── Selected state (교사 뷰) ── */
+.cardSelected {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  box-shadow: 0 8px 20px rgba(232, 89, 60, 0.25);
+}
+
+/* ── 상단 메타 행 (schedule + dots menu) ── */
+.cardMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 24px;
+  margin-bottom: 8px;
+}
+
+.cardScheduleArea {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardSchedule {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: rgba(177, 177, 177, 0.7);
+}
+
+.cardSelected .cardSchedule {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ── "..." 버튼 ── */
+.dotsBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--color-text-secondary);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.dotsBtn:hover {
+  background: var(--color-border-light);
+}
+
+/* ── 타이틀 블록 ── */
+.cardBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.cardTitle {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: #343434;
+  line-height: 1.4;
+}
+
+.cardTitleSelected {
+  color: var(--color-surface);
+}
+
+.cardSubtitle {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: #343434;
+  line-height: 1.5;
+}
+
+.cardSubtitleSelected {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ── 이동 버튼 ── */
+.moveBtn {
+  width: 100%;
+  background: var(--color-live-light);
+  border: none;
+  padding: 0 8px;
+  height: 40px;
+  border-radius: 6px;
+  color: var(--color-live);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.moveBtn:hover {
+  opacity: 0.85;
+}
+
+/* 학생 뷰: 텍스트 가운데 + 양쪽 화살표 */
+.moveBtnCentered {
+  justify-content: space-between;
+}
+
+.moveBtnCentered span {
+  flex: 1;
+  text-align: center;
+}
+
+.moveBtnSelected {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--color-surface);
+}

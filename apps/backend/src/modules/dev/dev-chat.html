@@ -233,7 +233,7 @@
 
     function connectSocket() {
       if (socket) socket.disconnect();
-      socket = io('http://localhost:3001', {
+      socket = io(window.location.origin, {
         auth: { token: tokens.teacherToken }
       });
 
@@ -347,7 +347,7 @@
       if (!confirm('정말로 이 대화방의 모든 기록을 삭제하시겠습니까?')) return;
       
       try {
-        const res = await fetch(`http://localhost:3001/livechat/dialog/${tokens.dialogId}`, {
+        const res = await fetch(`/livechat/dialog/${tokens.dialogId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${tokens.studentToken}`

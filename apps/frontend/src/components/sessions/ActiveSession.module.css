@@ -21,8 +21,8 @@
 }
 
 .sectionTitle {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   color: #6B6B6B;
   margin-bottom: 16px;
 }
@@ -65,13 +65,13 @@
 }
 
 .name {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   color: #1A1A1A;
 }
 
 .subName {
-  font-size: 10px;
+  font-size: var(--font-size-sm);
   color: #6B6B6B;
 }
 
@@ -95,8 +95,8 @@
   padding: 10px 12px;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   color: #6B6B6B;
 }
 
@@ -149,15 +149,15 @@
 }
 
 .chatTitle {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: #1A1A1A;
   margin-bottom: 4px;
   line-height: 1.4;
 }
 
 .chatSub {
-  font-size: 14px;
+  font-size: var(--font-size-md);
   color: #6B6B6B;
 }
 
@@ -173,8 +173,8 @@
 }
 
 .statusLabel {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   color: #6B6B6B;
   white-space: nowrap;
 }
@@ -194,8 +194,8 @@
 }
 
 .statusValue {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
   color: var(--color-live);
   white-space: nowrap;
 }

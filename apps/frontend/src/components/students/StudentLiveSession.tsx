@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { Clock, Check } from 'lucide-react';
 import { getSession } from '@/actions/sessions';
 import { joinSession } from '@/actions/sessions';
 import { getClass } from '@/actions/classes';
@@ -356,9 +357,7 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
               {scheduledStart && (
                 <div className={styles.waitStats}>
                   <div className={styles.waitStat}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-                    </svg>
+                    <Clock size={18} color="#6B6B6B" />
                     <div>
                       <div className={styles.statLabel}>시작 예정</div>
                       <div className={styles.statValue}>{scheduledStart}</div>
@@ -449,9 +448,7 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
           {sessionObjective && (
             <div className={styles.guideSection}>
               <div className={styles.guideSectionTitle}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
+                <Check size={16} color="#22C55E" strokeWidth={2.5} />
                 오늘의 목표
               </div>
               <p className={styles.guideSectionText}>{sessionObjective}</p>

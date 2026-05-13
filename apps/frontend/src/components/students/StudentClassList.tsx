@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { JoinClassModal } from './JoinClassModal';
 import { ConfirmModal } from '../common/ConfirmModal';
+import { FilterBar } from '../common/FilterBar';
+import { ClassCard } from '../common/ClassCard';
 import styles from './StudentClassList.module.css';
 
 interface ClassItem {
@@ -30,34 +32,14 @@ export const StudentClassList: React.FC<StudentClassListProps> = ({
   onRefresh,
 }) => {
   const router = useRouter();
-  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [search, setSearch] = useState('');
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleLeave = () => {
-    if (!selectedId) return;
-    setShowDropdown(false);
-    setIsLeaveConfirmOpen(true);
-  };
+  const [pendingLeaveId, setPendingLeaveId] = useState<number | null>(null);
 
   const handleLeaveConfirm = () => {
-    if (!selectedId) return;
-    onLeaveClass(selectedId);
-    setSelectedId(null);
-    setIsLeaveConfirmOpen(false);
+    if (pendingLeaveId === null) return;
+    onLeaveClass(pendingLeaveId);
+    setPendingLeaveId(null);
     onRefresh();
   };
 
@@ -65,153 +47,54 @@ export const StudentClassList: React.FC<StudentClassListProps> = ({
     `${c.subject} ${c.grade ?? ''} ${c.homeroom ?? ''}`.toLowerCase().includes(search.toLowerCase())
   );
 
-  const selectedClass = classes.find((c) => c.id === selectedId) ?? null;
+  /** 학년 + 반 + 과목을 하나의 타이틀로 합침 (피그마 기준) */
+  const formatTitle = (c: ClassItem) =>
+    [c.grade ? `${c.grade}학년` : '', c.homeroom ?? '', c.subject].filter(Boolean).join(' ');
 
   return (
-    <div className={styles.container}>
-      <div className={styles.layout}>
-        <div className={styles.leftPanel}>
-          <div className={styles.header}>
-            <div>
-              <h2 className={styles.title}>과목 리스트</h2>
-              <p className={styles.subtitle}>수강 중인 과목을 선택해주세요.</p>
-            </div>
-            <div className={styles.actionButtons}>
-              <button className={styles.newBtn} onClick={() => setIsJoinModalOpen(true)}>
-                새로운 과목
-              </button>
-              <div className={styles.moreWrapper} ref={dropdownRef}>
-                <button
-                  className={`${styles.moreBtn} ${selectedId ? styles.moreBtnActive : ''}`}
-                  onClick={() => selectedId && setShowDropdown((v) => !v)}
-                  disabled={!selectedId}
-                >
-                  더보기
-                </button>
-                {showDropdown && selectedClass && (
-                  <div className={styles.dropdownMenu}>
-                    <button
-                      className={`${styles.menuItem} ${styles.menuItemDanger}`}
-                      onClick={handleLeave}
-                    >
-                      클래스 나가기
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.filterBar}>
-            <div className={styles.searchBox}>
-              <svg className={styles.searchIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <input
-                type="text"
-                className={styles.searchInput}
-                placeholder="클래스 검색"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            <select className={styles.sortSelect} defaultValue="">
-              <option value="" disabled>정렬</option>
-              <option value="recent">최근 활동순</option>
-              <option value="name">이름순</option>
-            </select>
-          </div>
-
-          <div className={styles.cardGrid}>
-            {filtered.map((cls) => {
-              const isSelected = cls.id === selectedId;
-              return (
-                <div
-                  key={cls.id}
-                  className={`${styles.card} ${isSelected ? styles.cardSelected : ''}`}
-                  onClick={() => setSelectedId(isSelected ? null : cls.id)}
-                >
-                  {isSelected && (
-                    <div className={styles.starIcon}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                      </svg>
-                    </div>
-                  )}
-
-                  {cls.schedule && (
-                    <div className={styles.cardSchedule}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <polyline points="12 6 12 12 16 14" />
-                      </svg>
-                      {cls.schedule}
-                    </div>
-                  )}
-
-                  <div className={styles.cardTitle}>{cls.subject}</div>
-                  {cls.teacher && (
-                    <div className={styles.cardTeacher}>| {cls.teacher}</div>
-                  )}
-
-                  <button
-                    className={`${styles.moveBtn} ${isSelected ? styles.moveBtnSelected : ''}`}
-                    onClick={(e) => { e.stopPropagation(); router.push(`/s/classes/${cls.id}`); }}
-                  >
-                    <span>과목 대기실로 이동</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                  </button>
-                </div>
-              );
-            })}
-            {filtered.length === 0 && (
-              <div className={styles.empty}>
-                {search ? '검색 결과가 없습니다.' : '수강 중인 클래스가 없습니다.\n새로운 과목 버튼으로 참여해보세요.'}
-              </div>
-            )}
-          </div>
+    <>
+      <div className={styles.panel}>
+        {/* 헤더 */}
+        <div className={styles.header}>
+          <h2 className={styles.title}>클래스 목록</h2>
+          <button className={styles.addBtn} onClick={() => setIsJoinModalOpen(true)}>
+            클래스 추가하기
+          </button>
         </div>
 
-        <div className={styles.rightPanel}>
-          <div className={styles.sidebarHeader}>
-            <span className={styles.sidebarTitle}>클래스 정보</span>
-          </div>
-          {selectedClass ? (
-            <div className={styles.classInfo}>
-              <div className={styles.infoRow}>
-                <span className={styles.infoLabel}>과목</span>
-                <span className={styles.infoValue}>{selectedClass.subject}</span>
-              </div>
-              {selectedClass.grade && (
-                <div className={styles.infoRow}>
-                  <span className={styles.infoLabel}>학년</span>
-                  <span className={styles.infoValue}>{selectedClass.grade}학년 {selectedClass.homeroom ?? ''}</span>
-                </div>
-              )}
-              {selectedClass.teacher && (
-                <div className={styles.infoRow}>
-                  <span className={styles.infoLabel}>선생님</span>
-                  <span className={styles.infoValue}>{selectedClass.teacher}</span>
-                </div>
-              )}
-              <div className={styles.infoRow}>
-                <span className={styles.infoLabel}>상태</span>
-                <span className={`${styles.statusBadge} ${styles[`status${selectedClass.status}`]}`}>
-                  {selectedClass.status === 'ACTIVE' ? '진행 중' : selectedClass.status === 'PLANNING' ? '준비 중' : '종료'}
-                </span>
-              </div>
-              {selectedClass.explanation && (
-                <div className={styles.infoRow}>
-                  <span className={styles.infoLabel}>설명</span>
-                  <span className={styles.infoValue}>{selectedClass.explanation}</span>
-                </div>
-              )}
+        <div className={styles.divider} />
+
+        {/* 검색 + 정렬 */}
+        <FilterBar
+          search={search}
+          onSearch={setSearch}
+          placeholder="클래스 검색"
+        />
+
+        {/* 카드 그리드 */}
+        <div className={styles.cardGrid}>
+          {filtered.map((cls) => (
+            <ClassCard
+              key={cls.id}
+              title={formatTitle(cls)}
+              subtitle={cls.teacher ? `| ${cls.teacher} 선생님` : undefined}
+              schedule={cls.schedule}
+              onNavigate={() => router.push(`/s/classes/${cls.id}`)}
+              menuItems={[
+                {
+                  label: '클래스 나가기',
+                  danger: true,
+                  onClick: () => setPendingLeaveId(cls.id),
+                },
+              ]}
+            />
+          ))}
+          {filtered.length === 0 && (
+            <div className={styles.empty}>
+              {search
+                ? '검색 결과가 없습니다.'
+                : '수강 중인 클래스가 없습니다.\n클래스 추가하기 버튼으로 참여해보세요.'}
             </div>
-          ) : (
-            <p className={styles.sidebarEmpty}>클래스를 선택하면<br />정보가 표시됩니다.</p>
           )}
         </div>
       </div>
@@ -227,16 +110,17 @@ export const StudentClassList: React.FC<StudentClassListProps> = ({
           }}
         />
       )}
-      {isLeaveConfirmOpen && (
+
+      {pendingLeaveId !== null && (
         <ConfirmModal
           title="이 클래스에서 나가시겠습니까?"
           description="나가면 해당 클래스의 수업에 참여할 수 없습니다."
           cancelLabel="취소"
           confirmLabel="나가기"
-          onClose={() => setIsLeaveConfirmOpen(false)}
+          onClose={() => setPendingLeaveId(null)}
           onConfirm={handleLeaveConfirm}
         />
       )}
-    </div>
+    </>
   );
 };

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { X, AlertTriangle } from 'lucide-react';
 import styles from './LeaveSessionModal.module.css';
 
 interface Props {
@@ -12,10 +13,7 @@ export const LeaveSessionModal: React.FC<Props> = ({ onClose, onLeave }) => (
   <div className={styles.overlay} onClick={onClose}>
     <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
       <button className={styles.closeBtn} onClick={onClose}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
+        <X size={18} />
       </button>
 
       <div className={styles.iconWrap}>
@@ -38,11 +36,7 @@ export const LeaveSessionModal: React.FC<Props> = ({ onClose, onLeave }) => (
       <h2 className={styles.title}>정말로 클래스를 나가시겠어요?</h2>
 
       <div className={styles.warningBox}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff6f6f" strokeWidth="2" style={{ flexShrink: 0 }}>
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-          <line x1="12" y1="9" x2="12" y2="13" />
-          <line x1="12" y1="17" x2="12.01" y2="17" />
-        </svg>
+        <AlertTriangle size={16} color="#ff6f6f" style={{ flexShrink: 0 }} />
         <p className={styles.warningText}>
           나가시면 진행 중인 수업에 참여할 수 없고,<br />출석이 기록되지 않을 수 있어요.
         </p>

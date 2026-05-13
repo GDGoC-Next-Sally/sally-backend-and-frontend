@@ -50,8 +50,8 @@
 }
 
 .title {
-  font-size: 22px;
-  font-weight: 700;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   color: #262b29;
   margin: 0;
   text-align: center;
@@ -77,8 +77,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
   flex-shrink: 0;
 }
 
@@ -93,8 +93,8 @@
 }
 
 .stepLabel {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .stepLabelActive {
@@ -126,15 +126,15 @@
 }
 
 .sectionLabel {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   color: #262b29;
-  margin: 0 0 16px;
+  margin: 0 0 6px;
 }
 
 .sectionSubLabel {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
   color: #a9afad;
   margin: 4px 0 0;
 }
@@ -151,25 +151,157 @@
 }
 
 .templateEmpty {
-  font-size: 14px;
+  font-size: var(--font-size-md);
   color: #a9afad;
-  font-weight: 500;
+  font-weight: var(--font-weight-regular);
 }
 
-/* Step 2 - Form */
+/* Step 2 - Template section */
+.templateSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.templateHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.templateListContainer {
+  border: 1px solid #dbdded;
+  border-radius: 8px;
+  height: 292px;
+  background-color: #f7f7f9;
+  padding: 15px 7px 0 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.templateListContainer::-webkit-scrollbar {
+  width: 8px;
+}
+
+.templateListContainer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.templateListContainer::-webkit-scrollbar-thumb {
+  background-color: #dbdded;
+  border-radius: 28px;
+}
+
+.templateItem {
+  background-color: #ffffff;
+  border: 1px solid #dbdded;
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.templateItem:hover {
+  background-color: #f7fff9;
+}
+
+.templateItemSelected {
+  background-color: #f0fdf7;
+}
+
+.templateItemContent {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex: 1;
+}
+
+.templateUnit {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: #a9afad;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.templateLessonRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.templateLesson {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: #262b29;
+}
+
+.templatePages {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: #a9afad;
+}
+
+.templateObjectiveRow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.templateObjectiveTag {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: #40d294;
+  background-color: rgba(180, 240, 213, 0.3);
+  border-radius: 5px;
+  padding: 2px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.templateObjectiveText {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: #515554;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.templateCheckIcon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  margin-left: 8px;
+}
+
+/* Step 1 - Form */
+.fieldsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
 .fieldGroup {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-bottom: 20px;
+}
+
+.fieldRow {
+  display: flex;
+  gap: 12px;
 }
 
 .fieldLabel {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
   color: #262b29;
   display: block;
-  margin-bottom: 12px;
 }
 
 .inputWrapper {
@@ -182,8 +314,8 @@
   border: 1px solid #dbdded;
   border-radius: 8px;
   padding: 0 16px;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
   color: #262b29;
   background-color: #ffffff;
   outline: none;
@@ -197,7 +329,7 @@
 
 .input::placeholder {
   color: #a9afad;
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
 .inputCounter {
@@ -205,8 +337,8 @@
   right: 16px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
   color: #a9afad;
   pointer-events: none;
 }
@@ -215,15 +347,11 @@
   padding-right: 64px;
 }
 
-.row {
-  display: flex;
-  gap: 12px;
-}
-
 .halfField {
-  flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 12px;
+  flex: 1;
 }
 
 .select {
@@ -232,8 +360,8 @@
   border: 1px solid #dbdded;
   border-radius: 8px;
   padding: 0 36px 0 16px;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
   color: #a9afad;
   background-color: #ffffff;
   outline: none;
@@ -263,8 +391,8 @@
 }
 
 .visibilityLabel {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   color: #262b29;
   white-space: nowrap;
   padding-top: 2px;
@@ -316,14 +444,14 @@
 }
 
 .radioTitle {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
   color: #262b29;
 }
 
 .radioDesc {
-  font-size: 10px;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
   color: #a9afad;
 }
 
@@ -361,8 +489,8 @@
 }
 
 .aiGuideDescText {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-regular);
   color: #797c7c;
   line-height: 1.6;
 }
@@ -393,15 +521,15 @@
 }
 
 .uploadTitle {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   color: #797c7c;
   text-align: center;
 }
 
 .uploadSubtitle {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
   color: #a9afad;
   text-align: center;
 }
@@ -421,8 +549,8 @@
   border: 1.5px solid #dbdded;
   border-radius: 8px;
   background: none;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   color: #515554;
   cursor: pointer;
   transition: background-color 0.15s;
@@ -439,8 +567,8 @@
   border: none;
   border-radius: 8px;
   background-color: #22cb84;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   color: #ffffff;
   cursor: pointer;
   transition: background-color 0.15s;

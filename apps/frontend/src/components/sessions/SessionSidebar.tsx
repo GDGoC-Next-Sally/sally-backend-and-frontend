@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { RefreshCw, MoreHorizontal } from 'lucide-react';
 import styles from './SessionSidebar.module.css';
 import type { AttendanceStudent } from '@/actions/sessions';
 import type { StudentAnalysis } from './SessionWidget';
@@ -45,7 +47,6 @@ export const SessionSidebar: React.FC<Props> = ({
 }) => {
   const elapsed = useElapsed(sessionStartTime);
 
-  // Collect unique current topics from all students for the unit chips
   const unitTopics = Array.from(
     new Set(
       Array.from(analysisMap?.values() ?? [])
@@ -56,7 +57,6 @@ export const SessionSidebar: React.FC<Props> = ({
 
   return (
     <aside className={styles.sidebar}>
-      {/* 수업 종료 버튼 (active 상태에서만) */}
       {phase === 'active' && (
         <button className={styles.endBtn} onClick={onEnd} type="button">
           <span>수업 종료 하기</span>
@@ -64,22 +64,17 @@ export const SessionSidebar: React.FC<Props> = ({
         </button>
       )}
 
-      {/* 헤더 */}
       <div className={styles.header}>
         <h2 className={styles.title}>
-          학생 목록 <span className={styles.count}>{students.length}</span>
+          접속 중인 학생 <span className={styles.count}>{students.length}</span>
         </h2>
         {phase === 'waiting' && (
           <button className={styles.refreshBtn} type="button" onClick={onRefresh}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 2v6h-6" /><path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
-              <path d="M3 22v-6h6" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
-            </svg>
+            <RefreshCw size={18} />
           </button>
         )}
       </div>
 
-      {/* 학생 목록 */}
       {students.length === 0 ? (
         <p className={styles.empty}>아직 입장한 학생이 없습니다.</p>
       ) : (
@@ -88,6 +83,9 @@ export const SessionSidebar: React.FC<Props> = ({
             const isSelected = phase === 'active' && student.userId === selectedId;
             const analysis = analysisMap?.get(student.userId);
             const needsIntervention = analysis?.need_intervention;
+            const progressPct = analysis?.understanding_score != null
+              ? analysis.understanding_score * 10
+              : null;
 
             return (
               <li
@@ -100,64 +98,54 @@ export const SessionSidebar: React.FC<Props> = ({
                 ].join(' ')}
                 onClick={() => phase === 'active' && onSelect?.(student.userId)}
               >
-                {/* 학생 이름 행 */}
                 <div className={styles.itemHeader}>
                   <div className={styles.studentInfo}>
-                    <div className={styles.avatar} />
-                    <div className={styles.nameBlock}>
-                      <span className={styles.name}>{student.name}</span>
-                      {analysis?.current_topic && (
-                        <span className={styles.topicSub}>{analysis.current_topic}</span>
-                      )}
+                    <div className={styles.avatar}>
+                      <Image src="/images/profile_mini.png" alt={student.name} width={32} height={32} />
                     </div>
+                    <span className={styles.name}>{student.name}</span>
                   </div>
-                  <span className={`${styles.statusDot} ${needsIntervention || (analysis?.understanding_score && analysis.understanding_score <= 4)
-                      ? styles.dotRed
-                      : (analysis?.understanding_score && analysis.understanding_score <= 7)
-                        ? styles.dotYellow
-                        : styles.dotGreen
-                    }`} />
+                  <div className={styles.itemActions}>
+                    {progressPct != null && (
+                      <span className={styles.progressBadge}>진행률 {progressPct}%</span>
+                    )}
+                    <button
+                      className={styles.moreBtn}
+                      onClick={(e) => e.stopPropagation()}
+                      type="button"
+                    >
+                      <MoreHorizontal size={16} color="#9ca3af" />
+                    </button>
+                  </div>
                 </div>
 
-                {/* 선택된 학생 상세 */}
-                {isSelected && analysis ? (
-                  <div className={styles.selectedDetails}>
-                    <div className={styles.statsGrid}>
-                      <div className={styles.statCell}>
-                        <div className={styles.statLabel}>참여도</div>
-                        <div className={styles.statValue}>
-                          {analysis.engagement_level ?? '-'}
-                        </div>
-                      </div>
-                      <div className={styles.statDivider} />
-                      <div className={styles.statCell}>
-                        <div className={styles.statLabel}>이해도</div>
-                        <div className={styles.statValue}>
-                          {analysis.understanding_score !== undefined
-                            ? `${analysis.understanding_score * 10}%`
-                            : '-'}
-                        </div>
-                      </div>
-                      <div className={styles.statDivider} />
-                      <div className={styles.statCell}>
-                        <div className={styles.statLabel}>감정 상태</div>
-                        <div className={`${styles.statValue} ${styles.emotionValue}`}>
-                          {analysis.student_emotion ?? '-'}
-                        </div>
+                {analysis?.one_line_summary ? (
+                  <div className={styles.summaryText}>{analysis.one_line_summary}</div>
+                ) : (
+                  <div className={styles.summaryText}>수업중인 개념</div>
+                )}
+
+                {isSelected && analysis && (
+                  <div className={styles.statsGrid}>
+                    <div className={styles.statCell}>
+                      <div className={styles.statLabel}>참여도</div>
+                      <div className={styles.statValue}>{analysis.engagement_level ?? '-'}</div>
+                    </div>
+                    <div className={styles.statDivider} />
+                    <div className={styles.statCell}>
+                      <div className={styles.statLabel}>이해도</div>
+                      <div className={styles.statValue}>
+                        {analysis.understanding_score != null ? `${analysis.understanding_score * 10}%` : '-'}
                       </div>
                     </div>
-
-                    {/* 상태 요약 표시 */}
-                    {analysis.one_line_summary && (
-                      <div className={styles.analysisSummary}>
-                        <span className={styles.analysisIcon}>✨</span>
-                        {analysis.one_line_summary}
+                    <div className={styles.statDivider} />
+                    <div className={styles.statCell}>
+                      <div className={styles.statLabel}>감정 상태</div>
+                      <div className={`${styles.statValue} ${styles.emotionValue}`}>
+                        {analysis.student_emotion ?? '-'}
                       </div>
-                    )}
+                    </div>
                   </div>
-                ) : (
-                  /* 비선택 학생: 컴팩트 서브 텍스트 */
-                  <div className={styles.compactSub}>수업중인 개념</div>
                 )}
               </li>
             );
@@ -165,7 +153,6 @@ export const SessionSidebar: React.FC<Props> = ({
         </ul>
       )}
 
-      {/* 단원 칩 섹션 */}
       {phase === 'active' && unitTopics.length > 0 && (
         <div className={styles.unitSection}>
           <div className={styles.unitTitle}>수업 단원</div>

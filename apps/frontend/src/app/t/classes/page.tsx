@@ -12,6 +12,7 @@ import {
   type CreateClassBody,
 } from '@/actions/classes';
 import { ClassList } from '@/components/classes/ClassList';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function TeacherClassesPage() {
   const [classes, setClasses] = useState<ClassItem[]>([]);
@@ -70,13 +71,15 @@ export default function TeacherClassesPage() {
   };
 
   return (
-    <ClassList
-      classes={classes}
-      onCreateClass={handleCreateClass}
-      onUpdateClass={handleUpdateClass}
-      onDeleteClass={handleDeleteClass}
-      onRefreshCode={handleRefreshCode}
-      onToggleRegisterable={handleToggleRegisterable}
-    />
+    <PageContainer>
+      <ClassList
+        classes={classes}
+        onCreateClass={handleCreateClass}
+        onUpdateClass={handleUpdateClass}
+        onDeleteClass={handleDeleteClass}
+        onRefreshCode={handleRefreshCode}
+        onToggleRegisterable={handleToggleRegisterable}
+      />
+    </PageContainer>
   );
 }

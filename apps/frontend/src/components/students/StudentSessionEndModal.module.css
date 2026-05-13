@@ -44,8 +44,8 @@
 
 /* ─── 제목 ─────────────────────────────────────────────── */
 .title {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   text-align: center;
   margin: 0;
@@ -62,8 +62,8 @@
 /* ─── 메시지 ────────────────────────────────────────────── */
 .message {
   text-align: center;
-  font-size: 24px;
-  font-weight: 700;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-secondary);
   line-height: 1.5;
   display: flex;
@@ -87,8 +87,8 @@
 }
 
 .infoText {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   color: #0f76f8;
   line-height: 1.5;
   margin: 0;
@@ -106,8 +106,8 @@
   flex: 1;
   height: 44px;
   border-radius: 8px;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
   transition: filter 0.15s;
 }

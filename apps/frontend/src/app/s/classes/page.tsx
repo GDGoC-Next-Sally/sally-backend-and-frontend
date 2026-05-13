@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getStudentClasses, leaveClass, type ClassItem } from '@/actions/classes';
 import { StudentClassList } from '@/components/students/StudentClassList';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function StudentClassesPage() {
   const [classes, setClasses] = useState<ClassItem[]>([]);
@@ -23,10 +24,12 @@ export default function StudentClassesPage() {
   };
 
   return (
-    <StudentClassList
-      classes={classes}
-      onLeaveClass={handleLeave}
-      onRefresh={fetchClasses}
-    />
+    <PageContainer>
+      <StudentClassList
+        classes={classes}
+        onLeaveClass={handleLeave}
+        onRefresh={fetchClasses}
+      />
+    </PageContainer>
   );
 }

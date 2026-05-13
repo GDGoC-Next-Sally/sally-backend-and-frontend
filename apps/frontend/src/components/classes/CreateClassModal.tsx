@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { X } from 'lucide-react';
 import styles from './CreateClassModal.module.css';
 import type { CreateClassBody } from '@/actions/classes';
 
@@ -71,10 +72,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <button className={styles.closeBtn} onClick={onClose}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
+          <X size={20} />
         </button>
 
         <h2 className={styles.title}>{isEdit ? '클래스 수정하기' : '클래스 생성하기'}</h2>

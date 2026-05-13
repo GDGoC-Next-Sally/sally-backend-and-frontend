@@ -9,6 +9,7 @@ const config: StorybookConfig = {
   stories: ['../src/**/*.stories.@(ts|tsx|mdx)'],
   addons: ['@storybook/addon-docs'],
   framework: { name: '@storybook/nextjs', options: {} },
+  staticDirs: ['../public'],
   webpackFinal: async (config) => {
     if (config.resolve) {
       config.resolve.alias = {

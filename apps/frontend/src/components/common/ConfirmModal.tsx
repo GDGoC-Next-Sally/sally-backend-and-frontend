@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { X } from 'lucide-react';
 import styles from './ConfirmModal.module.css';
 
 interface ConfirmModalProps {
@@ -32,18 +33,17 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        {/* 닫기 버튼 */}
-        <button className={styles.closeBtn} onClick={onClose} aria-label="닫기">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-
         {/* 본문 */}
         <div className={styles.body}>
-          <h2 className={styles.title}>{title}</h2>
-          <hr className={styles.divider} />
+          <div className={styles.header}>
+            <div className={styles.titleRow}>
+              <h2 className={styles.title}>{title}</h2>
+              <button className={styles.closeBtn} onClick={onClose} aria-label="닫기">
+                <X size={22} />
+              </button>
+            </div>
+            <hr className={styles.divider} />
+          </div>
           {description && (
             <p className={styles.description}>{description}</p>
           )}

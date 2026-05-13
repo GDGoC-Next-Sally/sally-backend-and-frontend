@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { getTeacherClasses, type ClassItem } from '@/actions/classes';
 import { getSessionsByClass, type Session } from '@/actions/sessions';
 import { getSessionStudentReports, getSessionSummaryReport } from '@/actions/reports';
+import { Download, Clock, User, Search } from 'lucide-react';
 import styles from './reports.module.css';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 /* ── 타입 정의 ─────────────────────────────────────────────── */
 
@@ -279,16 +281,13 @@ export default function TeacherReportsPage() {
   /* 개별 학생 뷰 */
   if (selectedStudent) {
     return (
+      <PageContainer>
       <div className={styles.page}>
         <div className={styles.pageHeader}>
           <h1 className={styles.pageTitle}>AI 분석 리포트</h1>
           <button className={styles.exportBtn}>
             내보내기
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="17 8 12 3 7 8" />
-              <line x1="12" y1="3" x2="12" y2="15" />
-            </svg>
+            <Download size={14} strokeWidth={2.5} />
           </button>
         </div>
         <StudentDetailView
@@ -297,10 +296,12 @@ export default function TeacherReportsPage() {
           onBack={() => setSelectedStudent(null)}
         />
       </div>
+      </PageContainer>
     );
   }
 
   return (
+    <PageContainer>
     <div className={styles.page}>
       {/* 헤더 */}
       <div className={styles.pageHeader}>
@@ -339,9 +340,7 @@ export default function TeacherReportsPage() {
         </select>
         {activeTab === 'students' && (
           <div className={styles.searchBox}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
+            <Search size={14} color="#9CA3AF" strokeWidth={2.5} />
             <input className={styles.searchInput} placeholder="학생 검색" value={studentSearch} onChange={e => setStudentSearch(e.target.value)} />
           </div>
         )}
@@ -492,5 +491,6 @@ export default function TeacherReportsPage() {
         </div>
       )}
     </div>
+    </PageContainer>
   );
 }

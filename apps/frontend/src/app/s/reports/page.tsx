@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getStudentSessionList, getStudentSessionReport, type SessionListItem } from '@/actions/reports';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 interface MyReport {
   understanding_score?: number;
@@ -43,7 +44,7 @@ export default function StudentReportsPage() {
   const selectedSession = sessions.find(s => s.sessionId === selectedSessionId);
 
   return (
-    <div style={{ padding: 24, maxWidth: 900, margin: '0 auto' }}>
+    <PageContainer>
       <div style={{ marginBottom: 24 }}>
         <button
           onClick={() => router.back()}
@@ -171,6 +172,6 @@ export default function StudentReportsPage() {
           )}
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

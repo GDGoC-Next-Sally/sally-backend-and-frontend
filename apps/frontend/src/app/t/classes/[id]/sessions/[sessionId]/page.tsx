@@ -10,6 +10,7 @@ import {
   type AttendanceStudent,
 } from '@/actions/sessions';
 import { SessionWidget } from '@/components/sessions/SessionWidget';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function SessionPage() {
   const params = useParams();
@@ -52,19 +53,21 @@ export default function SessionPage() {
   };
 
   if (initialPhase === null) {
-    return <div style={{ padding: '2rem' }}>세션 정보를 불러오는 중...</div>;
+    return <PageContainer><div>세션 정보를 불러오는 중...</div></PageContainer>;
   }
 
   return (
-    <SessionWidget
-      classId={classId}
-      sessionId={sessionId}
-      initialPhase={initialPhase}
-      sessionName={sessionName}
-      students={students}
-      onStart={handleStart}
-      onFinish={handleFinish}
-      onRefreshStudents={fetchStudents}
-    />
+    <PageContainer>
+      <SessionWidget
+        classId={classId}
+        sessionId={sessionId}
+        initialPhase={initialPhase}
+        sessionName={sessionName}
+        students={students}
+        onStart={handleStart}
+        onFinish={handleFinish}
+        onRefreshStudents={fetchStudents}
+      />
+    </PageContainer>
   );
 }

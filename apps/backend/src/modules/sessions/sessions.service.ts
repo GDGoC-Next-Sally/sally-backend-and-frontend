@@ -4,6 +4,7 @@ import { EventsGateway } from '../../common/gateways/events.gateway';
 import { ReportsService } from '../reports/reports.service';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
+import { validateSessionOwner } from '../../common/utils/validate-session-owner';
 
 @Injectable()
 export class SessionsService {
@@ -88,12 +89,7 @@ export class SessionsService {
   }
 
   async update(id: number, teacherId: string, updateSessionDto: UpdateSessionDto) {
-    const session = await this.prisma.sessions.findUnique({ where: { id } });
-    if (!session) throw new NotFoundException(`세션 #${id}를 찾을 수 없습니다.`);
-    
-    if (session.teacher_id !== teacherId) {
-      throw new UnauthorizedException('수업을 수정할 권한이 없습니다.');
-    }
+    await validateSessionOwner(this.prisma, id, teacherId);
 
     const { scheduled_date, scheduled_start, scheduled_end, ...rest } = updateSessionDto;
 
@@ -109,20 +105,13 @@ export class SessionsService {
   }
 
   async remove(id: number, teacherId: string) {
-    const session = await this.prisma.sessions.findUnique({ where: { id } });
-    if (!session) throw new NotFoundException(`세션 #${id}를 찾을 수 없습니다.`);
-    
-    if (session.teacher_id !== teacherId) {
-      throw new UnauthorizedException('수업을 삭제할 권한이 없습니다.');
-    }
+    await validateSessionOwner(this.prisma, id, teacherId);
 
     return this.prisma.sessions.delete({ where: { id } });
   }
 
   async startSession(id: number, teacherId: string) {
-    const session = await this.prisma.sessions.findUnique({ where: { id } });
-    if (!session) throw new NotFoundException(`세션 #${id}를 찾을 수 없습니다.`);
-    if (session.teacher_id !== teacherId) throw new UnauthorizedException('수업을 시작할 권한이 없습니다.');
+    await validateSessionOwner(this.prisma, id, teacherId);
 
     const updatedSession = await this.prisma.sessions.update({
       where: { id },
@@ -137,11 +126,7 @@ export class SessionsService {
   }
 
   async finishSession(id: number, teacherId: string) {
-    const session = await this.prisma.sessions.findUnique({
-      where: { id },
-    });
-    if (!session) throw new NotFoundException(`세션 #${id}를 찾을 수 없습니다.`);
-    if (session.teacher_id !== teacherId) throw new UnauthorizedException('수업을 종료할 권한이 없습니다.');
+    await validateSessionOwner(this.prisma, id, teacherId);
 
     const updatedSession = await this.prisma.sessions.update({
       where: { id },

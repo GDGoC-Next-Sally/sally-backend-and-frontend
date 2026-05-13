@@ -12,6 +12,7 @@ import {
   type CreateSessionBody,
 } from '@/actions/sessions';
 import { SessionGrid } from '@/components/sessions/SessionGrid';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function ClassDetailPage() {
   const params = useParams();
@@ -63,16 +64,7 @@ export default function ClassDetailPage() {
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      padding: '24px',
-      backgroundColor: '#F5F4F0',
-      minHeight: 'calc(100vh - 60px)',
-      maxWidth: '1400px',
-      margin: '0 auto',
-      width: '100%',
-      boxSizing: 'border-box',
-    }}>
+    <PageContainer>
       <SessionGrid
         classId={classId}
         classInfo={classInfo}
@@ -82,6 +74,6 @@ export default function ClassDetailPage() {
         onUpdateSession={handleUpdateSession}
         onRefresh={fetchData}
       />
-    </div>
+    </PageContainer>
   );
 }

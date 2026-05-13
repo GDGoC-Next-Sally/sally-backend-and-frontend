@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { Clock, Smartphone } from 'lucide-react';
 import styles from './SessionPrep.module.css';
 
 export const SessionPrep = () => {
@@ -69,9 +70,7 @@ export const SessionPrep = () => {
         <div className={styles.statsRow}>
           <div className={styles.statItem}>
             <div className={styles.statIcon}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#868e96" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-              </svg>
+              <Clock size={20} color="#868e96" />
             </div>
             <div className={styles.statLabel}>시작 예정</div>
             <div className={styles.statValue}>13:30</div>
@@ -79,9 +78,7 @@ export const SessionPrep = () => {
           <div className={styles.statDivider} />
           <div className={styles.statItem}>
             <div className={styles.statIcon}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#868e96" strokeWidth="2">
-                <path d="M15 3H9a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z" /><line x1="12" y1="18" x2="12" y2="18" />
-              </svg>
+              <Smartphone size={20} color="#868e96" />
             </div>
             <div className={styles.statLabel}>입장 가능 시간</div>
             <div className={styles.statValue}>13:20부터</div>
@@ -89,9 +86,7 @@ export const SessionPrep = () => {
           <div className={styles.statDivider} />
           <div className={styles.statItem}>
             <div className={styles.statIcon}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#868e96" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-              </svg>
+              <Clock size={20} color="#868e96" />
             </div>
             <div className={styles.statLabel}>예상 소요 시간</div>
             <div className={styles.statValue}>45분</div>

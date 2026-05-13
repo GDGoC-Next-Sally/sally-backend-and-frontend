@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import { ConfirmModal } from '../common/ConfirmModal';
 import styles from './SessionCodeModal.module.css';
 
@@ -59,10 +60,7 @@ export const SessionCodeModal: React.FC<SessionCodeModalProps> = ({
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <button className={styles.closeBtn} onClick={onClose}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
+          <X size={18} />
         </button>
 
         <h2 className={styles.title}>입장 코드 관리</h2>

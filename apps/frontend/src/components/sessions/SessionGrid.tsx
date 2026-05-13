@@ -1,29 +1,44 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { type Session } from '@/actions/sessions';
 import { type ClassItem } from '@/actions/classes';
+import { User, MoreHorizontal } from 'lucide-react';
 import { SessionModal } from './SessionModal';
 import { CreateSessionModal } from './CreateSessionModal';
 import { ConfirmModal } from '../common/ConfirmModal';
+import { DropdownMenu } from '../common/DropdownMenu';
+import { FilterBar } from '../common/FilterBar';
 import styles from './SessionGrid.module.css';
 import type { CreateSessionBody } from '@/actions/sessions';
 import { computeSessionStatus, type ComputedStatus } from '@/utils/sessionStatus';
 
 const STATUS_CONFIG: Record<ComputedStatus, { label: string; badgeClass: string; iconColor: string; iconBg: string }> = {
-  live:     { label: '진행중', badgeClass: 'badgeActive',  iconColor: 'var(--color-live)',              iconBg: 'var(--color-live-light)' },
-  upcoming: { label: '예정',   badgeClass: 'badgePending', iconColor: '#ff922b',                        iconBg: '#fff4e6' },
-  finished: { label: '종료',   badgeClass: 'badgeClosed',  iconColor: 'var(--color-text-secondary)',    iconBg: 'var(--color-border-light)' },
+  live:     { label: '진행중',    badgeClass: 'badgeActive',  iconColor: '#22cb84', iconBg: '#f5faf8' },
+  upcoming: { label: '임시 예정', badgeClass: 'badgePending', iconColor: '#e3aa00', iconBg: '#f5faf8' },
+  finished: { label: '종료',      badgeClass: 'badgeClosed',  iconColor: '#adb5bd', iconBg: '#f5faf8' },
 };
 
-function formatDate(dateStr?: string | null) {
+function formatRelativeTime(dateStr?: string | null): string {
   if (!dateStr) return '';
   const d = new Date(dateStr);
-  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+  const now = new Date();
+  const diff = now.getTime() - d.getTime();
+  if (diff < 0) {
+    const futureDays = Math.floor(-diff / (1000 * 60 * 60 * 24));
+    const futureHours = Math.floor(-diff / (1000 * 60 * 60));
+    if (futureDays > 0) return `${futureDays}일 후`;
+    if (futureHours > 0) return `${futureHours}시간 후`;
+    return '곧';
+  }
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  if (hours < 1) return '방금 전';
+  if (hours < 24) return `${hours}시간 전`;
+  return `${days}일 전`;
 }
-
-type Tab = '전체보기' | '세션 목록' | '과제 & 자료';
 
 interface SessionGridProps {
   classId: number;
@@ -45,26 +60,12 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
   onRefresh,
 }) => {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<Tab>('세션 목록');
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [search, setSearch] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Session | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpenMenuId(null);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
 
   const handleDelete = (id: number) => {
-    setOpenMenuId(null);
     setDeleteTargetId(id);
   };
 
@@ -83,8 +84,6 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
       const aOrder = statusOrder[computeSessionStatus(a)];
       const bOrder = statusOrder[computeSessionStatus(b)];
       if (aOrder !== bOrder) return aOrder - bOrder;
-      
-      // 같은 상태면 최신순(날짜 내림차순)으로 정렬
       const aDate = new Date(a.scheduled_date || 0).getTime();
       const bDate = new Date(b.scheduled_date || 0).getTime();
       return bDate - aDate;
@@ -94,6 +93,8 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
     ? `${classInfo.grade ? `${classInfo.grade}학년 ` : ''}${classInfo.homeroom ?? ''}`
     : '';
 
+  const teacherName = classInfo?.users?.name;
+
   return (
     <div className={styles.mainContent}>
       <button className={styles.backLink} onClick={() => router.push('/t/classes')}>
@@ -102,118 +103,88 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
 
       <div className={styles.classHeader}>
         <h1 className={styles.classTitle}>{classTitle || '—'}</h1>
-        {classInfo?.subject && <span className={styles.tag}>{classInfo.subject}</span>}
-      </div>
-
-      <div className={styles.tabs}>
-        {(['전체보기', '세션 목록', '과제 & 자료'] as Tab[]).map((tab) => (
-          <button
-            key={tab}
-            className={`${styles.tab} ${activeTab === tab ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {activeTab !== '과제 & 자료' ? (
-        <>
-          <div className={styles.filterBar}>
-            <div className={styles.searchBox}>
-              <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <input
-                type="text"
-                className={styles.searchInput}
-                placeholder="세션 검색"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+        {teacherName && (
+          <div className={styles.teacherBadge}>
+            <div className={styles.teacherAvatar}>
+              <Image src="/images/profile_color.png" alt="프로필" width={28} height={28} />
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <select className={styles.sortSelect} defaultValue="">
-                <option value="" disabled>정렬</option>
-                <option value="recent">최근순</option>
-                <option value="name">이름순</option>
-              </select>
-              <button className={styles.createBtn} onClick={() => setIsCreateOpen(true)}>
-                + 세션 만들기
-              </button>
-            </div>
+            <span className={styles.teacherName}>{teacherName} 선생님</span>
           </div>
+        )}
+      </div>
 
-          <div className={styles.sessionList} ref={menuRef}>
-            {filtered.length === 0 && (
-              <div className={styles.empty}>
-                {search ? '검색 결과가 없습니다.' : '등록된 세션이 없습니다.'}
+      <FilterBar
+        search={search}
+        onSearch={setSearch}
+        placeholder="세션 검색"
+        sortOptions={[
+          { value: 'recent', label: '최근순' },
+          { value: 'name', label: '이름순' },
+        ]}
+      >
+        <button className={styles.createBtn} onClick={() => setIsCreateOpen(true)}>
+          + 세션 만들기
+        </button>
+      </FilterBar>
+
+      <div className={styles.sessionList}>
+        {filtered.length === 0 && (
+          <div className={styles.empty}>
+            {search ? '검색 결과가 없습니다.' : '등록된 세션이 없습니다.'}
+          </div>
+        )}
+        {filtered.map((session) => {
+          const computed = computeSessionStatus(session);
+          const cfg = STATUS_CONFIG[computed];
+          return (
+            <div
+              key={session.id}
+              className={styles.sessionRow}
+              onClick={() => router.push(`/t/classes/${classId}/sessions/${session.id}`)}
+            >
+              <div className={styles.sessionIcon}>
+                <Image src="/images/sessionicon.png" alt="세션" width={30} height={30} />
               </div>
-            )}
-            {filtered.map((session) => {
-              const computed = computeSessionStatus(session);
-              const cfg = STATUS_CONFIG[computed];
-              return (
-                <div
-                  key={session.id}
-                  className={styles.sessionRow}
-                  onClick={() => router.push(`/t/classes/${classId}/sessions/${session.id}`)}
-                >
-                  <div className={styles.sessionIcon} style={{ backgroundColor: cfg.iconBg }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={cfg.iconColor} strokeWidth="2">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                    </svg>
-                  </div>
 
-                  <div className={styles.sessionInfo}>
-                    <div className={styles.sessionTitle}>{session.session_name}</div>
-                    <div className={styles.sessionSubject}>{session.explanation ?? ''}</div>
-                  </div>
+              <div className={styles.sessionInfo}>
+                <div className={styles.sessionTitle}>{session.session_name}</div>
+                <div className={styles.sessionSubject}>{session.explanation ?? ''}</div>
+              </div>
 
-                  {session.period && (
-                    <div className={styles.sessionMeta}>{session.period}교시</div>
-                  )}
-
-                  <div className={styles.sessionTime}>{formatDate(session.scheduled_date)}</div>
-
-                  <span className={`${styles.badge} ${styles[cfg.badgeClass]}`}>{cfg.label}</span>
-
-                  <div className={styles.menuContainer}>
-                    <button
-                      className={styles.moreBtn}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenMenuId(openMenuId === session.id ? null : session.id);
-                      }}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                        <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
-                      </svg>
-                    </button>
-                    {openMenuId === session.id && (
-                      <div className={styles.dropdownMenu}>
-                        <button className={styles.menuItem} onClick={(e) => { e.stopPropagation(); router.push(`/t/classes/${classId}/sessions/${session.id}`); setOpenMenuId(null); }}>
-                          상세보기
-                        </button>
-                        <button className={styles.menuItem} onClick={(e) => { e.stopPropagation(); setEditTarget(session); setOpenMenuId(null); }}>
-                          정보 수정
-                        </button>
-                        <button className={`${styles.menuItem} ${styles.menuItemDanger}`} onClick={(e) => { e.stopPropagation(); handleDelete(session.id); }}>
-                          삭제
-                        </button>
-                      </div>
-                    )}
-                  </div>
+              {session.period != null && (
+                <div className={styles.sessionMeta}>
+                  <User size={20} color="#626664" strokeWidth={1.8} />
+                  <span>{session.period}</span>
                 </div>
-              );
-            })}
-          </div>
-        </>
-      ) : (
-        <div className={styles.empty} style={{ marginTop: '40px' }}>
-          등록된 과제 및 자료가 없습니다.
-        </div>
-      )}
+              )}
+
+              <div className={styles.sessionTime}>
+                {formatRelativeTime(session.scheduled_date ?? session.scheduled_start)}
+              </div>
+
+              <span className={`${styles.badge} ${styles[cfg.badgeClass]}`}>{cfg.label}</span>
+
+              <div
+                className={styles.menuContainer}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <DropdownMenu
+                  trigger={
+                    <button className={styles.moreBtn}>
+                      <MoreHorizontal size={20} color="#626664" />
+                    </button>
+                  }
+                  items={[
+                    { label: '상세보기', onClick: () => router.push(`/t/classes/${classId}/sessions/${session.id}`) },
+                    { label: '정보 수정', onClick: () => setEditTarget(session) },
+                    { label: '삭제', danger: true, onClick: () => handleDelete(session.id) },
+                  ]}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
       {isCreateOpen && (
         <CreateSessionModal

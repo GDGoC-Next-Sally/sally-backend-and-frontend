@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { RefreshCw, MoreHorizontal } from 'lucide-react';
 import styles from './StudentSidebar.module.css';
 
 const MOCK_STUDENTS = [
@@ -17,12 +18,7 @@ export const StudentSidebar = () => {
       <div className={styles.header}>
         <h2 className={styles.title}>접속 중인 학생 <span className={styles.count}>34</span></h2>
         <button className={styles.refreshBtn}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 2v6h-6"></path>
-            <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
-            <path d="M3 22v-6h6"></path>
-            <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
-          </svg>
+          <RefreshCw size={20} />
         </button>
       </div>
 
@@ -36,11 +32,7 @@ export const StudentSidebar = () => {
                 <span className={styles.progressBadge}>진행률 {student.progress}%</span>
               </div>
               <button className={styles.moreBtn}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <circle cx="5" cy="12" r="2"/>
-                  <circle cx="12" cy="12" r="2"/>
-                  <circle cx="19" cy="12" r="2"/>
-                </svg>
+                <MoreHorizontal size={16} />
               </button>
             </div>
             <div className={styles.summaryBox}>

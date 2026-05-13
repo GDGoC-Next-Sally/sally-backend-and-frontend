@@ -1,349 +1,89 @@
-.container {
-  background-color: var(--color-bg);
-  min-height: calc(100vh - 56px);
-  padding: 24px;
-}
-
-.layout {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 340px; /* Wider sidebar to match design */
-  gap: 0;
+/* ── 메인 패널 (흰 카드) ── */
+.panel {
   background: var(--color-surface);
-  border-radius: 16px;
+  border-radius: var(--radius-card);
   padding: 32px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  align-items: start;
 }
 
-.leftPanel {
-  min-width: 0;
-  padding-right: 32px;
-}
-
-/* Header */
+/* ── 헤더 ── */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-}
-
-.title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin: 0 0 4px 0;
-}
-
-.subtitle {
-  font-size: 13px;
-  color: var(--color-text-secondary);
-  margin: 0;
-}
-
-.actionButtons {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.moreWrapper {
-  position: relative;
-}
-
-.btnCreate {
-  background: #4B4B4B; /* Dark gray as per image */
-  color: var(--color-surface);
-  border: none;
-  border-radius: 10px;
-  padding: 12px 24px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s;
-}
-
-.btnCreate:hover {
-  background: var(--color-text-primary);
-  transform: translateY(-1px);
-}
-
-.btnMore {
-  background: var(--color-live);
-  color: var(--color-surface);
-  border: none;
-  border-radius: 10px;
-  padding: 12px 24px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: not-allowed;
-  white-space: nowrap;
-  opacity: 0.45;
-}
-
-.btnMoreActive {
-  cursor: pointer;
-  opacity: 1;
-}
-
-.btnMoreActive:hover {
-  background: var(--color-live-hover);
-}
-
-/* Filter bar */
-.filterBar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.searchBox {
-  flex: 1;
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.searchIcon {
-  position: absolute;
-  left: 14px;
-  color: var(--color-text-secondary);
-}
-
-.searchInput {
-  width: 100%;
-  padding: 12px 14px 12px 42px;
-  border: 1.5px solid var(--color-border);
-  border-radius: 10px;
-  font-size: 14px;
-  color: var(--color-text-primary);
-  background: var(--color-surface);
-  outline: none;
-}
-
-.searchInput:focus {
-  border-color: var(--color-live);
-}
-
-.sortSelect {
-  padding: 12px 36px 12px 14px;
-  border: 1.5px solid var(--color-border);
-  border-radius: 10px;
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  background: var(--color-surface);
-  cursor: pointer;
-  outline: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B6B6B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 1rem;
-}
-
-/* Card grid */
-.cardGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
-}
-
-.card {
-  background: var(--color-surface);
-  border-radius: 14px;
-  border: 1.5px solid var(--color-border);
-  padding: 20px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.card:hover {
-  border-color: var(--color-live);
-  transform: translateY(-2px);
-}
-
-.cardSelected {
-  background: var(--color-live);
-  border-color: var(--color-live);
-  box-shadow: 0 8px 20px rgba(34, 203, 132, 0.25);
-}
-
-.cardSchedule {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--color-text-placeholder);
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.cardSelected .cardSchedule {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.cardTitle {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--color-text-primary);
-  margin-bottom: 6px;
-}
-
-.cardTitleSelected { color: var(--color-surface); }
-
-.cardSubject {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
   margin-bottom: 20px;
 }
 
-.cardSubjectSelected { color: rgba(255, 255, 255, 0.9); }
-
-.moveBtn {
-  width: 100%;
-  background: var(--color-live-light);
-  border: none;
-  padding: 10px 14px;
-  border-radius: 8px;
-  color: var(--color-live);
-  font-weight: 700;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
 }
 
-.moveBtnSelected {
-  background: rgba(255, 255, 255, 0.2);
+.headerButtons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* "클래스 만들기" — 피그마: #515554, 46×176px, radius 12px */
+.createBtn {
+  height: 46px;
+  width: 176px;
+  background: #515554;
   color: var(--color-surface);
-}
-
-/* Sidebar */
-.rightPanel {
-  border-left: 1px solid var(--color-border-light);
-  padding-left: 28px;
-  min-height: 600px;
-}
-
-.sidebarHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.sidebarTitle {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--color-text-primary);
-}
-
-.sidebarCount {
-  color: var(--color-red);
-}
-
-.refreshBtn {
-  background: none;
   border: none;
-  color: var(--color-text-secondary);
+  border-radius: var(--radius-card);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
 }
 
-.studentList {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.createBtn:hover {
+  background: var(--color-text-primary);
 }
 
-.studentCard {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.studentTopRow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.studentAvatar {
-  width: 32px;
-  height: 32px;
-  background: var(--color-border-light);
-  border-radius: 50%;
-}
-
-.studentName {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  flex: 1;
-}
-
-.progressBadge {
-  color: var(--color-live);
-  font-size: 11px;
-  font-weight: 700;
-  background: var(--color-live-light);
-  padding: 4px 10px;
-  border-radius: 20px;
-}
-
-.studentMenuBtn {
-  background: none;
+/* "더보기" — 피그마: #22cb84, 46×176px, radius 12px */
+.moreBtn {
+  height: 46px;
+  width: 176px;
+  background: var(--color-live);
+  color: var(--color-surface);
   border: none;
-  color: var(--color-text-secondary);
+  border-radius: var(--radius-card);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
 }
 
-.studentSummary {
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-border-light);
-  border-radius: 10px;
-  padding: 12px;
-  font-size: 11px;
-  color: var(--color-text-secondary);
-  line-height: 1.6;
+.moreBtn:hover {
+  background: var(--color-live-hover);
 }
 
-.sidebarEmpty {
+/* ── 구분선 ── */
+.divider {
+  height: 1px;
+  background: var(--color-border);
+  margin-bottom: 20px;
+}
+
+/* ── 카드 그리드 ── */
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 238px));
+  gap: 14px;
+}
+
+/* ── 빈 상태 ── */
+.empty {
+  grid-column: 1 / -1;
+  padding: 48px 0;
   text-align: center;
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  padding: 60px 0;
-  line-height: 1.8;
+  font-size: var(--font-size-md);
+  color: var(--color-text-placeholder);
 }
-
-.dropdownMenu {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 8px);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  padding: 8px 0;
-  min-width: 180px;
-  z-index: 100;
-}
-
-.menuItem {
-  display: block;
-  width: 100%;
-  padding: 12px 20px;
-  background: none;
-  border: none;
-  text-align: left;
-  font-size: 14px;
-  color: var(--color-text-primary);
-  cursor: pointer;
-}
-
-.menuItem:hover { background: var(--color-bg); }
-.menuItemDanger { color: var(--color-primary); }
-.menuItemDisabled { color: var(--color-text-placeholder); cursor: not-allowed; }

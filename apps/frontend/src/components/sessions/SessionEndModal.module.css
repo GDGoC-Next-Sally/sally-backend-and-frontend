@@ -38,8 +38,8 @@
 
 .title {
   text-align: center;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: #1A1A1A;
   margin-bottom: 28px;
   line-height: 1.4;
@@ -53,8 +53,8 @@
 }
 
 .sessionTitle {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   color: #1A1A1A;
   line-height: 1.5;
 }
@@ -64,14 +64,14 @@
   color: #E8593C;
   padding: 4px 8px;
   border-radius: 4px;
-  font-size: 10px;
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
 }
 
 .metaRow {
   display: flex;
   gap: 16px;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: #6B6B6B;
   margin-bottom: 24px;
   padding-bottom: 24px;
@@ -101,13 +101,13 @@
 }
 
 .statTitle {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   color: #1A1A1A;
 }
 
 .statSub {
-  font-size: 10px;
+  font-size: var(--font-size-sm);
   color: #6B6B6B;
 }
 
@@ -133,13 +133,13 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 16px;
-  font-weight: 700;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   color: #1A1A1A;
 }
 
 .donutSmall {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
 }
 
 .textStat {
@@ -148,13 +148,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 24px;
-  font-weight: 700;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   color: #1A1A1A;
 }
 
 .textStatSmall {
-  font-size: 14px;
+  font-size: var(--font-size-md);
   margin-left: 2px;
 }
 
@@ -163,8 +163,8 @@
 }
 
 .insightsTitle {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   color: #1A1A1A;
   margin-bottom: 12px;
 }
@@ -172,7 +172,7 @@
 .insightsList {
   margin: 0;
   padding-left: 16px;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: #6B6B6B;
   line-height: 1.6;
 }
@@ -188,8 +188,8 @@
   height: 40px;
   padding: 12px 24px;
   border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
 }
 

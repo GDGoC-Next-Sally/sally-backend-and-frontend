@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { getClass } from '@/actions/classes';
 import { getSessionsByClass, joinSession, type Session } from '@/actions/sessions';
 import { StudentSessionList } from '@/components/students/StudentSessionList';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 interface ClassInfo {
   id: number;
@@ -40,12 +41,14 @@ export default function StudentClassDetailPage() {
   };
 
   return (
-    <StudentSessionList
-      classId={classId}
-      classInfo={classInfo}
-      sessions={sessions}
-      onJoinSession={handleJoinSession}
-      initialTab={tab}
-    />
+    <PageContainer>
+      <StudentSessionList
+        classId={classId}
+        classInfo={classInfo}
+        sessions={sessions}
+        onJoinSession={handleJoinSession}
+        initialTab={tab}
+      />
+    </PageContainer>
   );
 }
