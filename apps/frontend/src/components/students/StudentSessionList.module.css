@@ -1,12 +1,5 @@
 .container {
   display: flex;
-  padding: 24px;
-  background-color: #F5F4F0;
-  min-height: calc(100vh - 60px);
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-  box-sizing: border-box;
 }
 
 .inner {

@@ -1,0 +1,14 @@
+.container {
+  width: 100%;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 24px;
+  box-sizing: border-box;
+  min-height: calc(100vh - 56px);
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 16px;
+  }
+}

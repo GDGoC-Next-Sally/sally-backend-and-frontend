@@ -1,14 +1,5 @@
-/* ── 페이지 배경 ── */
-.container {
-  background-color: var(--color-bg);
-  min-height: calc(100vh - 56px);
-  padding: 24px;
-}
-
 /* ── 메인 패널 (흰 카드) ── */
 .panel {
-  max-width: 1300px;
-  margin: 0 auto;
   background: var(--color-surface);
   border-radius: var(--radius-card);
   padding: 32px;

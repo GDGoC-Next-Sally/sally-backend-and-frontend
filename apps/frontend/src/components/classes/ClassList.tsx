@@ -47,7 +47,7 @@ export const ClassList: React.FC<ClassListProps> = ({
   };
 
   return (
-    <div className={styles.container}>
+    <>
       <div className={styles.panel}>
         {/* 헤더 */}
         <div className={styles.header}>
@@ -143,6 +143,6 @@ export const ClassList: React.FC<ClassListProps> = ({
           onConfirm={handleDeleteConfirm}
         />
       )}
-    </div>
+    </>
   );
 };

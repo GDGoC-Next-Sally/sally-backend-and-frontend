@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { getTeacherClasses, type ClassItem } from '@/actions/classes';
 import { getSessionsByClass, type Session } from '@/actions/sessions';
 import { Dashboard } from '@/components/dashboard/Dashboard';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { computeSessionStatus } from '@/utils/sessionStatus';
 
 export interface RecentSessionInfo {
@@ -131,5 +132,9 @@ export default function TeacherHomePage() {
     return () => clearInterval(timer);
   }, []);
 
-  return <Dashboard classes={classes} todayClass={todayClass} recentSessions={recentSessions} />;
+  return (
+    <PageContainer>
+      <Dashboard classes={classes} todayClass={todayClass} recentSessions={recentSessions} />
+    </PageContainer>
+  );
 }

@@ -5,6 +5,7 @@ import { getStudentClasses, type ClassItem } from '@/actions/classes';
 import { getSessionsByClass, type Session } from '@/actions/sessions';
 import { useUser } from '@/utils/useUser';
 import { StudentDashboard } from '@/components/students/StudentDashboard';
+import { PageContainer } from '@/components/layout/PageContainer';
 import { computeSessionStatus } from '@/utils/sessionStatus';
 
 interface ActiveSessionInfo {
@@ -133,11 +134,13 @@ export default function StudentHomePage() {
   const dashboardUser = user ? { name: user.name ?? '학생' } : null;
 
   return (
-    <StudentDashboard
-      user={dashboardUser}
-      classes={classes}
-      todayClass={todayClass}
-      recentSessions={recentSessions}
-    />
+    <PageContainer>
+      <StudentDashboard
+        user={dashboardUser}
+        classes={classes}
+        todayClass={todayClass}
+        recentSessions={recentSessions}
+      />
+    </PageContainer>
   );
 }

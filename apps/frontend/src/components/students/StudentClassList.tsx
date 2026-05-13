@@ -52,7 +52,7 @@ export const StudentClassList: React.FC<StudentClassListProps> = ({
     [c.grade ? `${c.grade}학년` : '', c.homeroom ?? '', c.subject].filter(Boolean).join(' ');
 
   return (
-    <div className={styles.container}>
+    <>
       <div className={styles.panel}>
         {/* 헤더 */}
         <div className={styles.header}>
@@ -121,6 +121,6 @@ export const StudentClassList: React.FC<StudentClassListProps> = ({
           onConfirm={handleLeaveConfirm}
         />
       )}
-    </div>
+    </>
   );
 };
