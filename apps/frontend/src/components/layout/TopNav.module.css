@@ -131,3 +131,27 @@
 .profileWrapper [data-state="open"] .chevron {
   transform: rotate(180deg);
 }
+
+/* ── 모바일: 텍스트 숨기고 아이콘만 표시 ─────────────────────────────────────── */
+@media (max-width: 640px) {
+  .nav {
+    padding: 0 16px;
+  }
+
+  /* 네비 아이템: 텍스트 숨김, padding 축소 */
+  .navItem {
+    padding: 0 10px;
+    gap: 0;
+  }
+
+  .navItem span {
+    display: none;
+  }
+
+  /* 프로필: 이름·chevron 숨김 */
+  .userName,
+  .loginText,
+  .chevron {
+    display: none;
+  }
+}
