@@ -1,11 +1,8 @@
 .layout {
   display: flex;
   gap: 20px;
-  padding: 24px;
   background-color: var(--color-bg);
-  height: calc(100vh - 56px);
-  max-width: 1400px;
-  margin: 0 auto;
+  height: calc(100vh - 56px - 48px);
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
