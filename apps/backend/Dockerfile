@@ -21,10 +21,10 @@ RUN cd apps/backend && pnpm add -D @types/multer
 # Prisma Client 생성 (중요!)
 RUN cd apps/backend && npx prisma generate
 
-# 빌드
-RUN pnpm --filter backend build
+# 빌드 (명시적으로 폴더로 이동해서 빌드)
+RUN cd apps/backend && npx nest build
 
 EXPOSE 3001
 
-# NestJS 실행
-CMD ["pnpm", "--filter", "backend", "start:prod"]
+# 실행 (절대 경로로 명시적 실행)
+CMD ["node", "apps/backend/dist/main"]
