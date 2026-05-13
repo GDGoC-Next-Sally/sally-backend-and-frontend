@@ -12,6 +12,7 @@ import { SessionsModule } from './modules/sessions/sessions.module';
 import { LivechatModule } from './modules/livechat/livechat.module';
 import { MonitoringModule } from './modules/monitoring/monitoring.module';
 import { DevModule } from './modules/dev/dev.module';
+import { SupplementaryModule } from './modules/supplementary/supplementary.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { DevModule } from './modules/dev/dev.module';
     LivechatModule,
     MonitoringModule,
     DevModule,
+    SupplementaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
