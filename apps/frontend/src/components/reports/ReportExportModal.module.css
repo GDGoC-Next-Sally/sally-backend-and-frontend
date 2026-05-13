@@ -1,0 +1,187 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 40px 42px 36px;
+  width: 460px;
+  max-width: calc(100vw - 32px);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: #a9afad;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+}
+
+.closeBtn:hover {
+  background: #f5f6f8;
+  color: #1a1a1a;
+}
+
+.header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: #262b29;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: #a9afad;
+  margin: 0;
+}
+
+/* ── 옵션 카드 ── */
+
+.optionRow {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.optionCard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 16px;
+  background: #ffffff;
+  border: 1.5px solid #dbdded;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.optionCard:hover {
+  border-color: #a0a8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.optionSelected {
+  border-color: #22cb84;
+  box-shadow: 0 0 0 2px rgba(34, 203, 132, 0.15);
+}
+
+.optionLabel {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: #1a1a1a;
+  white-space: nowrap;
+}
+
+.optionSub {
+  font-size: var(--font-size-sm);
+  color: #626664;
+}
+
+/* ── 진행 바 ── */
+
+.progressSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progressLabel {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: #1a1a1a;
+}
+
+.progressSub {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: #a9afad;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 8px;
+  background: #d9d9d9;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.progressFill {
+  height: 100%;
+  background: #22cb84;
+  border-radius: 12px;
+  transition: width 0.15s ease;
+}
+
+/* ── 버튼 ── */
+
+.btnRow {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.cancelBtn {
+  width: 180px;
+  height: 44px;
+  background: none;
+  border: 1.5px solid #dbdded;
+  border-radius: 8px;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: #515554;
+  cursor: pointer;
+}
+
+.cancelBtn:hover {
+  background: #f5f6f8;
+}
+
+.confirmBtn {
+  width: 180px;
+  height: 44px;
+  background: #22cb84;
+  border: none;
+  border-radius: 8px;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.confirmBtn:disabled {
+  background: #a7f3d0;
+  cursor: not-allowed;
+}
+
+.confirmBtn:not(:disabled):hover {
+  background: #1ab872;
+}

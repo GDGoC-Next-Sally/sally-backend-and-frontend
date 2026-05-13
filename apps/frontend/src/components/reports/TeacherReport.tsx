@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Download, Search, ChevronLeft } from 'lucide-react';
 import styles from './TeacherReport.module.css';
+import { ReportExportModal } from './ReportExportModal';
 
 /* ─────────────────────────────────────────── Types ── */
 
@@ -535,12 +536,16 @@ export function TeacherReport({
   onSearchChange,
   onExport,
 }: TeacherReportProps) {
+  const [isExportOpen, setIsExportOpen] = useState(false);
+
   return (
     <div className={styles.page}>
+      {isExportOpen && <ReportExportModal onClose={() => setIsExportOpen(false)} />}
+
       {/* 헤더 */}
       <div className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>AI 분석 리포트</h1>
-        <button className={styles.exportBtn} onClick={onExport}>
+        <button className={styles.exportBtn} onClick={() => { onExport?.(); setIsExportOpen(true); }}>
           내보내기
           <Download size={16} strokeWidth={2} />
         </button>

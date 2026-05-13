@@ -40,6 +40,7 @@
   gap: 8px;
   overflow-y: auto;
   flex: 1;
+  align-content: start;
 }
 
 /* ── Card ─────────────────────────────────────────────── */
@@ -53,6 +54,8 @@
   flex-direction: column;
   gap: 10px;
   transition: border-color 0.15s;
+  align-self: start;
+  height: fit-content;
 }
 
 .card:hover {

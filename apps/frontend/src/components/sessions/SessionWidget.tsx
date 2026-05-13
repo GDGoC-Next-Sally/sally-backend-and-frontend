@@ -287,6 +287,7 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
             loading={loading}
             studentName={selectedStudent?.name ?? '학생'}
             currentTopic={selectedAnalysis?.current_topic}
+            summaryText={selectedAnalysis?.one_line_summary}
             warningText={
               selectedAnalysis?.need_intervention && selectedAnalysis?.one_line_summary
                 ? selectedAnalysis.one_line_summary
@@ -422,6 +423,7 @@ interface ActiveProps {
   loading: boolean;
   studentName: string;
   currentTopic?: string;
+  summaryText?: string;
   warningText?: string;
   messages: ChatMessage[];
   isLoadingChat: boolean;
@@ -447,6 +449,7 @@ const formatTime = (iso: string) => {
 const ActiveView: React.FC<ActiveProps> = ({
   studentName,
   currentTopic,
+  summaryText,
   warningText,
   messages,
   isLoadingChat,
@@ -492,13 +495,6 @@ const ActiveView: React.FC<ActiveProps> = ({
 
       {activeTab === 'chat' ? (
         <>
-          {warningText && (
-            <div className={styles.warningBanner}>
-              <span className={styles.warningArrow}>→</span>
-              {warningText}
-            </div>
-          )}
-
           <div className={styles.chatMessages}>
             {isLoadingChat ? (
               <div className={styles.chatEmpty}>채팅 기록을 불러오는 중...</div>
@@ -532,6 +528,19 @@ const ActiveView: React.FC<ActiveProps> = ({
             )}
             <div ref={messagesEndRef} />
           </div>
+
+          {summaryText && !warningText && (
+            <div className={styles.summaryBanner}>
+              <span className={styles.summaryIcon}>✦</span>
+              {summaryText}
+            </div>
+          )}
+          {warningText && (
+            <div className={styles.warningBanner}>
+              <span className={styles.warningArrow}>→</span>
+              {warningText}
+            </div>
+          )}
 
           <div className={styles.interventionBar}>
             <input

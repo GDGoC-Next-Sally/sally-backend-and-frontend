@@ -21,6 +21,16 @@ const EMOTION_EMOJI: Record<string, string> = {
   피곤: '😴',
 };
 
+const POSITIVE_EMOTIONS = new Set(['행복', '집중', '흥미']);
+const NEGATIVE_EMOTIONS = new Set(['불안', '혼란', '지루', '피곤']);
+
+function emotionDotColor(emotion?: string): string {
+  if (!emotion) return '#E0DED8';
+  if (POSITIVE_EMOTIONS.has(emotion)) return '#22c55e';
+  if (NEGATIVE_EMOTIONS.has(emotion)) return '#ef4444';
+  return '#E0DED8';
+}
+
 function UnderstandingBar({ score }: { score: number }) {
   const pct = score * 10;
   const color = pct >= 70 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#ef4444';
@@ -49,7 +59,7 @@ function StudentCard({ student, analysis }: { student: AttendanceStudent; analys
           )}
         </div>
         <div className={styles.statusDot} style={{
-          backgroundColor: needsIntervention ? '#ef4444' : analysis ? '#22c55e' : '#e0ded8'
+          backgroundColor: emotionDotColor(analysis?.student_emotion)
         }} />
       </div>
 
