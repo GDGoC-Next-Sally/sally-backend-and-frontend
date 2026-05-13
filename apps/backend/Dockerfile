@@ -4,10 +4,13 @@ FROM node:20-slim AS base
 RUN apt-get update && apt-get install -y python3 build-essential openssl
 ENV PYTHON=/usr/bin/python3
 
-# 코어팩 활성화 및 pnpm 설치 (스택오버플로우 추천 방식)
+# 코어팩 활성화 및 pnpm 설치
 RUN corepack enable && corepack prepare pnpm@9.11.0 --activate
 
 WORKDIR /app
+
+# pnpm이 가짜 링크(심볼릭 링크)를 쓰지 않고 모든 패키지를 플랫하게 설치하도록 강제 (중요!)
+RUN echo "shamefully-hoist=true" > .npmrc
 
 # 모노레포 모든 설정 파일 및 package.json 복사
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
