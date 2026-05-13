@@ -11,31 +11,15 @@
 
 /* ─── 모달 카드 ────────────────────────────────────────── */
 .modal {
-  background-color: var(--color-surface);
+  background-color: #ffffff;
   border-radius: 12px;
-  width: 514px;
+  width: 420px;
   max-width: calc(100vw - 32px);
-  padding: 40px 40px 32px;
-  position: relative;
+  padding: 24px 28px 20px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.14);
-}
-
-/* ─── 닫기 버튼 ────────────────────────────────────────── */
-.closeBtn {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  background: none;
-  border: none;
-  color: var(--color-text-placeholder);
-  cursor: pointer;
-  padding: 4px;
-  line-height: 0;
-  border-radius: 4px;
-}
-
-.closeBtn:hover {
-  color: var(--color-text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 /* ─── 본문 ─────────────────────────────────────────────── */
@@ -43,27 +27,54 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-bottom: 24px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .title {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
-  color: var(--color-text-primary);
+  color: #262b29;
   margin: 0;
-  line-height: 1.5;
+  line-height: 2;
+}
+
+/* ─── 닫기 버튼 ────────────────────────────────────────── */
+.closeBtn {
+  background: none;
+  border: none;
+  color: #a9afad;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 0;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.closeBtn:hover {
+  color: #262b29;
 }
 
 .divider {
   border: none;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid #dbdded;
   margin: 0;
 }
 
 .description {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 600;
-  color: var(--color-text-secondary);
+  color: #515554;
   margin: 0;
   line-height: 1.5;
 }
@@ -73,6 +84,7 @@
   display: flex;
   gap: 16px;
   justify-content: flex-end;
+  align-items: center;
 }
 
 .cancelBtn,
@@ -91,17 +103,17 @@
 }
 
 .cancelBtn {
-  background-color: var(--color-surface);
-  border: 1.5px solid var(--color-border);
-  color: var(--color-text-secondary);
+  background-color: #ffffff;
+  border: 1.5px solid #dbdded;
+  color: #515554;
 }
 
 .cancelBtn:hover {
-  background-color: var(--color-bg);
+  background-color: #f7f7f9;
 }
 
 .confirmBtn {
-  background-color: var(--color-live);
+  background-color: #22cb84;
   border: none;
   color: #ffffff;
 }

@@ -134,12 +134,13 @@
 .itemHeader {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  gap: 6px;
 }
 
 .studentInfo {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   flex: 1;
   min-width: 0;
@@ -149,15 +150,18 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #E5E7EB;
+  background: #e5f9f0;
   flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.nameBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .name {
@@ -169,32 +173,46 @@
   text-overflow: ellipsis;
 }
 
-.topicSub {
-  font-size: 11px;
-  color: #6B7280;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.statusDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.itemActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   flex-shrink: 0;
-  margin-top: 4px;
 }
 
-.dotGreen {
-  background-color: #22CB84;
+.progressBadge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #22cb84;
+  background: #e5f9f0;
+  border-radius: 20px;
+  padding: 2px 8px;
+  white-space: nowrap;
 }
 
-.dotRed {
-  background-color: #EF4444;
+.moreBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
 }
 
-.dotYellow {
-  background-color: #F59E0B;
+.moreBtn:hover {
+  background: #f3f4f6;
+}
+
+.summaryText {
+  font-size: 11px;
+  color: #9ca3af;
+  padding-left: 40px;
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 /* ── 3열 스탯 (선택된 학생) ──────────────────────────────────────────────────── */
@@ -263,13 +281,6 @@
   margin-top: 1px;
 }
 
-/* ── 컴팩트 서브텍스트 (비선택 학생) ────────────────────────────────────────── */
-
-.compactSub {
-  font-size: 11px;
-  color: #9CA3AF;
-  padding-left: 40px;
-}
 
 /* ── 비어있음 ────────────────────────────────────────────────────────────────── */
 

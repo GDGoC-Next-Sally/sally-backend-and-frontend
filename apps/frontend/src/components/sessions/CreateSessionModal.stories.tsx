@@ -18,13 +18,13 @@ const meta: Meta<typeof CreateSessionModal> = {
 export default meta;
 type Story = StoryObj<typeof CreateSessionModal>;
 
-/** Step 1 — 템플릿 선택 (초기 상태) */
-export const Step1_TemplateSelect: Story = {
+/** Step 1 — 정보 입력 */
+export const Step1_InfoInput: Story = {
   args: { initialStep: 1 },
 };
 
-/** Step 2 — 정보 입력 */
-export const Step2_InfoInput: Story = {
+/** Step 2 — 템플릿 선택 */
+export const Step2_TemplateSelect: Story = {
   args: { initialStep: 2 },
 };
 

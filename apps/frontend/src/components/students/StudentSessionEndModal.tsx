@@ -1,38 +1,13 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import styles from './StudentSessionEndModal.module.css';
 
 interface Props {
   onClose: () => void;
   onNext: () => void;
 }
-
-/** 초록 체크 일러스트 */
-const CheckIllustration = () => (
-  <svg width="230" height="128" viewBox="0 0 230 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* 배경 연한 원 */}
-    <circle cx="115" cy="64" r="60" fill="#e6faf2" />
-    {/* 초록 원 */}
-    <circle cx="115" cy="64" r="44" fill="#22cb84" />
-    {/* 체크 */}
-    <polyline
-      points="96,64 110,78 136,50"
-      stroke="white"
-      strokeWidth="5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="none"
-    />
-    {/* 장식 점들 */}
-    <circle cx="52" cy="36" r="5" fill="#22cb84" opacity="0.5" />
-    <circle cx="40" cy="72" r="3.5" fill="#22cb84" opacity="0.35" />
-    <circle cx="68" cy="106" r="4" fill="#22cb84" opacity="0.4" />
-    <circle cx="178" cy="30" r="4" fill="#22cb84" opacity="0.45" />
-    <circle cx="192" cy="68" r="5.5" fill="#22cb84" opacity="0.3" />
-    <circle cx="168" cy="104" r="3" fill="#22cb84" opacity="0.4" />
-  </svg>
-);
 
 /** 전구 아이콘 */
 const BulbIcon = () => (
@@ -57,7 +32,7 @@ export const StudentSessionEndModal: React.FC<Props> = ({ onClose, onNext }) => 
 
       {/* 일러스트 */}
       <div className={styles.illustration}>
-        <CheckIllustration />
+        <Image src="/images/sessionsend.png" alt="세션 종료" width={230} height={128} />
       </div>
 
       {/* 메시지 */}

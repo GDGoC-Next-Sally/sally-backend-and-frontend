@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { SessionSidebar } from './SessionSidebar';
 import { ConfirmModal } from '../common/ConfirmModal';
@@ -23,11 +24,22 @@ export interface StudentAnalysis {
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
 
+function formatTimeOnly(iso?: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return `${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')}`;
+}
+
 interface SessionWidgetProps {
   classId: string;
   sessionId: string;
   initialPhase: Phase;
   sessionName?: string;
+  sessionDescription?: string;
+  scheduledStart?: string;
+  joinableFrom?: string;
+  estimatedMinutes?: number;
   students: AttendanceStudent[];
   onStart: () => Promise<void>;
   onFinish: () => Promise<void>;
@@ -39,6 +51,10 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
   sessionId,
   initialPhase,
   sessionName,
+  sessionDescription,
+  scheduledStart,
+  joinableFrom,
+  estimatedMinutes,
   students,
   onStart,
   onFinish,
@@ -100,7 +116,6 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
     }).catch(() => { });
   }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Socket
   useEffect(() => {
     let socket: import('socket.io-client').Socket;
 
@@ -252,6 +267,10 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
         {phase === 'waiting' ? (
           <WaitingView
             sessionName={sessionName}
+            sessionDescription={sessionDescription}
+            scheduledStart={scheduledStart}
+            joinableFrom={joinableFrom}
+            estimatedMinutes={estimatedMinutes}
             loading={loading}
             onStart={handleStart}
             onBack={() => router.push(`/t/classes/${classId}`)}
@@ -296,50 +315,92 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
 
 interface WaitingProps {
   sessionName?: string;
+  sessionDescription?: string;
+  scheduledStart?: string;
+  joinableFrom?: string;
+  estimatedMinutes?: number;
   loading: boolean;
   onStart: () => void;
   onBack: () => void;
   students: AttendanceStudent[];
 }
 
-const WaitingView: React.FC<WaitingProps> = ({ sessionName, loading, onStart, onBack, students }) => (
+const WaitingView: React.FC<WaitingProps> = ({
+  sessionName,
+  sessionDescription,
+  scheduledStart,
+  joinableFrom,
+  estimatedMinutes,
+  loading,
+  onStart,
+  onBack,
+  students,
+}) => (
   <div className={styles.mainContent}>
     <div className={styles.topBar}>
       <div className={styles.topBarLeft}>
-        <button className={styles.backBtn} onClick={onBack}>&lt;</button>
         <div>
           <div className={styles.sessionName}>{sessionName ?? '세션'}</div>
-          <div className={styles.sessionDesc}>현재 {students.length}명의 학생이 입장했습니다</div>
+          {sessionDescription && (
+            <div className={styles.sessionDesc}>{sessionDescription}</div>
+          )}
         </div>
       </div>
       <div className={styles.topBarRight}>
         <span className={styles.statusBadge}>시작 대기</span>
+        {scheduledStart && (
+          <span className={styles.timerText}>
+            시작 {formatTimeOnly(scheduledStart)} | {students.length > 0 ? `${students.length}명 입장` : '0분 경과'}
+          </span>
+        )}
         <button className={styles.leaveBtn} onClick={onBack}>나가기</button>
       </div>
     </div>
 
     <div className={styles.waitCard}>
       <div className={styles.illustration}>
-        <svg width="100" height="80" viewBox="0 0 100 80" fill="none">
-          <circle cx="50" cy="28" r="24" fill="#E5F9F0" />
-          <circle cx="50" cy="22" r="8" fill="#22CB84" opacity="0.7" />
-          <rect x="30" y="44" width="40" height="20" rx="4" fill="#22CB84" opacity="0.5" />
-          <circle cx="32" cy="56" r="6" fill="#22CB84" opacity="0.8" />
-          <circle cx="50" cy="56" r="6" fill="#22CB84" opacity="0.8" />
-          <circle cx="68" cy="56" r="6" fill="#22CB84" opacity="0.8" />
-        </svg>
+        <Image src="/images/sessionstart.png" alt="세션 시작 대기" width={180} height={140} />
       </div>
       <h2 className={styles.waitTitle}>곧 수업이 시작됩니다!</h2>
       <p className={styles.waitDesc}>
-        {students.length > 0 
-          ? `현재 ${students.length}명의 학생이 대기 중입니다.` 
-          : '학생들이 입장하기를 기다리고 있습니다.'}
-        <br />
+        학생들이 입장 중입니다.<br />
         준비를 마친 뒤 수업을 시작해 주세요.
       </p>
       <button className={styles.startBtn} onClick={onStart} disabled={loading}>
         {loading ? '시작 중...' : '세션 시작하기'}
       </button>
+
+      {(scheduledStart || joinableFrom || estimatedMinutes) && (
+        <div className={styles.infoBar}>
+          {scheduledStart && (
+            <div className={styles.infoItem}>
+              <Image src="/images/akar-icons_clock.png" alt="" width={28} height={28} />
+              <div>
+                <div className={styles.infoLabel}>시작 예정</div>
+                <div className={styles.infoValue}>{formatTimeOnly(scheduledStart)}</div>
+              </div>
+            </div>
+          )}
+          {joinableFrom && (
+            <div className={styles.infoItem}>
+              <Image src="/images/famicons_log-in-outline.png" alt="" width={28} height={28} />
+              <div>
+                <div className={styles.infoLabel}>입장 가능 시간</div>
+                <div className={styles.infoValue}>{formatTimeOnly(joinableFrom)}부터</div>
+              </div>
+            </div>
+          )}
+          {estimatedMinutes && (
+            <div className={styles.infoItem}>
+              <Image src="/images/icon-park-outline_timer.png" alt="" width={28} height={28} />
+              <div>
+                <div className={styles.infoLabel}>예상 소요 시간</div>
+                <div className={styles.infoValue}>{estimatedMinutes}분</div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   </div>
 );
@@ -383,7 +444,6 @@ const ActiveView: React.FC<ActiveProps> = ({
 }) => (
   <div className={styles.mainContent}>
     <div className={styles.chatCard}>
-      {/* 채팅 헤더 */}
       <div className={styles.chatHeader}>
         <button className={styles.chatBackBtn} onClick={onBack}>‹</button>
         <div className={styles.chatAvatar} />
@@ -395,7 +455,6 @@ const ActiveView: React.FC<ActiveProps> = ({
         </div>
       </div>
 
-      {/* 경고 배너 */}
       {warningText && (
         <div className={styles.warningBanner}>
           <span className={styles.warningArrow}>→</span>
@@ -403,7 +462,6 @@ const ActiveView: React.FC<ActiveProps> = ({
         </div>
       )}
 
-      {/* 메시지 영역 */}
       <div className={styles.chatMessages}>
         {isLoadingChat ? (
           <div className={styles.chatEmpty}>채팅 기록을 불러오는 중...</div>
@@ -438,7 +496,6 @@ const ActiveView: React.FC<ActiveProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 개입 입력바 */}
       <div className={styles.interventionBar}>
         <input
           type="text"
