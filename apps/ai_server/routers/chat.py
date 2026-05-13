@@ -4,7 +4,7 @@ routers/chat.py — AI 서버 API 엔드포인트 모음
 import asyncio
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-from ai_server.models import ChatRequest, EndSessionRequest, EndSessionResponse, UpdateRealtimeRequest, RealtimeAnalysis, SessionReportRequest, SessionReportResponse
+from ai_server.models import ChatRequest, EndSessionRequest, EndSessionResponse, RealtimeAnalysis, SessionReportRequest, SessionReportResponse
 from ai_server.services.llm_service import stream_chat, analyze_student
 from ai_server.services.callback_client import (
     notify_backend_analytics_callback,
@@ -21,8 +21,9 @@ from ai_server.services.db_client import (
     get_dialog,
     get_chat_messages,
     mark_dialog_analyzed,
-    append_real_time_analysis,
     get_real_time_analyses,
+    save_student_report,
+    save_session_report,
 )
 
 router = APIRouter()
@@ -108,6 +109,8 @@ async def analyze(request: ChatRequest):
                 dialog = await get_dialog(session_id=session_id, student_id=student_id)
                 if dialog:
                     analysis_dict = summary.model_dump() if hasattr(summary, "model_dump") else summary.dict()
+                    
+                    # 백엔드로 콜백 전송 (백엔드가 Socket 알림 및 DB 저장을 모두 처리함)
                     await notify_backend_analytics_callback(
                         dialog_id=dialog["id"],
                         analysis=analysis_dict,
@@ -119,37 +122,6 @@ async def analyze(request: ChatRequest):
         asyncio.create_task(_send_callback())
 
     return summary
-
-
-@router.post("/update-realtime")
-async def update_realtime(request: UpdateRealtimeRequest):
-    """
-    [NestJS 백엔드 → 이 API] 실시간 분석 결과 DB 업데이트 전용 엔드포인트
-    
-    요청(Request):
-        - session_id: 수업 세션 ID
-        - student_id: 학생 UUID
-        - analysis: /analyze 에서 반환된 RealtimeAnalysis JSON 객체
-        
-    응답(Response):
-        - status: "ok"
-    """
-    try:
-        dialog = await get_dialog(
-            session_id=request.session_id,
-            student_id=request.student_id,
-        )
-        if not dialog:
-            raise HTTPException(status_code=404, detail="해당 session_id와 student_id에 매칭되는 대화(dialog)를 찾을 수 없습니다.")
-            
-        summary_dict = request.analysis.model_dump() if hasattr(request.analysis, "model_dump") else request.analysis.dict()
-        await append_real_time_analysis(dialog["id"], summary_dict)  # 덮어쓰기 → 배열 누적 저장
-        return {"status": "ok", "dialog_id": dialog["id"]}
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"DB 업데이트 실패: {str(e)}")
 
 
 @router.post("/session-report", response_model=SessionReportResponse)
@@ -186,6 +158,13 @@ async def session_report(request: SessionReportRequest):
         )
 
     report_dict = report.model_dump() if hasattr(report, "model_dump") else report.dict()
+    
+    # DB에 직접 저장 (session_reports 테이블)
+    await save_session_report(
+        session_id=request.session_id,
+        content=report_dict,
+    )
+
     callback_ok = await notify_backend_session_report_callback(
         session_id=request.session_id,
         report=report_dict,
@@ -300,6 +279,15 @@ async def end_session(request: EndSessionRequest):
 
     # Step 6. 백엔드 학생 리포트 콜백 전송
     report_dict = report.model_dump() if hasattr(report, "model_dump") else report.dict()
+    
+    # DB에 직접 저장 (student_reports 테이블)
+    await save_student_report(
+        student_id=request.student_id,
+        session_id=request.session_id,
+        dialog_id=dialog_id,
+        content=report_dict,
+    )
+
     callback_ok = await notify_backend_student_report_callback(
         session_id=request.session_id,
         student_id=request.student_id,
@@ -323,5 +311,4 @@ async def end_session(request: EndSessionRequest):
         session_id=str(request.session_id),
         student_id=request.student_id,
         report=report,
-        report_url="",
     )

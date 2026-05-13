@@ -145,7 +145,6 @@ def _format_student_conversation(
                     content,
                     "STUDENT",
                     default_student_label=label,
-                    speaker_name=msg.get("speaker_name"),
                 )
             )
             has_student_message = True

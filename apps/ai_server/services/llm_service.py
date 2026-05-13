@@ -6,6 +6,7 @@ import re
 import json
 import os
 import asyncio
+from difflib import SequenceMatcher
 from pathlib import Path
 from openai import APIConnectionError, APITimeoutError, AsyncOpenAI, RateLimitError
 from dotenv import load_dotenv
@@ -80,24 +81,22 @@ async def stream_chat(
     client = _get_client()
     system_prompt = build_chat_system_prompt(student_profile)
 
+    # 학생 상태 기반 추가 지침은 대화 발화가 아니라 운영 정책이므로 system prompt에 병합합니다.
+    if need_intervention:
+        system_prompt += """
+
+# 현재 학생 상태에 따른 추가 지도 지침
+지금 이 학생은 반복적으로 어려움을 겪고 있습니다.
+평소보다 더 친절하고 쉽게 설명하십시오.
+단계를 나누거나 구체적인 예시를 사용하십시오.
+정답을 바로 알려주기보다 학생이 스스로 생각해볼 수 있도록 유도하십시오.
+"""
+
     # system 역할을 첫 번째 메시지로 명시적으로 분리
     messages = [{"role": "system", "content": system_prompt}]
 
     # few-shot 예시: AI가 실제 대화 패턴을 '보고' 따라 하도록 삽입 (리허설)
     messages.extend(build_chat_few_shot_messages(student_profile))
-
-    # [방향 B] 방향 B: 시스템이 개입 필요 신호를 보낸 경우, 대화 기록 전에 자동 지시 삽입
-    # need_intervention=True이면 교사 메시지 없이도 AI가 자동으로 "배려 모드"로 전환합니다.
-    if need_intervention:
-        messages.append({
-            "role": "user",
-            "content": (
-                "시스템: 지금 이 학생은 반복적으로 어려움을 겪고 있습니다. "
-                "지금보다 더 친절하고 쉽게 설명해 주세요. "
-                "단계를 나누거나 구체적인 예시를 들어 주세요. "
-                "정답을 바로 알려주기보다 학생이 스스로 생각해볼 수 있도록 유도해 주세요."
-            )
-        })
 
     # 실제 대화 기록 이어 붙이기
     # TEACHER는 학생에게 보인 발화가 아니라 AI용 비공개 지도 방향으로 라벨링합니다. (방향 A)
@@ -109,8 +108,6 @@ async def stream_chat(
                 turn.text,
                 turn.sender_type,
                 student_name=turn.student_name,
-                sender_name=turn.sender_name,
-                speaker_name=turn.speaker_name,
             )
             messages.append({"role": "user", "content": labeled_text})
 
@@ -167,14 +164,14 @@ async def analyze_student(
     # 마지막 턴 = 마지막 AI 발화 + 마지막 학생 발화 (최대 최근 2개)
 
     # ── User Prompt 구성 (3구역 분리) ────────────────────────────────────────
-    MAX_CONTEXT_TURNS = 6
+    MAX_CONTEXT_TURNS = 4
     MAX_TURN_CHARS = 500
 
     def _is_student_turn(turn: ConversationTurn) -> bool:
         if turn.role == "model":
             return False
-        sender_type = (turn.sender_type or "STUDENT").upper()
-        return sender_type in {"STUDENT", "USER", "LEARNER", "HUMAN"}
+        sender_type = (turn.sender_type or "").upper()
+        return sender_type == "STUDENT"
 
     # 마지막 학생 발화를 기준으로 마지막 상호작용 구성
     # 선생님 지시는 백그라운드 지도 방향이므로 분석 대상 학생 발화로 잡지 않습니다.
@@ -217,18 +214,173 @@ async def analyze_student(
                 speaker = speaker_label(
                     turn.sender_type,
                     student_name=turn.student_name,
-                    sender_name=turn.sender_name,
-                    speaker_name=turn.speaker_name,
                 )
             lines.append(f"{speaker}: {_truncate(turn.text)}")
         return "\n".join(lines) + "\n"
 
-    def _is_nonresponsive_student_turn(turn: ConversationTurn) -> bool:
+    def _previous_model_turn(index: int) -> ConversationTurn | None:
+        for prev_index in range(index - 1, -1, -1):
+            turn = conversation_history[prev_index]
+            if turn.role == "model":
+                return turn
+            if _is_student_turn(turn):
+                break
+        return None
+
+    def _previous_ai_question_type(turn: ConversationTurn | None) -> str:
+        if not turn:
+            return "none"
+
+        text = turn.text.strip().lower()
+        if not text:
+            return "none"
+
+        yes_no_markers = (
+            "맞지",
+            "맞니",
+            "맞나요",
+            "이해됐",
+            "알겠",
+            "괜찮",
+            "해볼래",
+            "해볼까",
+            "볼래",
+            "볼까",
+            "준비됐",
+            "되겠",
+            "되나요",
+            "있을까",
+            "있나요",
+        )
+        choice_markers = (
+            "둘 중",
+            "어느 쪽",
+            "어떤 것",
+            "무엇",
+            "뭐가",
+            "뭐를",
+            "어디",
+            "주격",
+            "목적격",
+            "a와 b",
+            "a or b",
+            "1번",
+            "2번",
+            "골라",
+            "선택",
+        )
+        explanation_markers = (
+            "설명해",
+            "말해볼",
+            "왜",
+            "이유",
+            "네 말로",
+            "정리해",
+            "요약해",
+        )
+
+        if any(marker in text for marker in explanation_markers):
+            return "explanation"
+        if any(marker in text for marker in choice_markers):
+            return "choice"
+        if any(marker in text for marker in yes_no_markers):
+            return "yes_no"
+        if "?" in text or text.endswith(("까", "니", "나요", "래")):
+            return "question"
+        return "statement"
+
+    def _is_short_answer_to_previous_question(text: str, question_type: str) -> bool:
+        normalized = " ".join(text.strip().lower().split())
+        if not normalized:
+            return False
+
+        tokens = normalized.split()
+        compact = normalized.replace(" ", "")
+        affirmative_answers = {"네", "예", "응", "어", "맞아요", "맞아", "아니요", "아니", "아뇨"}
+        choice_answers = {
+            "주격",
+            "목적격",
+            "주어",
+            "목적어",
+            "관계대명사",
+            "which",
+            "who",
+            "that",
+            "whom",
+            "1번",
+            "2번",
+            "a",
+            "b",
+        }
+
+        if question_type == "yes_no":
+            return compact in affirmative_answers
+
+        if question_type == "choice":
+            return (
+                compact in choice_answers
+                or any(answer in compact for answer in choice_answers)
+                or len(tokens) <= 2
+            )
+
+        if question_type == "question":
+            return len(tokens) <= 2 and compact not in {"음", "ㅇ", "ㅋㅋ"}
+
+        return False
+
+    def _is_nonresponsive_student_turn(turn: ConversationTurn, previous_ai_turn: ConversationTurn | None = None) -> bool:
         if not _is_student_turn(turn):
             return False
 
         text = turn.text.strip()
-        return text in {"", ".", "..", "...", "네", "음", "ㅇ", "ㅋㅋ"} or len(text) <= 2
+        if text in {"", ".", "..", "...", "음", "ㅇ", "ㅋㅋ"}:
+            return True
+
+        question_type = _previous_ai_question_type(previous_ai_turn)
+        if _is_short_answer_to_previous_question(text, question_type):
+            return False
+
+        return text in {"네", "어"} or len(text) <= 2
+
+    def _normalize_for_signal_match(text: str) -> str:
+        return re.sub(r"[^0-9a-zA-Z가-힣]+", "", text.lower())
+
+    def _max_window_similarity(text: str, phrase: str) -> float:
+        text_len = len(text)
+        phrase_len = len(phrase)
+        if text_len == 0 or phrase_len == 0:
+            return 0.0
+        if text_len <= phrase_len + 2:
+            return SequenceMatcher(None, text, phrase).ratio()
+
+        best = 0.0
+        min_size = max(2, phrase_len - 2)
+        max_size = min(text_len, phrase_len + 2)
+        for size in range(min_size, max_size + 1):
+            for start in range(0, text_len - size + 1):
+                score = SequenceMatcher(None, text[start:start + size], phrase).ratio()
+                if score > best:
+                    best = score
+                    if best >= 0.92:
+                        return best
+        return best
+
+    def _has_signal_match(text: str, phrases: tuple[str, ...], threshold: float = 0.82) -> bool:
+        normalized_text = _normalize_for_signal_match(text)
+        if not normalized_text:
+            return False
+
+        for phrase in phrases:
+            normalized_phrase = _normalize_for_signal_match(phrase)
+            if not normalized_phrase:
+                continue
+            if normalized_phrase in normalized_text:
+                return True
+            if len(normalized_phrase) < 4:
+                continue
+            if _max_window_similarity(normalized_text, normalized_phrase) >= threshold:
+                return True
+        return False
 
     def _is_offtask_or_refusal_student_turn(turn: ConversationTurn) -> bool:
         if not _is_student_turn(turn):
@@ -239,24 +391,33 @@ async def analyze_student(
             return False
 
         temporary_requests = ("화장실", "잠시만", "물 마시", "쉬는 시간")
-        if any(keyword in text for keyword in temporary_requests):
+        if _has_signal_match(text, temporary_requests, threshold=0.84):
             return False
 
         refusal_keywords = (
             "싫어",
             "안 할",
             "안할",
+            "하기 싫",
             "못 하겠",
             "못하겠",
             "그만",
+            "그만할래",
+            "그만하고 싶",
             "포기",
-            "하기 싫",
             "공부 싫",
             "수업 싫",
             "수업 안",
+            "안 하고 싶",
+            "안하고 싶",
+            "안 할래",
+            "안할래",
             "나갈래",
             "나가고",
             "집에 갈",
+            "집 가고 싶",
+            "못 듣겠",
+            "집중 안",
         )
         offtask_keywords = (
             "게임",
@@ -270,8 +431,11 @@ async def analyze_student(
             "다른 얘기",
             "상관없는",
             "수업 말고",
+            "공부 말고",
+            "딴 거",
+            "재밌는 얘기",
         )
-        return any(keyword in text for keyword in refusal_keywords + offtask_keywords)
+        return _has_signal_match(text, refusal_keywords + offtask_keywords)
 
     def _is_self_blame_or_helpless_student_turn(turn: ConversationTurn) -> bool:
         if not _is_student_turn(turn):
@@ -301,8 +465,27 @@ async def analyze_student(
             "못하겠",
             "못 하겠",
             "포기하고 싶",
+            "너무 못",
+            "진짜 못",
+            "아예 못",
+            "절대 못",
+            "답이 없",
+            "가망이 없",
+            "소용없",
+            "해봤자",
+            "또 틀",
+            "난 안 돼",
+            "난 안되",
+            "저는 안 돼",
+            "저는 안되",
+            "자신 없어",
+            "자신없",
+            "망했",
+            "멘탈",
+            "머리가 안 돌아",
+            "머리 안 돌아",
         )
-        return any(keyword in text for keyword in helpless_keywords)
+        return _has_signal_match(text, helpless_keywords)
 
     def _is_confusion_or_stuck_student_turn(turn: ConversationTurn) -> bool:
         if not _is_student_turn(turn):
@@ -317,6 +500,7 @@ async def analyze_student(
             "헷갈",
             "이해가 안",
             "이해 안",
+            "이해를 못",
             "구분이 안",
             "구분 안",
             "어려워",
@@ -326,51 +510,42 @@ async def analyze_student(
             "무슨 뜻",
             "뭔지 모르",
             "뭐가 다른",
+            "감이 안",
+            "감 안",
+            "감이 안 잡",
+            "감 안 잡",
+            "머릿속이 복잡",
+            "머리가 복잡",
+            "머릿속이 엉켜",
+            "엉켜",
+            "정리가 안",
+            "정리 안",
+            "따라가기 힘들",
+            "못 따라가",
+            "뭔 말인지",
+            "무슨 말인지",
+            "어디서부터",
+            "뭘 해야",
+            "어떻게 해야",
+            "막막",
+            "어디가 틀",
+            "왜 틀",
+            "왜 안",
+            "잘 안 돼",
+            "잘 안되",
+            "안 풀",
         )
-        return any(keyword in text for keyword in stuck_keywords)
+        return _has_signal_match(text, stuck_keywords)
 
-    def _has_relative_pronoun_misconception(text: str) -> bool:
-        normalized = text.strip().lower()
-        if not normalized:
-            return False
-
-        connector_only = (
-            "접속사" in normalized
-            and not any(keyword in normalized for keyword in ("대명사 역할", "목적어 역할", "주어 역할"))
-        )
-        repeats_object_pronoun = (
-            any(keyword in normalized for keyword in ("it을 또", "it을 다시", "it도", "it이 또", "it이 다시"))
-            and any(keyword in normalized for keyword in ("써야", "필요", "완전"))
-        )
-        role_reversal = (
-            "목적어가 빠졌" in normalized
-            and "주격" in normalized
-        ) or (
-            "주어가 빠졌" in normalized
-            and "목적격" in normalized
-        )
-        return connector_only or repeats_object_pronoun or role_reversal
-
-    def _has_clear_relative_pronoun_understanding(text: str) -> bool:
-        normalized = text.strip().lower()
-        if not normalized:
-            return False
-
-        role_understanding = any(keyword in normalized for keyword in ("목적어 역할", "주어 역할", "it 역할"))
-        no_duplicate_pronoun = any(
-            keyword in normalized
-            for keyword in ("it을 다시 쓰면 안", "it을 또 쓰면 안", "it을 쓰면 안", "중복")
-        )
-        object_omission = "목적격" in normalized and any(keyword in normalized for keyword in ("생략", "빼도"))
-        return role_understanding and (no_duplicate_pronoun or object_omission)
-
-    recent_student_turns = [
-        turn for turn in conversation_history
+    recent_student_turns_with_context = [
+        (index, turn, _previous_model_turn(index))
+        for index, turn in enumerate(conversation_history)
         if _is_student_turn(turn)
     ][-3:]
+    recent_student_turns = [turn for _, turn, _ in recent_student_turns_with_context]
     recent_nonresponsive_count = sum(
-        1 for turn in recent_student_turns
-        if _is_nonresponsive_student_turn(turn)
+        1 for _, turn, previous_ai_turn in recent_student_turns_with_context
+        if _is_nonresponsive_student_turn(turn, previous_ai_turn)
     )
     recent_offtask_or_refusal_count = sum(
         1 for turn in recent_student_turns
@@ -386,8 +561,6 @@ async def analyze_student(
     )
     last_student_turn = recent_student_turns[-1] if recent_student_turns else None
     last_student_text = last_student_turn.text.strip() if last_student_turn else ""
-    has_relative_pronoun_misconception = _has_relative_pronoun_misconception(last_student_text)
-    has_clear_relative_pronoun_understanding = _has_clear_relative_pronoun_understanding(last_student_text)
 
     user_content = ""
 
@@ -424,10 +597,6 @@ async def analyze_student(
         "- 이 값이 1 이상이면 학생이 강한 자책이나 학습 무력감을 표현한 상태입니다.\n"
         f"- recent_confusion_or_stuck_student_turn_count: {recent_confusion_or_stuck_count}\n"
         "- 이 값이 2 이상이면 최근 같은 흐름에서 혼란이나 막힘이 반복된 상태입니다.\n"
-        f"- has_relative_pronoun_misconception_in_last_student_turn: {has_relative_pronoun_misconception}\n"
-        "- 이 값이 true이면 마지막 학생 발화에 관계대명사를 접속사로만 보거나 목적격 뒤 대명사를 반복해야 한다는 명확한 오개념이 있습니다.\n"
-        f"- has_clear_relative_pronoun_understanding_in_last_student_turn: {has_clear_relative_pronoun_understanding}\n"
-        "- 이 값이 true이면 마지막 학생 발화가 관계대명사의 문장 성분 역할과 대명사 중복 금지 또는 목적격 생략을 정확히 설명한 상태입니다.\n"
         "\n"
     )
 
@@ -529,24 +698,6 @@ async def analyze_student(
                 data["student_emotion"] = "혼란"
             data["one_line_summary"] = "같은 개념에서 반복적으로 막힘"
             data["need_intervention"] = True
-        elif has_relative_pronoun_misconception:
-            score = data.get("understanding_score")
-            if score is None or score > 4:
-                data["understanding_score"] = 3
-            if data.get("student_emotion") in {None, "중립", "집중", "흥미"}:
-                data["student_emotion"] = "혼란"
-            data["current_topic"] = "관계대명사의 역할 이해"
-            data["one_line_summary"] = "관계대명사 역할을 오해함"
-            data["need_intervention"] = False
-        elif has_clear_relative_pronoun_understanding:
-            score = data.get("understanding_score")
-            if score is None or score < 8:
-                data["understanding_score"] = 8
-            if data.get("student_emotion") in {None, "중립", "혼란"}:
-                data["student_emotion"] = "집중"
-            data["current_topic"] = "관계대명사의 역할 이해"
-            data["one_line_summary"] = "관계대명사 역할을 정확히 설명함"
-            data["need_intervention"] = False
         elif data.get("current_topic") == "수업 외 대화" and len(last_student_text) > 2:
             data["understanding_score"] = None
             if data.get("student_emotion") == "무반응":

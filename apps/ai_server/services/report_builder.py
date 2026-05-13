@@ -93,7 +93,6 @@ def normalize_chat_messages(raw_messages: list[dict]) -> list[dict]:
     {
         "role": "student" | "assistant" | "teacher" | "system",
         "content": str,
-        "speaker_name": str | None,
         "created_at": str | None
     }
 
@@ -111,8 +110,8 @@ def normalize_chat_messages(raw_messages: list[dict]) -> list[dict]:
 
         raw_role = (
             msg.get("role")
-            or msg.get("sender")
             or msg.get("sender_type")
+            or msg.get("sender")
             or msg.get("message_role")
             or msg.get("author")
         )
@@ -132,56 +131,28 @@ def normalize_chat_messages(raw_messages: list[dict]) -> list[dict]:
             or msg.get("time")
         )
 
-        speaker_name = (
-            msg.get("student_name")
-            or msg.get("sender_name")
-            or msg.get("speaker_name")
-            or msg.get("author_name")
-            or msg.get("user_name")
-            or msg.get("name")
-        )
-
         content = str(content).strip()
         if not content:
             continue
 
-        role_str = str(raw_role).strip().lower() if raw_role is not None else ""
+        role_str = str(raw_role).strip().upper() if raw_role is not None else ""
 
-        if role_str in {
-            "user",
-            "student",
-            "learner",
-            "human",
-            "학생",
-            "student_user",
-        }:
+        if role_str == "STUDENT":
             normalized_role = "student"
-        elif role_str in {
-            "assistant",
-            "ai",
-            "tutor",
-            "sally",
-            "bot",
-            "system_ai",
-        }:
+        elif role_str == "AI":
             normalized_role = "assistant"
-        elif role_str.upper() == "STUDENT":
-            normalized_role = "student"
-        elif role_str.upper() == "AI":
-            normalized_role = "assistant"
-        elif role_str in {"teacher", "선생님", "admin"} or role_str.upper() == "TEACHER":
+        elif role_str == "TEACHER":
             normalized_role = "teacher"
-        elif role_str in {"system"} or role_str.upper() == "SYSTEM":
+        elif role_str == "SYSTEM":
             normalized_role = "system"
         else:
-            # unknown 등은 통과
+            # 알 수 없는 발화자는 통과
             continue
 
         normalized.append(
             {
                 "role": normalized_role,
                 "content": content,
-                "speaker_name": str(speaker_name).strip() if speaker_name else None,
                 "created_at": str(created_at) if created_at else None,
             }
         )
@@ -214,7 +185,6 @@ def _format_conversation(chat_messages: list[dict]) -> tuple[str, bool]:
                 format_labeled_message(
                     content,
                     "STUDENT",
-                    speaker_name=msg.get("speaker_name"),
                 )
             )
             has_student = True
@@ -266,13 +236,14 @@ def _split_into_chunks(text: str, chunk_max_chars: int = CHUNK_MAX_CHARS) -> lis
 # Prompt builders
 # ─────────────────────────────────────────────────────────────
 
-def _build_report_prompt(conversation_text: str) -> str:
+def _build_report_prompt(conversation_text: str, realtime_context: str = "") -> str:
     """전체 대화 기반 최종 리포트 생성 프롬프트를 생성합니다."""
+    realtime_section = f"\n\n보조 컨텍스트:{realtime_context}" if realtime_context else ""
     return f"""당신은 교사를 돕는 학습 분석 AI입니다.
 
 아래는 한 학생과 AI 튜터 Sally가 진행한 한 세션의 채팅 기록입니다.
 이 대화를 바탕으로 교사용 학생별 최종 리포트를 생성하세요.
-선생님 관점에서 비판적으로 평가하세요.
+선생님 관점에서 비판적으로 평가하세요.{realtime_section}
 
 리포트 목적:
 - 세션 주요 학습 주제와 학생의 최종 취약 개념을 정리합니다.
@@ -415,16 +386,17 @@ def _build_chunk_summary_prompt(
 """
 
 
-def _build_synthesis_prompt(chunk_summaries: list[str]) -> str:
+def _build_synthesis_prompt(chunk_summaries: list[str], realtime_context: str = "") -> str:
     """chunk 요약들을 합쳐 최종 리포트를 만드는 프롬프트를 생성합니다."""
     summaries_text = "\n\n".join(
         f"[{i + 1}번째 파트 요약]\n{s}" for i, s in enumerate(chunk_summaries)
     )
+    realtime_section = f"\n\n보조 컨텍스트:{realtime_context}" if realtime_context else ""
 
     return f"""당신은 교사를 돕는 학습 분석 AI입니다.
 
 아래는 한 학생과 AI 튜터 Sally가 진행한 긴 학습 세션을 파트별로 요약한 내용입니다.
-파트별 요약을 시간 순서대로 종합하여 교사용 학생별 최종 리포트를 생성하세요.
+파트별 요약을 시간 순서대로 종합하여 교사용 학생별 최종 리포트를 생성하세요.{realtime_section}
 
 리포트 목적:
 - 세션 주요 학습 주제와 학생의 최종 취약 개념을 정리합니다.
@@ -487,8 +459,7 @@ def _build_synthesis_prompt(chunk_summaries: list[str]) -> str:
 - 세션에서 다룬 내용, 학생의 이해 수준, 확인된 장점, 해결된 혼란, 마지막까지 남은 약점, 다음 지도 방향을 자연스러운 하나의 문단으로 작성하세요.
 - 긍정/부정 평가는 파트별 요약의 근거 비율을 반영하세요.
 - 오개념이나 약점이 확인되지 않았다면 "뚜렷한 오개념은 확인되지 않았습니다"라고 작성하세요.
-- 세션 내용이 복잡하면 6~10문장까지 작성할 수 있습니다.
-- 줄바꿈 없이 하나의 문단으로 작성하세요.
+- 세션 내용의 분량에는 제한이 없습니다. 
 - 한자 표기를 사용하지 마세요.
 
 파트별 요약:
@@ -564,7 +535,7 @@ def _strip_code_fence(raw_text: str) -> str:
 def _extract_json_object(raw_text: str) -> str:
     """
     응답 텍스트에서 JSON 객체 부분만 추출합니다.
-    MVP 수준에서는 첫 번째 '{'부터 마지막 '}'까지 추출합니다.
+    중첩 괄호 카운팅 방식으로 올바른 JSON 범위를 찾습니다.
     """
     text = _strip_code_fence(raw_text)
 
@@ -572,10 +543,33 @@ def _extract_json_object(raw_text: str) -> str:
     text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", text).strip()
 
     start = text.find("{")
-    end = text.rfind("}")
-
-    if start == -1 or end == -1 or end <= start:
+    if start == -1:
         return text
+
+    depth = 0
+    in_string = False
+    escape_next = False
+    end = start
+
+    for i, ch in enumerate(text[start:], start=start):
+        if escape_next:
+            escape_next = False
+            continue
+        if ch == "\\" and in_string:
+            escape_next = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                end = i
+                break
 
     return text[start:end + 1]
 
@@ -827,9 +821,31 @@ async def generate_final_report(
       8. 최종 실패 시 fallback FinalReport 반환
     """
 
-    # realtime_summaries는 현재 최종 리포트 생성에 직접 사용하지 않지만,
-    # 향후 보조 컨텍스트로 확장할 수 있도록 시그니처에 남겨둡니다.
-    _ = realtime_summaries
+    # ── realtime_summaries: 프롬프트 보조 컨텍스트로 활용 ────────────────────
+    realtime_context = ""
+    if realtime_summaries:
+        # 이해도 변화, 반복 혼란, 감정 변화, 개입 필요 여부를 요약하여 프롬프트에 주입합니다.
+        scores = [
+            s.get("understanding_score")
+            for s in realtime_summaries
+            if s.get("understanding_score") is not None
+        ]
+        interventions = [s for s in realtime_summaries if s.get("need_intervention")]
+        emotions = [s.get("student_emotion") for s in realtime_summaries if s.get("student_emotion")]
+
+        lines = []
+        if scores:
+            lines.append(f"이해도 변화: {' → '.join(str(s) for s in scores)}")
+        if emotions:
+            lines.append(f"감정 흐름: {' → '.join(emotions)}")
+        if interventions:
+            lines.append(f"교사 개입 필요 발생 횟수: {len(interventions)}회")
+
+        if lines:
+            realtime_context = (
+                "\n\n[실시간 분석 요약]\n"
+                + "\n".join(f"- {l}" for l in lines)
+            )
 
     # ── Step 0: 메시지 정규화 ───────────────────────────────────────────────
     normalized_messages = normalize_chat_messages(chat_messages)
@@ -861,7 +877,7 @@ async def generate_final_report(
         if estimated_tokens <= SHORT_SESSION_TOKEN_THRESHOLD:
             print("[INFO] 짧은 세션 감지 → 전체 원문 기반 리포트 생성")
 
-            prompt = _build_report_prompt(conversation_text)
+            prompt = _build_report_prompt(conversation_text, realtime_context=realtime_context)
             raw_text = await _call_llm(
                 client=client,
                 prompt=prompt,
@@ -892,11 +908,18 @@ async def generate_final_report(
                 )
 
                 summary = summary.strip()
+
+                # chunk summary도 JSON 형식이어야 합니다. 파싱이 실패하면 경고만 남기고 계속 진행합니다.
+                try:
+                    json.loads(_extract_json_object(summary))
+                except (json.JSONDecodeError, ValueError):
+                    print(f"[WARN] chunk summary {i + 1}/{len(chunks)} JSON 파싱 실패. 원본 텍스트로 진행.")
+
                 chunk_summaries.append(summary)
 
                 print(f"[INFO] chunk summary done {i + 1}/{len(chunks)}")
 
-            synthesis_prompt = _build_synthesis_prompt(chunk_summaries)
+            synthesis_prompt = _build_synthesis_prompt(chunk_summaries, realtime_context=realtime_context)
             raw_text = await _call_llm(
                 client=client,
                 prompt=synthesis_prompt,
