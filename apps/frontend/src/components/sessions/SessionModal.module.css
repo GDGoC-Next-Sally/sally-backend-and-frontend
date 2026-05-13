@@ -36,8 +36,8 @@
 }
 
 .title {
-  font-size: 18px;
-  font-weight: 800;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: #212529;
   margin: 0 0 24px;
 }
@@ -56,8 +56,8 @@
 }
 
 .label {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   color: #495057;
 }
 
@@ -65,7 +65,7 @@
   border: 1px solid #dee2e6;
   border-radius: 8px;
   padding: 10px 14px;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   color: #212529;
   outline: none;
   transition: border-color 0.15s;
@@ -82,7 +82,7 @@
 }
 
 .error {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: #fa5252;
   margin: 0 0 12px;
 }
@@ -100,8 +100,8 @@
   border: none;
   border-radius: 8px;
   padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
 }
 
@@ -115,8 +115,8 @@
   border: none;
   border-radius: 8px;
   padding: 10px 24px;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
 }
 

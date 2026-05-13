@@ -27,7 +27,7 @@
   background: none;
   border: none;
   color: #868e96;
-  font-size: 18px;
+  font-size: var(--font-size-xl);
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 6px;
@@ -39,13 +39,13 @@
 }
 
 .sessionName {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   color: #212529;
 }
 
 .sessionDesc {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: #868e96;
   margin-top: 2px;
 }
@@ -59,14 +59,14 @@
 .statusBadge {
   background-color: #f1f3f5;
   color: #868e96;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   padding: 5px 12px;
   border-radius: 20px;
 }
 
 .timeInfo {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: #868e96;
 }
 
@@ -74,8 +74,8 @@
   background-color: white;
   border: 1.5px solid #dee2e6;
   color: #495057;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   padding: 8px 20px;
   border-radius: 8px;
   cursor: pointer;
@@ -102,15 +102,15 @@
 }
 
 .waitTitle {
-  font-size: 22px;
-  font-weight: 800;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   color: #212529;
   margin: 0 0 12px 0;
   text-align: center;
 }
 
 .waitDesc {
-  font-size: 14px;
+  font-size: var(--font-size-md);
   color: #868e96;
   text-align: center;
   line-height: 1.7;
@@ -122,8 +122,8 @@
   color: white;
   border: none;
   border-radius: 10px;
-  font-size: 16px;
-  font-weight: 700;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   padding: 14px 60px;
   cursor: pointer;
   margin-bottom: 36px;
@@ -162,12 +162,12 @@
 }
 
 .statLabel {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: #868e96;
 }
 
 .statValue {
-  font-size: 18px;
-  font-weight: 800;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: #212529;
 }

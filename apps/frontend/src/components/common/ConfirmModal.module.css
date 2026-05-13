@@ -42,8 +42,8 @@
 }
 
 .title {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   color: #262b29;
   margin: 0;
   line-height: 2;
@@ -72,8 +72,8 @@
 }
 
 .description {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   color: #515554;
   margin: 0;
   line-height: 1.5;
@@ -93,8 +93,8 @@
   height: 44px;
   padding: 0 16px;
   border-radius: 8px;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
   display: flex;
   align-items: center;

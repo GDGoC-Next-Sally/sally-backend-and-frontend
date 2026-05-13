@@ -33,7 +33,7 @@
 .backBtn {
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: var(--font-size-2xl);
   color: #6B6B6B;
   cursor: pointer;
   padding: 0 4px;
@@ -46,13 +46,13 @@
 .headerInfo { flex: 1; min-width: 0; }
 
 .sessionTitle {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   color: #1A1A1A;
 }
 
 .teacherName {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: #6B6B6B;
   margin-top: 2px;
 }
@@ -67,8 +67,8 @@
 .waitingChip {
   background: var(--color-bg);
   color: #6B6B6B;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   padding: 5px 12px;
   border-radius: 20px;
 }
@@ -82,14 +82,14 @@
 .liveChip {
   background: var(--color-live);
   color: white;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   padding: 5px 10px;
   border-radius: 20px;
 }
 
 .elapsed {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: #6B6B6B;
 }
 
@@ -98,7 +98,7 @@
   border: 1px solid #E0DED8;
   border-radius: 8px;
   padding: 7px 16px;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: #6B6B6B;
   cursor: pointer;
 }
@@ -115,26 +115,26 @@
 
 .waitMeta {
   align-self: flex-start;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: #6B6B6B;
   margin-bottom: 32px;
 }
 
-.waitTime { font-size: 12px; color: #6B6B6B; }
+.waitTime { font-size: var(--font-size-sm); color: #6B6B6B; }
 
 .waitIllustration {
   margin-bottom: 24px;
 }
 
 .waitTitle {
-  font-size: 22px;
-  font-weight: 700;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   color: #1A1A1A;
   margin: 0 0 8px;
 }
 
 .waitSubtitle {
-  font-size: 14px;
+  font-size: var(--font-size-md);
   color: #6B6B6B;
   text-align: center;
   line-height: 1.6;
@@ -147,8 +147,8 @@
   border: none;
   border-radius: 10px;
   padding: 14px 48px;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   margin-bottom: 32px;
   transition: background 0.15s;
@@ -179,13 +179,13 @@
 .waitStat:last-child { border-right: none; }
 
 .statLabel {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: #6B6B6B;
 }
 
 .statValue {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   color: #1A1A1A;
 }
 
@@ -232,7 +232,7 @@
 }
 
 .senderLabel {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: #6B6B6B;
   padding: 0 4px;
 }
@@ -241,14 +241,14 @@
   border-radius: 12px;
   border: 1px solid #E0DED8;
   padding: 10px 14px;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 .typingDot {
-  font-size: 10px;
+  font-size: var(--font-size-sm);
   color: #aaa;
   letter-spacing: 2px;
 }
@@ -265,7 +265,7 @@
 }
 
 .msgTime {
-  font-size: 10px;
+  font-size: var(--font-size-sm);
   color: #6B6B6B;
   white-space: nowrap;
   padding-bottom: 4px;
@@ -273,7 +273,7 @@
 
 .systemMsg {
   text-align: center;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: #6B6B6B;
   padding: 4px 0;
 }
@@ -291,7 +291,7 @@
   border: 1px solid #E0DED8;
   border-radius: 20px;
   padding: 7px 14px;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: #1A1A1A;
   cursor: pointer;
   white-space: nowrap;
@@ -314,7 +314,7 @@
   padding: 10px 16px;
   border: 1px solid #E0DED8;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   color: #1A1A1A;
   outline: none;
   background: white;
@@ -340,8 +340,8 @@
   border: none;
   border-radius: 8px;
   padding: 10px 18px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.15s;
@@ -362,8 +362,8 @@
 }
 
 .guideTitle {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   color: #1A1A1A;
 }
 
@@ -374,8 +374,8 @@
 }
 
 .guideSectionTitle {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
   color: var(--color-live);
   display: flex;
   align-items: center;
@@ -383,7 +383,7 @@
 }
 
 .guideSectionText {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: #6B6B6B;
   line-height: 1.6;
   margin: 0;
@@ -396,8 +396,8 @@
 }
 
 .progressPct {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
   color: var(--color-live);
 }
 

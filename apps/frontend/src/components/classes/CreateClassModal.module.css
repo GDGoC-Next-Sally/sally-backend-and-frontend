@@ -39,8 +39,8 @@
 
 .title {
   text-align: center;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: #212529;
   margin: 0 0 24px 0;
 }
@@ -51,8 +51,8 @@
 
 .label {
   display: block;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   color: #343a40;
   margin-bottom: 7px;
 }
@@ -64,7 +64,7 @@
   border: 1px solid #e9ecef;
   background-color: #f8f9fa;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   color: #212529;
   outline: none;
   transition: border-color 0.2s, background-color 0.2s;
@@ -117,7 +117,7 @@
   background-color: white;
   border: 1.5px solid #e9ecef;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: #868e96;
   cursor: pointer;
   transition: all 0.15s;
@@ -127,7 +127,7 @@
   border-color: var(--color-live);
   color: var(--color-live);
   background-color: var(--color-live-light);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 /* Two-column layout for grade + homeroom */
@@ -139,7 +139,7 @@
 
 /* Error message */
 .errorMsg {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: #E8593C;
   margin-bottom: 8px;
   text-align: center;
@@ -157,8 +157,8 @@
   flex: 1;
   padding: 13px;
   border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
 }
 

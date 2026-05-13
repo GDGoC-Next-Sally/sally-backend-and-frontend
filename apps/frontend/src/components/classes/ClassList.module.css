@@ -31,14 +31,14 @@
 }
 
 .title {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0 0 4px 0;
 }
 
 .subtitle {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   margin: 0;
 }
@@ -59,8 +59,8 @@
   border: none;
   border-radius: 10px;
   padding: 12px 24px;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s;
@@ -77,8 +77,8 @@
   border: none;
   border-radius: 10px;
   padding: 12px 24px;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   cursor: not-allowed;
   white-space: nowrap;
   opacity: 0.45;
@@ -118,7 +118,7 @@
   padding: 12px 14px 12px 42px;
   border: 1.5px solid var(--color-border);
   border-radius: 10px;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   color: var(--color-text-primary);
   background: var(--color-surface);
   outline: none;
@@ -132,7 +132,7 @@
   padding: 12px 36px 12px 14px;
   border: 1.5px solid var(--color-border);
   border-radius: 10px;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   color: var(--color-text-secondary);
   background: var(--color-surface);
   cursor: pointer;
@@ -172,8 +172,8 @@
 }
 
 .cardSchedule {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-placeholder);
   display: flex;
   align-items: center;
@@ -185,8 +185,8 @@
 }
 
 .cardTitle {
-  font-size: 20px;
-  font-weight: 800;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin-bottom: 6px;
 }
@@ -194,8 +194,8 @@
 .cardTitleSelected { color: var(--color-surface); }
 
 .cardSubject {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
   margin-bottom: 20px;
 }
@@ -209,8 +209,8 @@
   padding: 10px 14px;
   border-radius: 8px;
   color: var(--color-live);
-  font-weight: 700;
-  font-size: 12px;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -237,8 +237,8 @@
 }
 
 .sidebarTitle {
-  font-size: 18px;
-  font-weight: 800;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
 }
 
@@ -279,16 +279,16 @@
 }
 
 .studentName {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   flex: 1;
 }
 
 .progressBadge {
   color: var(--color-live);
-  font-size: 11px;
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
   background: var(--color-live-light);
   padding: 4px 10px;
   border-radius: 20px;
@@ -306,7 +306,7 @@
   border: 1.5px solid var(--color-border-light);
   border-radius: 10px;
   padding: 12px;
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   line-height: 1.6;
 }
@@ -314,7 +314,7 @@
 .sidebarEmpty {
   text-align: center;
   color: var(--color-text-secondary);
-  font-size: 14px;
+  font-size: var(--font-size-md);
   padding: 60px 0;
   line-height: 1.8;
 }
@@ -339,7 +339,7 @@
   background: none;
   border: none;
   text-align: left;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   color: var(--color-text-primary);
   cursor: pointer;
 }

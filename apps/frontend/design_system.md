@@ -27,15 +27,46 @@ originSessionId: 3b4a5895-6136-4bad-a72d-eb76e87faf24
 **Why:** Primary CTA is orange (#E8593C), NOT teal. Semantic/Live green (#22C55E) is ONLY for live/active status indicators, NOT for buttons.
 
 ## Typography Scale
-| Level | Size | Weight | Line Height | Usage |
-|-------|------|--------|-------------|-------|
-| H1 · Page Title | 28px | Bold (700) | 1.3 | 페이지 제목 |
-| H2 · Section Title | 22px | SemiBold (600) | 1.4 | 섹션 제목 |
-| H3 · Card Title | 18px | SemiBold (600) | 1.4 | 카드 제목 |
-| H4 · Subtitle | 16px | SemiBold (600) | 1.5 | 소제목 |
-| Body · Default | 14px | Regular (400) | 1.6 | 본문 텍스트 |
-| Caption · Label | 12px | Regular (400) | 1.5 | 보조 텍스트, 레이블 |
-| Badge · Tag | 10px | SemiBold (600) | 1.4 | 배지, 태그 |
+
+### Size Primitives (CSS 변수)
+| Token | Size | 대응 폐기값 |
+|-------|------|-----------|
+| `--font-size-display` | 32px | 32px, 24px (수치강조) |
+| `--font-size-2xl` | 22px | 22px, 20px, 24px (제목류) |
+| `--font-size-xl` | 18px | 18px, 15px (카드 상단) |
+| `--font-size-lg` | 16px | 16px |
+| `--font-size-md` | 14px | 14px, 13px |
+| `--font-size-sm` | 12px | 12px, 11px, 10px |
+
+### Weight Primitives (CSS 변수)
+| Token | Value | 대응 폐기값 |
+|-------|-------|-----------|
+| `--font-weight-regular` | 400 | 400, 500 |
+| `--font-weight-semibold` | 600 | 600 |
+| `--font-weight-bold` | 700 | 700, 800 |
+
+### Semantic Roles (글로벌 CSS 클래스)
+CSS Module에서 `composes: t-section from global;` 으로 사용.
+
+| Class | Size | Weight | Line-height | 사용처 |
+|-------|------|--------|-------------|--------|
+| `.t-display` | 32px | 700 | 1.2 | 통계 숫자, 대형 수치 강조 |
+| `.t-section` | 22px | 700 | 1.4 | 모달 제목, 섹션 헤더, 인증 페이지 제목 |
+| `.t-card` | 18px | 600 | 1.4 | 카드 제목, 그룹 헤더 |
+| `.t-label` | 16px | 600 | 1.5 | 폼 레이블, 소제목, 탭 항목 |
+| `.t-body` | 14px | 400 | 1.6 | 기본 본문 (body default) |
+| `.t-body-strong` | 14px | 700 | 1.6 | 강조 본문, 중요 항목명 |
+| `.t-caption` | 12px | 400 | 1.5 | 보조 텍스트, 날짜, 메타 정보 |
+| `.t-caption-strong` | 12px | 600 | 1.5 | 배지 레이블, 상태 텍스트, 작은 레이블 |
+
+**폐기 규칙:**
+- `font-size: 13px` → `var(--font-size-md)` (14px)
+- `font-size: 15px` → 컨텍스트에 따라 `--font-size-md` 또는 `--font-size-lg`
+- `font-size: 11px`, `10px` → `var(--font-size-sm)` (12px)
+- `font-size: 20px`, `24px` → `var(--font-size-2xl)` (22px) 또는 `--font-size-display`
+- `font-weight: 500` → `var(--font-weight-regular)` (400)
+- `font-weight: 800` → `var(--font-weight-bold)` (700)
+- rem 단위 → px 통일 (0.85rem→12px, 0.875rem→14px, 0.95rem→14px, 1.1rem→16px, 1.2rem→18px, 1.5rem→22px)
 
 ## Spacing Scale (8pt Grid)
 4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64, 80px

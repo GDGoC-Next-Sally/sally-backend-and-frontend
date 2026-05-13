@@ -30,7 +30,7 @@
 }
 
 .subtitle {
-  font-size: 0.85rem;
+  font-size: var(--font-size-sm);
   color: #6B6B6B;
   margin: 4px 0 0;
 }
@@ -52,7 +52,7 @@
   border: none;
   padding: 0.75rem 1.25rem;
   border-radius: 0.75rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -89,7 +89,7 @@
   width: 100%;
   padding: 10px 16px;
   text-align: left;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   background: none;
   border: none;
   cursor: pointer;
@@ -110,8 +110,8 @@
 }
 
 .title {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   color: #1a1a1a;
   margin: 0;
 }
@@ -122,7 +122,7 @@
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 0.75rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
@@ -157,7 +157,7 @@
   padding: 0.75rem 1rem 0.75rem 2.75rem;
   border: 1px solid #e2e8f0;
   border-radius: 0.75rem;
-  font-size: 0.95rem;
+  font-size: var(--font-size-md);
   outline: none;
   transition: border-color 0.2s;
 }
@@ -170,7 +170,7 @@
   padding: 0.75rem 2rem 0.75rem 1rem;
   border: 1px solid #e2e8f0;
   border-radius: 0.75rem;
-  font-size: 0.95rem;
+  font-size: var(--font-size-md);
   color: #64748b;
   outline: none;
   cursor: pointer;
@@ -211,8 +211,8 @@
 }
 
 .cardSchedule {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   color: #94a3b8;
   display: flex;
   align-items: center;
@@ -225,8 +225,8 @@
 }
 
 .cardTitle {
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   color: #1e293b;
   margin-bottom: 0.5rem;
   line-height: 1.4;
@@ -237,8 +237,8 @@
 }
 
 .cardTeacher {
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
   color: #64748b;
   margin-bottom: 1.5rem;
 }
@@ -254,8 +254,8 @@
   padding: 0.6rem 1rem;
   border-radius: 0.5rem;
   color: #10b981;
-  font-weight: 700;
-  font-size: 0.85rem;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -292,8 +292,8 @@
 }
 
 .sidebarTitle {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   color: #1a1a1a;
 }
 
@@ -321,7 +321,7 @@
   padding: 4rem 0;
   text-align: center;
   color: #94a3b8;
-  font-weight: 500;
+  font-weight: var(--font-weight-regular);
 }
 
 .classInfo {
@@ -344,22 +344,22 @@
 }
 
 .infoLabel {
-  font-size: 0.8rem;
+  font-size: var(--font-size-sm);
   color: #94a3b8;
-  font-weight: 500;
+  font-weight: var(--font-weight-regular);
   flex-shrink: 0;
 }
 
 .infoValue {
-  font-size: 0.875rem;
+  font-size: var(--font-size-md);
   color: #1e293b;
-  font-weight: 500;
+  font-weight: var(--font-weight-regular);
   text-align: right;
 }
 
 .statusBadge {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   padding: 0.2rem 0.6rem;
   border-radius: 9999px;
 }
@@ -382,7 +382,7 @@
 .sidebarEmpty {
   text-align: center;
   color: #94a3b8;
-  font-size: 0.875rem;
+  font-size: var(--font-size-md);
   line-height: 1.6;
   padding: 2rem 0;
 }

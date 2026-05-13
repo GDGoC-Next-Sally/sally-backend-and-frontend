@@ -40,6 +40,19 @@
   --color-red:              var(--red);
   --color-red-bg:           var(--red-bg);
 
+  /* Typography — Size primitives */
+  --font-size-display: 32px;
+  --font-size-2xl:     22px;
+  --font-size-xl:      18px;
+  --font-size-lg:      16px;
+  --font-size-md:      14px;
+  --font-size-sm:      12px;
+
+  /* Typography — Weight primitives */
+  --font-weight-regular:  400;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
+
   /* Border Radius */
   --radius-badge:   4px;
   --radius-button:  8px;
@@ -62,6 +75,18 @@ body {
   background: var(--color-bg);
   color: var(--color-text-primary);
   font-family: 'Pretendard Variable', sans-serif;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   line-height: 1.6;
 }
+
+/* ─── Typography Semantic Roles ──────────────────────────────────────────── */
+/* 사용: composes: t-section from global; 또는 className={styles.title + ' t-section'} */
+
+.t-display       { font-size: var(--font-size-display); font-weight: var(--font-weight-bold);     line-height: 1.2; }
+.t-section       { font-size: var(--font-size-2xl);     font-weight: var(--font-weight-bold);     line-height: 1.4; }
+.t-card          { font-size: var(--font-size-xl);      font-weight: var(--font-weight-semibold); line-height: 1.4; }
+.t-label         { font-size: var(--font-size-lg);      font-weight: var(--font-weight-semibold); line-height: 1.5; }
+.t-body          { font-size: var(--font-size-md);      font-weight: var(--font-weight-regular);  line-height: 1.6; }
+.t-body-strong   { font-size: var(--font-size-md);      font-weight: var(--font-weight-bold);     line-height: 1.6; }
+.t-caption       { font-size: var(--font-size-sm);      font-weight: var(--font-weight-regular);  line-height: 1.5; }
+.t-caption-strong{ font-size: var(--font-size-sm);      font-weight: var(--font-weight-semibold); line-height: 1.5; }

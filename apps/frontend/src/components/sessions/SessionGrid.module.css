@@ -14,8 +14,8 @@
   background: none;
   border: none;
   color: #797c7c;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   padding: 0;
   margin-bottom: 8px;
@@ -38,8 +38,8 @@
 }
 
 .classTitle {
-  font-size: 24px;
-  font-weight: 800;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   color: #212529;
   margin: 0;
 }
@@ -74,8 +74,8 @@
 }
 
 .teacherName {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   color: #797c7c;
   white-space: nowrap;
 }
@@ -109,7 +109,7 @@
   border: none;
   outline: none;
   width: 100%;
-  font-size: 16px;
+  font-size: var(--font-size-lg);
   color: #343a40;
 }
 
@@ -121,7 +121,7 @@
   padding: 0 14px;
   border: 1px solid #c0c8c5;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: var(--font-size-lg);
   color: #a9afad;
   background-color: white;
   cursor: pointer;
@@ -170,15 +170,15 @@
 }
 
 .sessionTitle {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   color: #212529;
   margin-bottom: 2px;
 }
 
 .sessionSubject {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   color: #797c7c;
 }
 
@@ -187,16 +187,16 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   color: #626664;
   white-space: nowrap;
 }
 
 /* Time */
 .sessionTime {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   color: #626664;
   white-space: nowrap;
   min-width: 80px;
@@ -207,8 +207,8 @@
 .badge {
   padding: 8px 16px;
   border-radius: 30px;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   white-space: nowrap;
   min-width: 90px;
   text-align: center;
@@ -269,8 +269,8 @@
   padding: 10px 24px;
   background: none;
   border: none;
-  font-size: 16px;
-  font-weight: 700;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   color: #626664;
   cursor: pointer;
 }
@@ -297,7 +297,7 @@
   border: none;
   color: #adb5bd;
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   padding: 4px 8px;
 }
 
@@ -310,14 +310,14 @@
   border: none;
   color: #212529;
   cursor: pointer;
-  font-size: 16px;
+  font-size: var(--font-size-lg);
   width: 28px;
   height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 6px;
-  font-weight: 400;
+  font-weight: var(--font-weight-regular);
 }
 
 .pageNumber:hover {
@@ -325,7 +325,7 @@
 }
 
 .pageActive {
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   color: #212529;
 }
 
@@ -336,8 +336,8 @@
   border-radius: 8px;
   padding: 0 16px;
   height: 40px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   white-space: nowrap;
 }
@@ -349,6 +349,6 @@
 .empty {
   padding: 48px 0;
   text-align: center;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   color: #adb5bd;
 }

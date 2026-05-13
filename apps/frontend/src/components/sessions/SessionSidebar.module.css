@@ -22,8 +22,8 @@
   background: white;
   border: 1.5px solid #E0DED8;
   border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   color: #374151;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
@@ -36,8 +36,8 @@
 }
 
 .endBtnTime {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
   color: #6B7280;
   font-variant-numeric: tabular-nums;
 }
@@ -55,8 +55,8 @@
 }
 
 .title {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   color: #6B7280;
   margin: 0;
 }
@@ -165,8 +165,8 @@
 }
 
 .name {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
   color: #1A1A1A;
   white-space: nowrap;
   overflow: hidden;
@@ -181,8 +181,8 @@
 }
 
 .progressBadge {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   color: #22cb84;
   background: #e5f9f0;
   border-radius: 20px;
@@ -205,7 +205,7 @@
 }
 
 .summaryText {
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   color: #9ca3af;
   padding-left: 40px;
   line-height: 1.4;
@@ -236,20 +236,20 @@
 }
 
 .statLabel {
-  font-size: 10px;
+  font-size: var(--font-size-sm);
   color: #9CA3AF;
-  font-weight: 500;
+  font-weight: var(--font-weight-regular);
   white-space: nowrap;
 }
 
 .statValue {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
   color: #1A1A1A;
 }
 
 .emotionValue {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
 }
 
 .statDivider {
@@ -268,7 +268,7 @@
   background: #F0FDF4;
   border-radius: 6px;
   padding: 8px 10px;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: #15803D;
   line-height: 1.4;
   display: flex;
@@ -277,7 +277,7 @@
 }
 
 .analysisIcon {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   margin-top: 1px;
 }
 
@@ -285,7 +285,7 @@
 /* ── 비어있음 ────────────────────────────────────────────────────────────────── */
 
 .empty {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   color: #6B6B6B;
   text-align: center;
   padding: 24px 0;
@@ -299,8 +299,8 @@
 }
 
 .unitTitle {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   color: #9CA3AF;
   margin-bottom: 8px;
   text-transform: uppercase;
@@ -318,7 +318,7 @@
   color: #15803D;
   border: 1px solid #BBF7D0;
   border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   padding: 3px 10px;
 }

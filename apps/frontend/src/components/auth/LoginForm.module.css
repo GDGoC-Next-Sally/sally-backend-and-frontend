@@ -27,8 +27,8 @@
   flex: 1;
   padding: 16px 0;
   text-align: center;
-  font-weight: 600;
-  font-size: 15px;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-md);
   cursor: pointer;
   transition: all 0.2s;
   border: none;
@@ -66,8 +66,8 @@
 
 .title {
   text-align: center;
-  font-size: 24px;
-  font-weight: 700;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin-bottom: 32px;
   line-height: 1.4;
@@ -79,8 +79,8 @@
 
 .label {
   display: block;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin-bottom: 8px;
 }
@@ -91,7 +91,7 @@
   padding: 12px 16px;
   border: 1px solid var(--color-border);
   border-radius: 10px;
-  font-size: 14px;
+  font-size: var(--font-size-md);
   color: var(--color-text-primary);
   background-color: var(--color-surface);
   transition: border-color 0.2s;
@@ -112,8 +112,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 32px;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .checkboxLabel {
@@ -155,8 +155,8 @@
   color: var(--color-surface);
   border: none;
   border-radius: 10px;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   cursor: pointer;
   transition: all 0.2s;
 }
