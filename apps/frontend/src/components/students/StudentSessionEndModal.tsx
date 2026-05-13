@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { X, Lightbulb } from 'lucide-react';
 import styles from './StudentSessionEndModal.module.css';
 
 interface Props {
@@ -9,22 +10,12 @@ interface Props {
   onNext: () => void;
 }
 
-/** 전구 아이콘 */
-const BulbIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0f76f8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.4-1.3 4.5-3.3 5.7-.4.3-.7.7-.7 1.1V17H10v-1.2c0-.4-.3-.8-.7-1.1A6 6 0 0 1 6 9a6 6 0 0 1 6-6z" />
-  </svg>
-);
-
 export const StudentSessionEndModal: React.FC<Props> = ({ onClose, onNext }) => (
   <div className={styles.overlay} onClick={onClose}>
     <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
       {/* 닫기 버튼 */}
       <button className={styles.closeBtn} onClick={onClose} aria-label="닫기">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
+        <X size={18} />
       </button>
 
       {/* 제목 */}
@@ -43,7 +34,7 @@ export const StudentSessionEndModal: React.FC<Props> = ({ onClose, onNext }) => 
 
       {/* 파란 안내 박스 */}
       <div className={styles.infoBox}>
-        <BulbIcon />
+        <Lightbulb size={24} color="#0f76f8" strokeWidth={1.8} />
         <p className={styles.infoText}>
           수업 후, 학습 리포트를 바탕으로{' '}
           어려웠던 부분을 다시 복습해보세요.

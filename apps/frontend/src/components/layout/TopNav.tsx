@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Home, BookText, LayoutGrid, ChevronDown } from 'lucide-react';
 import styles from './TopNav.module.css';
 import { ChangePasswordModal } from './ChangePasswordModal';
 import { DropdownMenu } from '../common/DropdownMenu';
@@ -21,42 +22,15 @@ interface TopNavProps {
 }
 
 function HomeNavIcon({ active }: { active: boolean }) {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M11.47 3.841a.75.75 0 0 1 1.06 0l8.99 8.99a.75.75 0 1 1-1.06 1.06L12 5.432 3.54 13.89a.75.75 0 1 1-1.06-1.06l8.99-8.99Z"
-        fill={active ? '#22cb84' : '#1A1A1A'}
-      />
-      <path
-        d="M12 5.432 4.5 12.932V20.25c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-4.5h3v4.5c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-7.318L12 5.432Z"
-        fill={active ? '#22cb84' : '#1A1A1A'}
-      />
-    </svg>
-  );
+  return <Home size={24} color={active ? '#22cb84' : '#1A1A1A'} />;
 }
 
 function ClassNavIcon({ active }: { active: boolean }) {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M19 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h13a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1ZM6 4h12v12H6V4Zm0 16v-2h12v2H6Z"
-        fill={active ? '#22cb84' : '#1A1A1A'}
-      />
-      <rect x="8" y="7" width="8" height="1.5" rx="0.75" fill={active ? '#22cb84' : '#1A1A1A'} />
-      <rect x="8" y="10" width="5" height="1.5" rx="0.75" fill={active ? '#22cb84' : '#1A1A1A'} />
-    </svg>
-  );
+  return <BookText size={24} color={active ? '#22cb84' : '#1A1A1A'} />;
 }
 
 function ReportNavIcon({ active }: { active: boolean }) {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="3" y="3" width="7" height="7" rx="1" fill={active ? '#22cb84' : '#1A1A1A'} />
-      <rect x="14" y="3" width="7" height="7" rx="1" fill={active ? '#22cb84' : '#1A1A1A'} />
-      <rect x="3" y="14" width="7" height="7" rx="1" fill={active ? '#22cb84' : '#1A1A1A'} />
-      <rect x="14" y="14" width="7" height="7" rx="1" fill={active ? '#22cb84' : '#1A1A1A'} />
-    </svg>
-  );
+  return <LayoutGrid size={24} color={active ? '#22cb84' : '#1A1A1A'} />;
 }
 
 export const TopNav: React.FC<TopNavProps> = ({ user, onSignOut }) => {
@@ -110,22 +84,7 @@ export const TopNav: React.FC<TopNavProps> = ({ user, onSignOut }) => {
                 <button type="button" className={styles.profileSection}>
                   <ProfileIcon className={styles.avatarImage} />
                   <span className={styles.userName}>{user.name} {roleTitle}</span>
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={styles.chevron}
-                  >
-                    <path
-                      d="M5 7.5L10 12.5L15 7.5"
-                      stroke="#1A1A1A"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  <ChevronDown size={20} color="#1A1A1A" className={styles.chevron} />
                 </button>
               }
               items={[

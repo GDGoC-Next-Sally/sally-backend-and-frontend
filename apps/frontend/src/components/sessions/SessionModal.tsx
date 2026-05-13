@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { type Session, type CreateSessionBody } from '@/actions/sessions';
+import { X } from 'lucide-react';
 import styles from './SessionModal.module.css';
 import dayjs from 'dayjs';
 
@@ -52,9 +53,7 @@ export const SessionModal: React.FC<Props> = ({ classId, session, onClose, onSub
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <button className={styles.closeBtn} onClick={onClose} type="button">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
+          <X size={20} />
         </button>
 
         <h2 className={styles.title}>{isEdit ? '세션 수정' : '새 세션 만들기'}</h2>

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ChevronRight as ChevronRightIcon, Calendar, Clock, User, Users, Bell, BookOpen, LayoutGrid } from 'lucide-react';
 import styles from './Dashboard.module.css';
 import type { RecentSessionInfo } from '@/app/t/home/page';
 import { computeSessionStatus } from '@/utils/sessionStatus';
@@ -56,11 +57,7 @@ const STATUS_CONFIG: Record<
 };
 
 /* ── 화살표 아이콘 ────────────────────────────────────────── */
-const ChevronRight = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="9 18 15 12 9 6" />
-  </svg>
-);
+const ChevronRight = () => <ChevronRightIcon size={18} strokeWidth={2.5} />;
 
 /* ── 통합 카드 컴포넌트 ───────────────────────────────────── */
 function TodayClassContent({ todayClass }: { todayClass?: TodayClass }) {
@@ -69,9 +66,7 @@ function TodayClassContent({ todayClass }: { todayClass?: TodayClass }) {
     return (
       <div className={styles.emptyBody}>
         <div className={styles.emptyIcon}>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
-          </svg>
+          <Calendar size={32} strokeWidth={1.5} />
         </div>
         <p className={styles.emptyTitle}>오늘은 예정된 수업이 없어요.</p>
         <p className={styles.emptySubtitle}>클래스를 등록하면 여기에 표시돼요.</p>
@@ -99,15 +94,11 @@ function TodayClassContent({ todayClass }: { todayClass?: TodayClass }) {
         {/* 교시 + 인원수 */}
         <div className={styles.classStats}>
           <div className={styles.statItem}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-            </svg>
+            <Clock size={18} />
             <span>{todayClass.period}교시</span>
           </div>
           <div className={styles.statItem}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-            </svg>
+            <User size={18} />
             <span>{todayClass.studentCount ?? '—'}</span>
           </div>
         </div>
@@ -164,9 +155,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass, recen
         <div className={styles.topCard}>
           <div className={styles.topCardContent}>
             <div className={styles.iconCircle}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
+              <Bell size={20} color="#10b981" />
             </div>
             <div>
               <h3 className={styles.cardTitle}>공지사항</h3>
@@ -184,9 +173,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass, recen
         <div className={styles.topCard}>
           <div className={styles.topCardContent}>
             <div className={styles.iconCircle}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
+              <Users size={20} color="#10b981" />
             </div>
             <div>
               <h3 className={styles.cardTitle}>도움이 필요한 학생 <span className={styles.highlightCount}>{alert.count}</span></h3>
@@ -278,9 +265,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass, recen
                 <Link href={`/t/classes/${cls.id}`} key={cls.id} style={{ textDecoration: 'none' }}>
                   <div className={styles.quickLinkItem}>
                     <div className={styles.quickLinkIcon}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                      </svg>
+                      <BookOpen size={20} color="#10b981" />
                     </div>
                     <div className={styles.quickLinkText}>
                       <span className={styles.quickLinkTitle}>{cls.subject}</span>
@@ -296,9 +281,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass, recen
                 <Link href="/t/classes" style={{ textDecoration: 'none' }}>
                   <div className={styles.quickLinkItem}>
                     <div className={styles.quickLinkIcon}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2">
-                        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-                      </svg>
+                      <LayoutGrid size={20} color="#64748b" />
                     </div>
                     <div className={styles.quickLinkText}>
                       <span className={styles.quickLinkTitle}>내 클래스 관리</span>

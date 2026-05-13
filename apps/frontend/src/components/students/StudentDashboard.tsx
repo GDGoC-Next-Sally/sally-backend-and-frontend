@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { ChevronRight as ChevronRightIcon, Calendar, Clock, Bell, Activity, BookOpen, LayoutGrid } from 'lucide-react';
 import styles from './StudentDashboard.module.css';
 import type { RecentSessionInfo, TodayClassData } from '@/app/s/home/page';
 import { computeSessionStatus } from '@/utils/sessionStatus';
@@ -46,11 +47,7 @@ const STATUS_CONFIG: Record<
   completed: { tag: '완료',  getLabel: ()  => '오늘 수업 완료',      btnText: '내 리포트 보기' },
 };
 
-const ChevronRight = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="9 18 15 12 9 6" />
-  </svg>
-);
+const ChevronRight = () => <ChevronRightIcon size={18} strokeWidth={2.5} />;
 
 function StudentTodayClassContent({ todayClass }: { todayClass?: TodayClassData }) {
   const router = useRouter();
@@ -58,9 +55,7 @@ function StudentTodayClassContent({ todayClass }: { todayClass?: TodayClassData 
     return (
       <div className={styles.emptyBody}>
         <div className={styles.emptyIcon}>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
-          </svg>
+          <Calendar size={32} strokeWidth={1.5} />
         </div>
         <p className={styles.emptyTitle}>오늘은 예정된 수업이 없어요.</p>
         <p className={styles.emptySubtitle}>선생님이 클래스를 열면 여기에 표시돼요.</p>
@@ -85,9 +80,7 @@ function StudentTodayClassContent({ todayClass }: { todayClass?: TodayClassData 
 
         <div className={styles.classStats}>
           <div className={styles.statItem}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-            </svg>
+            <Clock size={18} />
             <span>{todayClass.period}교시</span>
           </div>
         </div>
@@ -126,10 +119,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classe
         <div className={styles.topCard}>
           <div className={styles.topCardContent}>
             <div className={styles.iconCircle}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
+              <Bell size={20} color="#10b981" />
             </div>
             <div>
               <h3 className={styles.cardTitle}>공지사항</h3>
@@ -145,9 +135,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classe
         <div className={styles.topCard}>
           <div className={styles.topCardContent}>
             <div className={styles.iconCircle}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-              </svg>
+              <Activity size={20} color="#10b981" />
             </div>
             <div>
               <h3 className={styles.cardTitle}>나의 학습 진도 <span className={styles.highlightCount}>{progressAlert.count}</span></h3>
@@ -224,9 +212,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classe
                 <Link href={`/s/classes/${cls.id}`} key={cls.id} style={{ textDecoration: 'none' }}>
                   <div className={styles.quickLinkItem}>
                     <div className={styles.quickLinkIcon}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                      </svg>
+                      <BookOpen size={20} color="#10b981" />
                     </div>
                     <div className={styles.quickLinkText}>
                       <span className={styles.quickLinkTitle}>{cls.subject}</span>
@@ -241,9 +227,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classe
                 <Link href="/s/classes" style={{ textDecoration: 'none' }}>
                   <div className={styles.quickLinkItem}>
                     <div className={styles.quickLinkIcon}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2">
-                        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-                      </svg>
+                      <LayoutGrid size={20} color="#64748b" />
                     </div>
                     <div className={styles.quickLinkText}>
                       <span className={styles.quickLinkTitle}>클래스 참여하기</span>

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import { X, CheckCircle } from 'lucide-react';
 import styles from './ChangePasswordModal.module.css';
 
 interface Props {
@@ -40,10 +41,7 @@ export const ChangePasswordModal: React.FC<Props> = ({ onClose }) => {
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <button className={styles.closeBtn} onClick={onClose} aria-label="닫기">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
+          <X size={22} />
         </button>
 
         <h2 className={styles.title}>비밀번호 변경</h2>
@@ -51,10 +49,7 @@ export const ChangePasswordModal: React.FC<Props> = ({ onClose }) => {
 
         {success ? (
           <div className={styles.successBody}>
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-live)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="9 12 11 14 15 10" />
-            </svg>
+            <CheckCircle size={48} color="var(--color-live)" />
             <p className={styles.successText}>비밀번호가 성공적으로 변경되었어요.</p>
             <button className={styles.confirmBtn} onClick={onClose}>확인</button>
           </div>

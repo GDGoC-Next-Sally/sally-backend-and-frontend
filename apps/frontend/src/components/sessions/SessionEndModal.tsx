@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { X, Clock, User } from 'lucide-react';
 import styles from './SessionEndModal.module.css';
 
 interface SessionEndModalProps {
@@ -12,10 +13,7 @@ export const SessionEndModal: React.FC<SessionEndModalProps> = ({ onClose }) => 
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <button className={styles.closeBtn} onClick={onClose}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
+          <X size={24} />
         </button>
 
         <h2 className={styles.title}>세션이 종료되었습니다.</h2>
@@ -27,15 +25,11 @@ export const SessionEndModal: React.FC<SessionEndModalProps> = ({ onClose }) => 
 
         <div className={styles.metaRow}>
           <div className={styles.metaItem}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-            </svg>
+            <Clock size={14} />
             수요일 5교시
           </div>
           <div className={styles.metaItem}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-            </svg>
+            <User size={14} />
             28명
           </div>
         </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Clock, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
 import { DropdownMenu, type DropdownMenuItem } from './DropdownMenu';
 import styles from './ClassCard.module.css';
 
@@ -53,19 +54,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         <div className={styles.cardScheduleArea}>
           {schedule && (
             <div className={styles.cardSchedule}>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
+              <Clock size={14} strokeWidth={2.5} />
               {schedule}
             </div>
           )}
@@ -77,11 +66,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
             <DropdownMenu
               trigger={
                 <button className={styles.dotsBtn} aria-label="더보기">
-                  <svg width="16" height="4" viewBox="0 0 16 4" fill="currentColor">
-                    <circle cx="2" cy="2" r="1.5" />
-                    <circle cx="8" cy="2" r="1.5" />
-                    <circle cx="14" cy="2" r="1.5" />
-                  </svg>
+                  <MoreHorizontal size={16} />
                 </button>
               }
               items={menuItems}
@@ -109,20 +94,14 @@ export const ClassCard: React.FC<ClassCardProps> = ({
       >
         {moveBtnCentered ? (
           <>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
+            <ChevronLeft size={12} strokeWidth={2.5} />
             <span>{navigateLabel}</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
+            <ChevronRight size={12} strokeWidth={2.5} />
           </>
         ) : (
           <>
             <span>{navigateLabel}</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
+            <ChevronRight size={16} strokeWidth={2.5} />
           </>
         )}
       </button>

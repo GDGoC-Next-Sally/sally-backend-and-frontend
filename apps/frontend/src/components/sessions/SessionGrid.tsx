@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { type Session } from '@/actions/sessions';
 import { type ClassItem } from '@/actions/classes';
+import { User, MoreHorizontal } from 'lucide-react';
 import { SessionModal } from './SessionModal';
 import { CreateSessionModal } from './CreateSessionModal';
 import { ConfirmModal } from '../common/ConfirmModal';
@@ -152,10 +153,7 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
 
               {session.period != null && (
                 <div className={styles.sessionMeta}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#626664" strokeWidth="1.8">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
+                  <User size={20} color="#626664" strokeWidth={1.8} />
                   <span>{session.period}</span>
                 </div>
               )}
@@ -173,9 +171,7 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
                 <DropdownMenu
                   trigger={
                     <button className={styles.moreBtn}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="#626664">
-                        <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
-                      </svg>
+                      <MoreHorizontal size={20} color="#626664" />
                     </button>
                   }
                   items={[

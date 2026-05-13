@@ -3,6 +3,7 @@
 import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { type Session } from '@/actions/sessions';
+import { Users, Search, MessageSquare, MoreHorizontal } from 'lucide-react';
 import { computeSessionStatus, type ComputedStatus } from '@/utils/sessionStatus';
 import styles from './StudentSessionList.module.css';
 
@@ -201,9 +202,7 @@ export const StudentSessionList: React.FC<Props> = ({
                       </div>
                       <div className={styles.pastStats}>
                         <div className={styles.statItem}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                          </svg>
+                          <Users size={14} />
                           완료
                         </div>
                       </div>
@@ -226,9 +225,7 @@ export const StudentSessionList: React.FC<Props> = ({
           <div className={styles.sessionsContent}>
             <div className={styles.sessionsFilterBar}>
               <div className={styles.searchBox}>
-                <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
+                <Search className={styles.searchIcon} size={16} />
                 <input
                   type="text"
                   className={styles.searchInput}
@@ -259,9 +256,7 @@ export const StudentSessionList: React.FC<Props> = ({
                       onClick={() => router.push(`/s/classes/${classId}/sessions/${session.id}`)}
                     >
                       <div className={styles.sessionIcon} style={{ backgroundColor: cfg.iconBg }}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={cfg.iconColor} strokeWidth="2">
-                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                        </svg>
+                        <MessageSquare size={18} color={cfg.iconColor} />
                       </div>
                       <div className={styles.sessionInfo}>
                         <div className={styles.sessionTitle}>{session.session_name}</div>
@@ -285,9 +280,7 @@ export const StudentSessionList: React.FC<Props> = ({
                             setOpenMenuId(openMenuId === session.id ? null : session.id);
                           }}
                         >
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                            <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
-                          </svg>
+                          <MoreHorizontal size={18} />
                         </button>
                         {openMenuId === session.id && (
                           <div className={styles.dropdownMenu}>

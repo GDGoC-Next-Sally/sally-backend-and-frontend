@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { RefreshCw, MoreHorizontal } from 'lucide-react';
 import styles from './SessionSidebar.module.css';
 import type { AttendanceStudent } from '@/actions/sessions';
 import type { StudentAnalysis } from './SessionWidget';
@@ -69,10 +70,7 @@ export const SessionSidebar: React.FC<Props> = ({
         </h2>
         {phase === 'waiting' && (
           <button className={styles.refreshBtn} type="button" onClick={onRefresh}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 2v6h-6" /><path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
-              <path d="M3 22v-6h6" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
-            </svg>
+            <RefreshCw size={18} />
           </button>
         )}
       </div>
@@ -116,11 +114,7 @@ export const SessionSidebar: React.FC<Props> = ({
                       onClick={(e) => e.stopPropagation()}
                       type="button"
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="#9ca3af">
-                        <circle cx="5" cy="12" r="2" />
-                        <circle cx="12" cy="12" r="2" />
-                        <circle cx="19" cy="12" r="2" />
-                      </svg>
+                      <MoreHorizontal size={16} color="#9ca3af" />
                     </button>
                   </div>
                 </div>
