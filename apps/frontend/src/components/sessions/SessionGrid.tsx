@@ -9,6 +9,7 @@ import { SessionModal } from './SessionModal';
 import { CreateSessionModal } from './CreateSessionModal';
 import { ConfirmModal } from '../common/ConfirmModal';
 import { DropdownMenu } from '../common/DropdownMenu';
+import { FilterBar } from '../common/FilterBar';
 import styles from './SessionGrid.module.css';
 import type { CreateSessionBody } from '@/actions/sessions';
 import { computeSessionStatus, type ComputedStatus } from '@/utils/sessionStatus';
@@ -111,30 +112,19 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
         )}
       </div>
 
-      <div className={styles.filterBar}>
-        <div className={styles.searchBox}>
-          <svg className={styles.searchIcon} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="세션 검색"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <select className={styles.sortSelect} defaultValue="">
-            <option value="" disabled>정렬</option>
-            <option value="recent">최근순</option>
-            <option value="name">이름순</option>
-          </select>
-          <button className={styles.createBtn} onClick={() => setIsCreateOpen(true)}>
-            + 세션 만들기
-          </button>
-        </div>
-      </div>
+      <FilterBar
+        search={search}
+        onSearch={setSearch}
+        placeholder="세션 검색"
+        sortOptions={[
+          { value: 'recent', label: '최근순' },
+          { value: 'name', label: '이름순' },
+        ]}
+      >
+        <button className={styles.createBtn} onClick={() => setIsCreateOpen(true)}>
+          + 세션 만들기
+        </button>
+      </FilterBar>
 
       <div className={styles.sessionList}>
         {filtered.length === 0 && (

@@ -1,0 +1,68 @@
+.filterBar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+/* ── Search ── */
+.searchBox {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  color: var(--color-text-placeholder);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px 0 42px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-button);
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-placeholder);
+}
+
+.searchInput:focus {
+  border-color: var(--color-primary);
+}
+
+/* ── Sort select ── */
+.sortSelect {
+  height: 40px;
+  padding: 0 36px 0 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-button);
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+  background-color: var(--color-surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B6B6B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 1rem;
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+  white-space: nowrap;
+}
+
+/* ── Right slot (optional extra controls) ── */
+.rightSlot {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
