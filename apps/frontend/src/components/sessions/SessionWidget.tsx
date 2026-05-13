@@ -5,7 +5,8 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Paperclip } from 'lucide-react';
 import { SessionSidebar } from './SessionSidebar';
-import { ConfirmModal } from '../common/ConfirmModal';
+import { SessionEndModal } from './SessionEndModal';
+import { StudentMonitorGrid } from './StudentMonitorGrid';
 import { type AttendanceStudent } from '@/actions/sessions';
 import { getSessionStudents, getStudentDetail, sendIntervention, type ChatMessage } from '@/actions/livechat';
 import { createClient } from '@/utils/supabase/client';
@@ -71,6 +72,7 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
   const [isLoadingChat, setIsLoadingChat] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isEndConfirmOpen, setIsEndConfirmOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'chat' | 'monitor'>('chat');
   const [interventionInput, setInterventionInput] = useState('');
   const [isSendingIntervention, setIsSendingIntervention] = useState(false);
   const [analysisMap, setAnalysisMap] = useState<Map<string, StudentAnalysis>>(new Map());
@@ -157,8 +159,8 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
         }
       });
 
-      socket.on('student_analysis_ready', (data: { dialog_id: number; student_id: string } & StudentAnalysis) => {
-        const { dialog_id: _d, ...analysis } = data;
+      socket.on('student_analysis_ready', (data: { dialog_id: number; student_id: string; analysis?: StudentAnalysis } & StudentAnalysis) => {
+        const analysis: StudentAnalysis = data.analysis ?? data;
         setAnalysisMap(prev => new Map(prev).set(data.student_id, analysis));
       });
 
@@ -199,11 +201,7 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
     loadChat(id);
   }, [loadChat]);
 
-  useEffect(() => {
-    if (phase === 'active' && selectedStudentId) {
-      loadChat(selectedStudentId);
-    }
-  }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
+  // loadChat은 getSessionStudents().then() 안에서 dialogMapRef 채운 후 호출됨
 
   const handleStart = async () => {
     setLoading(true);
@@ -295,15 +293,20 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
             onInterventionChange={setInterventionInput}
             onSendIntervention={handleSendIntervention}
             isSendingIntervention={isSendingIntervention}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            localStudents={localStudents}
+            analysisMap={analysisMap}
           />
         )}
       </div>
 
       {isEndConfirmOpen && (
-        <ConfirmModal
-          title="세션을 종료하시겠습니까?"
-          description="세션을 종료하면 학생들이 더 이상 참여할 수 없습니다."
-          confirmLabel="종료"
+        <SessionEndModal
+          sessionName={sessionName}
+          localStudents={localStudents}
+          sessionActiveTime={sessionActiveTime}
+          analysisMap={analysisMap}
           onClose={() => setIsEndConfirmOpen(false)}
           onConfirm={handleFinishConfirm}
         />
@@ -421,6 +424,10 @@ interface ActiveProps {
   onInterventionChange: (v: string) => void;
   onSendIntervention: () => void;
   isSendingIntervention: boolean;
+  activeTab: 'chat' | 'monitor';
+  onTabChange: (tab: 'chat' | 'monitor') => void;
+  localStudents: AttendanceStudent[];
+  analysisMap: Map<string, StudentAnalysis>;
 }
 
 const formatTime = (iso: string) => {
@@ -442,6 +449,10 @@ const ActiveView: React.FC<ActiveProps> = ({
   onInterventionChange,
   onSendIntervention,
   isSendingIntervention,
+  activeTab,
+  onTabChange,
+  localStudents,
+  analysisMap,
 }) => (
   <div className={styles.mainContent}>
     <div className={styles.chatCard}>
@@ -454,75 +465,99 @@ const ActiveView: React.FC<ActiveProps> = ({
             <span className={styles.chatSub}>{currentTopic} 학습 중</span>
           )}
         </div>
+        <div className={styles.tabGroup}>
+          <button
+            className={`${styles.tabBtn} ${activeTab === 'chat' ? styles.tabBtnActive : ''}`}
+            onClick={() => onTabChange('chat')}
+            type="button"
+          >
+            채팅
+          </button>
+          <button
+            className={`${styles.tabBtn} ${activeTab === 'monitor' ? styles.tabBtnActive : ''}`}
+            onClick={() => onTabChange('monitor')}
+            type="button"
+          >
+            학생 관찰
+          </button>
+        </div>
       </div>
 
-      {warningText && (
-        <div className={styles.warningBanner}>
-          <span className={styles.warningArrow}>→</span>
-          {warningText}
+      {activeTab === 'chat' ? (
+        <>
+          {warningText && (
+            <div className={styles.warningBanner}>
+              <span className={styles.warningArrow}>→</span>
+              {warningText}
+            </div>
+          )}
+
+          <div className={styles.chatMessages}>
+            {isLoadingChat ? (
+              <div className={styles.chatEmpty}>채팅 기록을 불러오는 중...</div>
+            ) : messages.length === 0 ? (
+              <div className={styles.chatEmpty}>아직 대화 내역이 없습니다.</div>
+            ) : (
+              messages.map((msg) => {
+                const isStudent = msg.sender_type === 'STUDENT';
+                const isTeacher = msg.sender_type === 'TEACHER';
+                return (
+                  <div
+                    key={msg.id}
+                    className={`${styles.messageRow} ${isStudent ? styles.messageRowRight : ''}`}
+                  >
+                    {!isStudent && <div className={styles.messageAvatar} />}
+                    <div className={styles.messageBubbleWrap}>
+                      {isTeacher && <div className={styles.senderLabel}>선생님 개입</div>}
+                      <div
+                        className={`${styles.bubble} ${isStudent ? styles.bubbleRight : styles.bubbleLeft} ${isTeacher ? styles.bubbleTeacher : ''}`}
+                      >
+                        {msg.content}
+                      </div>
+                      <div className={`${styles.msgTime} ${isStudent ? styles.msgTimeRight : ''}`}>
+                        {formatTime(msg.created_at)}
+                      </div>
+                    </div>
+                    {isStudent && <div className={styles.messageAvatar} />}
+                  </div>
+                );
+              })
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <div className={styles.interventionBar}>
+            <input
+              type="text"
+              className={styles.interventionInput}
+              placeholder="메시지를 입력하세요..."
+              value={interventionInput}
+              onChange={(e) => onInterventionChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && interventionInput.trim()) {
+                  e.preventDefault();
+                  onSendIntervention();
+                }
+              }}
+              disabled={isSendingIntervention}
+            />
+            <button className={styles.attachBtn} type="button" title="파일 첨부">
+              <Paperclip size={18} />
+            </button>
+            <button
+              className={styles.sendBtn}
+              onClick={onSendIntervention}
+              disabled={!interventionInput.trim() || isSendingIntervention}
+            >
+              {isSendingIntervention ? '전송 중...' : '전송'}
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className={styles.monitorPanel}>
+          <StudentMonitorGrid students={localStudents} analysisMap={analysisMap} />
         </div>
       )}
-
-      <div className={styles.chatMessages}>
-        {isLoadingChat ? (
-          <div className={styles.chatEmpty}>채팅 기록을 불러오는 중...</div>
-        ) : messages.length === 0 ? (
-          <div className={styles.chatEmpty}>아직 대화 내역이 없습니다.</div>
-        ) : (
-          messages.map((msg) => {
-            const isStudent = msg.sender_type === 'STUDENT';
-            const isTeacher = msg.sender_type === 'TEACHER';
-            return (
-              <div
-                key={msg.id}
-                className={`${styles.messageRow} ${isStudent ? styles.messageRowRight : ''}`}
-              >
-                {!isStudent && <div className={styles.messageAvatar} />}
-                <div className={styles.messageBubbleWrap}>
-                  {isTeacher && <div className={styles.senderLabel}>선생님 개입</div>}
-                  <div
-                    className={`${styles.bubble} ${isStudent ? styles.bubbleRight : styles.bubbleLeft} ${isTeacher ? styles.bubbleTeacher : ''}`}
-                  >
-                    {msg.content}
-                  </div>
-                  <div className={`${styles.msgTime} ${isStudent ? styles.msgTimeRight : ''}`}>
-                    {formatTime(msg.created_at)}
-                  </div>
-                </div>
-                {isStudent && <div className={styles.messageAvatar} />}
-              </div>
-            );
-          })
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      <div className={styles.interventionBar}>
-        <input
-          type="text"
-          className={styles.interventionInput}
-          placeholder="메시지를 입력하세요..."
-          value={interventionInput}
-          onChange={(e) => onInterventionChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey && interventionInput.trim()) {
-              e.preventDefault();
-              onSendIntervention();
-            }
-          }}
-          disabled={isSendingIntervention}
-        />
-        <button className={styles.attachBtn} type="button" title="파일 첨부">
-          <Paperclip size={18} />
-        </button>
-        <button
-          className={styles.sendBtn}
-          onClick={onSendIntervention}
-          disabled={!interventionInput.trim() || isSendingIntervention}
-        >
-          {isSendingIntervention ? '전송 중...' : '전송'}
-        </button>
-      </div>
     </div>
   </div>
 );
