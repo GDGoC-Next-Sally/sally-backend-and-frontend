@@ -3,6 +3,7 @@ import { PrismaService } from '../../providers/prisma/prisma.service';
 import { EventsGateway } from '../../common/gateways/events.gateway';
 import { SendInterventionDto } from './dto/send-intervention.dto';
 import { LivechatService } from '../livechat/livechat.service';
+import { validateSessionOwner } from '../../common/utils/validate-session-owner';
 
 @Injectable()
 export class MonitoringService {
@@ -91,11 +92,7 @@ export class MonitoringService {
 
   async sendGlobalAnnouncement(teacherId: string, sessionId: number, content: string) {
     // 1. 세션 존재 및 권한 확인
-    const session = await this.prisma.sessions.findUnique({
-      where: { id: sessionId }
-    });
-    if (!session) throw new NotFoundException('세션을 찾을 수 없습니다.');
-    if (session.teacher_id !== teacherId) throw new UnauthorizedException('권한이 없습니다.');
+    await validateSessionOwner(this.prisma, sessionId, teacherId);
 
     // 2. 세션에 속한 모든 다이얼로그 조회
     const dialogs = await this.prisma.dialogs.findMany({

@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { EventsGateway } from '../../common/gateways/events.gateway';
 import { PrismaService } from '../../providers/prisma/prisma.service';
 import axios from 'axios';
+import { validateSessionOwner } from '../../common/utils/validate-session-owner';
 
 const AI_SERVER_URL = process.env.AI_SERVER_URL || 'http://localhost:8000';
 
@@ -12,9 +13,7 @@ export class ReportsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventsGateway: EventsGateway,
-  ) { }
-
-  private 
+  ) {}
 
   /**
    * 특정 세션의 모든 학생 리포트를 조회합니다 (선생님용).
@@ -104,16 +103,7 @@ export class ReportsService {
 
   // 세션 종료 시 AI 서버에 학생별 최종 리포트 생성을 요청합니다.
   async requestStudentFinalReports(sessionId: number, teacherId: string): Promise<void> {
-    const session = await this.prisma.sessions.findFirst({
-      where: {
-        id: sessionId,
-        teacher_id: teacherId
-      }
-    });
-    if (!session) {
-      this.logger.error(`세션 ${sessionId}를 찾을 수 없거나 권한이 없습니다.`);
-      return;
-    }
+    await validateSessionOwner(this.prisma, sessionId, teacherId);
     const pendingDialogs = await this.prisma.dialogs.findMany({
       where: { session_id: sessionId, is_analyzed: false },
       select: { student_id: true },
@@ -157,16 +147,7 @@ export class ReportsService {
   }
 
   async requestSessionFinalReport(sessionId: number, teacherId: string) {
-    const session = await this.prisma.sessions.findFirst({
-      where: {
-        id: sessionId,
-        teacher_id: teacherId
-      }
-    });
-    if (!session) {
-      this.logger.error(`세션 ${sessionId}를 찾을 수 없거나 권한이 없습니다.`);
-      return;
-    }
+    await validateSessionOwner(this.prisma, sessionId, teacherId);
 
     const dialogs = await this.prisma.dialogs.findMany({
       where: { session_id: sessionId },
