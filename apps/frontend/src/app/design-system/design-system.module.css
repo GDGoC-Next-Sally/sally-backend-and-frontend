@@ -1,0 +1,761 @@
+/* ── Page layout ──────────────────────────────────────── */
+.page {
+  background: #f5f6f8;
+  min-height: 100vh;
+  font-family: 'Pretendard', sans-serif;
+}
+
+.header {
+  background: #fff;
+  border-bottom: 1px solid #eeeff2;
+  padding: 24px 60px;
+}
+
+.headerInner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.logoText {
+  font-family: 'Cafe24 Ssurround', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #22cb84;
+  line-height: 1;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #000;
+  margin: 0 0 4px;
+}
+
+.pageSubtitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: #797c7c;
+  margin: 0;
+}
+
+.main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 60px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+}
+
+/* ── Section ──────────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #000;
+  margin: 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #22cb84;
+}
+
+.groupTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #797c7c;
+  margin: 8px 0 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.groupDesc {
+  font-size: 14px;
+  font-weight: 500;
+  color: #797c7c;
+  margin: -8px 0 0;
+}
+
+/* ── Colors ───────────────────────────────────────────── */
+.colorGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.swatchColor {
+  width: 80px;
+  height: 60px;
+  border-radius: 8px;
+}
+
+.swatchName {
+  font-size: 12px;
+  font-weight: 600;
+  color: #000;
+  margin: 0;
+}
+
+.swatchHex {
+  font-size: 11px;
+  font-weight: 500;
+  color: #797c7c;
+  margin: 0;
+  font-family: 'Courier New', monospace;
+}
+
+/* ── Typography ───────────────────────────────────────── */
+.typeTable {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid #eeeff2;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.typeRow {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #eeeff2;
+}
+
+.typeRow:last-child {
+  border-bottom: none;
+}
+
+.typeMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 160px;
+}
+
+.typeLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #000;
+}
+
+.typeSpec {
+  font-size: 11px;
+  font-weight: 500;
+  color: #c2c2c2;
+  font-family: 'Courier New', monospace;
+}
+
+.typeSample {
+  line-height: 1.5;
+}
+
+/* ── Spacing ──────────────────────────────────────────── */
+.spacingRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  padding: 20px 24px;
+  background: #fff;
+  border: 1px solid #eeeff2;
+  border-radius: 12px;
+}
+
+.spacingItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.spacingBlock {
+  background: #22cb84;
+  border-radius: 2px;
+}
+
+.spacingLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: #797c7c;
+  font-family: 'Courier New', monospace;
+}
+
+/* ── Border Radius ────────────────────────────────────── */
+.radiusRow {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #eeeff2;
+  border-radius: 12px;
+}
+
+.radiusItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.radiusBox {
+  width: 64px;
+  height: 64px;
+  background: #e5f9f0;
+  border: 2px solid #22cb84;
+}
+
+.radiusLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: #797c7c;
+  text-align: center;
+  white-space: pre;
+  font-family: 'Courier New', monospace;
+}
+
+/* ── Component row ────────────────────────────────────── */
+.componentRow {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* ── Card ─────────────────────────────────────────────── */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 340px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 55px;
+  background: #d9d9d9;
+  flex-shrink: 0;
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: #000;
+}
+
+.alertCount {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ff6f6f;
+}
+
+.moreBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #797c7c;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.noticeRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.noticeTitleText {
+  font-size: 14px;
+  font-weight: 600;
+  color: #797c7c;
+}
+
+.noticeDate {
+  font-size: 12px;
+  font-weight: 500;
+  color: #c2c2c2;
+}
+
+.noticeDesc {
+  font-size: 14px;
+  font-weight: 500;
+  color: #c2c2c2;
+  margin: 0;
+}
+
+/* ── Live Card ────────────────────────────────────────── */
+.liveCard {
+  background: #40d294;
+  border-radius: 8px;
+  padding: 21px 20px 17px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 340px;
+}
+
+.liveCardTop {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.liveBadge {
+  background: #fff;
+  color: #40d294;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 5px;
+}
+
+.liveCardSub {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.liveCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.liveCardClass {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.liveCardMeta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.liveMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.liveActionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #3eb476;
+  cursor: pointer;
+  width: 100%;
+}
+
+.upcomingCard {
+  background: rgba(34, 203, 132, 0.86);
+  border-radius: 12px;
+  padding: 14px 16px 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 340px;
+  height: 114px;
+}
+
+.upcomingCardInner {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.upcomingClass {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+/* ── Badge ────────────────────────────────────────────── */
+.badgeRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.badgeLive {
+  background: #40d294;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 5px;
+}
+
+.badgeAlert {
+  background: #feeeef;
+  color: #ff6f6f;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 30px;
+  white-space: nowrap;
+}
+
+.badgePrimaryActive {
+  background: #e5f9f0;
+  color: #22cb84;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: 27px;
+}
+
+/* ── Buttons ──────────────────────────────────────────── */
+.btnPrimary {
+  background: #22cb84;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btnOutline {
+  background: #fff;
+  color: #000;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid #eeeff2;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btnGhost {
+  background: none;
+  color: #797c7c;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ── Progress Bar ─────────────────────────────────────── */
+.progressSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #eeeff2;
+  border-radius: 12px;
+  padding: 20px 24px;
+}
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.progressLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #797c7c;
+  min-width: 80px;
+}
+
+.progressTrack {
+  flex: 1;
+  height: 4px;
+  background: #cdcccc;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: #49d098;
+  border-radius: 2px;
+}
+
+.progressValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: #797c7c;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* ── Rank List ────────────────────────────────────────── */
+.rankList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: #fff;
+  border: 1px solid #eeeff2;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.rankRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-bottom: 1px solid #eeeff2;
+}
+
+.rankRow:last-child {
+  border-bottom: none;
+}
+
+.rankNo {
+  font-size: 14px;
+  font-weight: 700;
+  color: #797c7c;
+  min-width: 20px;
+}
+
+.rankFirst {
+  color: #49d098;
+}
+
+.rankClass {
+  font-size: 14px;
+  font-weight: 500;
+  color: #797c7c;
+  min-width: 80px;
+}
+
+.rankName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #797c7c;
+  min-width: 60px;
+}
+
+.rankReason {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: #797c7c;
+}
+
+/* ── Shortcut Grid ────────────────────────────────────── */
+.shortcutGrid {
+  display: flex;
+  gap: 0;
+  background: #fff;
+  border: 1px solid #eeeff2;
+  border-radius: 12px;
+  padding: 20px 24px;
+}
+
+.shortcutItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  padding-right: 16px;
+  border-right: 1px solid #eeeff2;
+  margin-right: 16px;
+}
+
+.shortcutItem:last-child {
+  border-right: none;
+  margin-right: 0;
+  padding-right: 0;
+}
+
+.shortcutIcon {
+  width: 46px;
+  height: 46px;
+  border-radius: 55px;
+  background: #d9d9d9;
+  flex-shrink: 0;
+}
+
+.shortcutText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shortcutLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: #000;
+}
+
+.shortcutSub {
+  font-size: 14px;
+  font-weight: 500;
+  color: #797c7c;
+}
+
+/* ── GNB ──────────────────────────────────────────────── */
+.gnbPreview {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #eeeff2;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 40px;
+}
+
+.gnbLogo {
+  font-family: 'Cafe24 Ssurround', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #22cb84;
+}
+
+.gnbNav {
+  display: flex;
+  gap: 32px;
+  flex: 1;
+}
+
+.gnbNavItem {
+  font-size: 14px;
+  font-weight: 600;
+  color: #000;
+}
+
+.gnbNavItemActive {
+  font-size: 14px;
+  font-weight: 600;
+  color: #22cb84;
+  background: #e5f9f0;
+  padding: 6px 16px;
+  border-radius: 27px;
+}
+
+.gnbProfile {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.gnbAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background: #d9d9d9;
+}
+
+.gnbProfileName {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000;
+}
+
+/* ── Dropdown ─────────────────────────────────────────── */
+.dropdownPreview {
+  display: flex;
+}
+
+.dropdown {
+  background: #fefefe;
+  border: 1px solid #c0c8c5;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 176px;
+}
+
+.dropdownItem {
+  font-size: 16px;
+  font-weight: 700;
+  color: #626664;
+}
+
+.dropdownItemDanger {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ff6f6f;
+}
+
+/* ── AI Insight Box ───────────────────────────────────── */
+.insightBox {
+  background: #f5f6f8;
+  border: 1px solid #eeeff2;
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  max-width: 500px;
+}
+
+.insightIcon {
+  font-size: 18px;
+  color: #22cb84;
+  line-height: 1.6;
+}
+
+.insightText {
+  font-size: 14px;
+  font-weight: 500;
+  color: #797c7c;
+  margin: 0;
+  line-height: 1.6;
+}
