@@ -1,0 +1,27 @@
+name: Deploy to GCP
+
+on:
+  push:
+    branches: [ main ] # 배포할 브랜치명을 적어주세요 (기본값 main)
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: SSH로 서버 접속 및 배포 명령어 실행
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.GCP_HOST }}
+        username: ${{ secrets.GCP_USERNAME }}
+        key: ${{ secrets.GCP_SSH_KEY }}
+        script: |
+          # 프로젝트 폴더로 이동 (서버 생성 후 이 경로에 git clone이 미리 되어 있어야 합니다)
+          cd /home/${{ secrets.GCP_USERNAME }}/sally-ai-coach
+          
+          # 최신 코드 가져오기
+          git pull origin main
+          
+          # 도커 컴포즈로 빌드 및 실행
+          # --build 옵션이 있으면 변경된 부분이 있을 때 알아서 패키지를 다시 설치하고 빌드합니다.
+          docker compose up --build -d

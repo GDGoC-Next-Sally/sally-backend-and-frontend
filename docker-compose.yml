@@ -1,11 +1,40 @@
 name: sally-ai-coach
 
 services:
-  redis:
-    image: redis:latest
-    container_name: sally-redis
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+      args:
+        - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+        - NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
+    container_name: sally-frontend
     ports:
-      - "6379:6379"
-    # 데이터 보존을 원하면 아래 주석 해제
-    # volumes:
-    #   - ./redis-data:/data
+      - "3000:3000"
+    restart: always
+    env_file:
+      - apps/frontend/.env
+
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    container_name: sally-backend
+    ports:
+      - "3001:3001"
+    restart: always
+    environment:
+      - AI_SERVER_URL=http://ai-server:8000 # Docker 내부 네트워크 이름으로 통신
+    env_file:
+      - apps/backend/.env
+
+  ai-server:
+    build:
+      context: .
+      dockerfile: apps/ai_server/Dockerfile
+    container_name: sally-ai-server
+    ports:
+      - "8000:8000"
+    restart: always
+    env_file:
+      - apps/ai_server/.env
