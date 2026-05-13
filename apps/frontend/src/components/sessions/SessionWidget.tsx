@@ -109,10 +109,17 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
 
   useEffect(() => {
     getSessionStudents(sessionId).then(students => {
-      students.forEach(({ studentId, dialogId }) => {
+      const initialAnalysis = new Map<string, StudentAnalysis>();
+      students.forEach(({ studentId, dialogId, latestAnalysis }) => {
         dialogMapRef.current.set(studentId, dialogId);
         revDialogMapRef.current.set(dialogId, studentId);
+        if (latestAnalysis) {
+          initialAnalysis.set(studentId, latestAnalysis as StudentAnalysis);
+        }
       });
+      if (initialAnalysis.size > 0) {
+        setAnalysisMap(prev => new Map([...initialAnalysis, ...prev]));
+      }
       if (selectedStudentIdRef.current && initialPhase === 'active') {
         loadChat(selectedStudentIdRef.current);
       }
