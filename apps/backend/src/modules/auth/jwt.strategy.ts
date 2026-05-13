@@ -30,7 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   // 검증 성공했을 때 실행
   async validate(payload: any) {
-    console.log('토큰 검증 성공! 페이로드:', payload);
+    console.log('토큰 검증 성공! 페이로드:', { sub: payload.sub, email: payload.email, session_id: payload.session_id });
     
     // 1. 캐시에 데이터가 있고, 아직 유효하면 DB 조회 건너뛰기!
     const cachedData = this.userCache.get(payload.sub);
