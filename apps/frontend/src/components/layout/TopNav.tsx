@@ -6,8 +6,8 @@ import { usePathname } from 'next/navigation';
 import styles from './TopNav.module.css';
 import { ChangePasswordModal } from './ChangePasswordModal';
 import { DropdownMenu } from '../common/DropdownMenu';
-import SallyLogo from '../../lib/icon/sallylogo.jsx';
-import ProfileIcon from '../../lib/icon/profile.jsx';
+import SallyLogo from '../icons/SallyLogo.jsx';
+import ProfileIcon from '../icons/ProfileIcon.jsx';
 
 interface TopNavUser {
   name: string;
