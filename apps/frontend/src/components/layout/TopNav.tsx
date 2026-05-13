@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import styles from './TopNav.module.css';
 import { ChangePasswordModal } from './ChangePasswordModal';
+import { DropdownMenu } from '../common/DropdownMenu';
 import SallyLogo from '../../lib/icon/sallylogo.jsx';
 import ProfileIcon from '../../lib/icon/profile.jsx';
 
@@ -60,9 +61,7 @@ function ReportNavIcon({ active }: { active: boolean }) {
 
 export const TopNav: React.FC<TopNavProps> = ({ user, onSignOut }) => {
   const pathname = usePathname();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const roleTitle = user?.role === 'teacher' ? '선생님' : '학생';
 
@@ -99,65 +98,43 @@ export const TopNav: React.FC<TopNavProps> = ({ user, onSignOut }) => {
         </div>
 
         {/* 프로필 영역 */}
-        <div className={styles.profileWrapper} ref={dropdownRef}>
+        <div className={styles.profileWrapper}>
           {!user ? (
             <Link href="/login" className={styles.loginSection}>
               <ProfileIcon className={styles.avatarImage} />
               <span className={styles.loginText}>로그인을 해주세요</span>
             </Link>
           ) : (
-            <>
-              <button
-                type="button"
-                className={styles.profileSection}
-                onClick={() => setDropdownOpen((v) => !v)}
-              >
-                <ProfileIcon className={styles.avatarImage} />
-                <span className={styles.userName}>{user.name} {roleTitle}</span>
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className={`${styles.chevron} ${dropdownOpen ? styles.chevronOpen : ''}`}
-                >
-                  <path
-                    d="M5 7.5L10 12.5L15 7.5"
-                    stroke="#1A1A1A"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-
-              {dropdownOpen && (
-                <>
-                  <div className={styles.dropdownBackdrop} onClick={() => setDropdownOpen(false)} />
-                  <div className={styles.dropdown}>
-                    <button
-                      type="button"
-                      className={styles.dropdownItem}
-                      onClick={() => { setDropdownOpen(false); setShowPasswordModal(true); }}
-                    >
-                      비밀번호 변경
-                    </button>
-                    <button type="button" className={styles.dropdownItem}>
-                      알림
-                    </button>
-                    <div className={styles.dropdownDivider} />
-                    <button
-                      type="button"
-                      className={`${styles.dropdownItem} ${styles.dropdownItemDanger}`}
-                      onClick={() => { setDropdownOpen(false); onSignOut?.(); }}
-                    >
-                      로그아웃
-                    </button>
-                  </div>
-                </>
-              )}
-            </>
+            <DropdownMenu
+              trigger={
+                <button type="button" className={styles.profileSection}>
+                  <ProfileIcon className={styles.avatarImage} />
+                  <span className={styles.userName}>{user.name} {roleTitle}</span>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={styles.chevron}
+                  >
+                    <path
+                      d="M5 7.5L10 12.5L15 7.5"
+                      stroke="#1A1A1A"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              }
+              items={[
+                { label: '비밀번호 변경', onClick: () => setShowPasswordModal(true) },
+                { label: '알림', disabled: true },
+                { separator: true },
+                { label: '로그아웃', danger: true, onClick: () => onSignOut?.() },
+              ]}
+            />
           )}
         </div>
       </nav>
