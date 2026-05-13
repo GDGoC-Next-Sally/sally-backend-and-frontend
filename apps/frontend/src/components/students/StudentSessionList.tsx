@@ -3,7 +3,7 @@
 import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { type Session } from '@/actions/sessions';
-import { Users, Search, MessageSquare, MoreHorizontal } from 'lucide-react';
+import { Users, Search, MessageSquare, MoreHorizontal, ChevronLeft } from 'lucide-react';
 import { computeSessionStatus, type ComputedStatus } from '@/utils/sessionStatus';
 import styles from './StudentSessionList.module.css';
 
@@ -116,7 +116,7 @@ export const StudentSessionList: React.FC<Props> = ({
     <div className={styles.container}>
       <div className={styles.inner}>
         <button className={styles.backBtn} onClick={() => router.push('/s/classes')}>
-          &lt; 클래스 목록으로
+          <ChevronLeft size={16} /> 클래스 목록으로
         </button>
 
         <div className={styles.pageHeader}>

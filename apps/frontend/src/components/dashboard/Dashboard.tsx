@@ -194,7 +194,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass, recen
                 <h2 className={styles.sectionTitle}>주간 AI 인사이트 요약</h2>
                 <p className={styles.sectionSubtitle}>최근 7일간 우리 반 학습 데이터를 분석했어요.</p>
               </div>
-              <button className={styles.reportBtn}>전체 분석 리포트로 이동 &gt;</button>
+              <button className={styles.reportBtn}>전체 분석 리포트로 이동 <ChevronRightIcon size={14} /></button>
             </div>
 
             <div className={styles.aiContent}>

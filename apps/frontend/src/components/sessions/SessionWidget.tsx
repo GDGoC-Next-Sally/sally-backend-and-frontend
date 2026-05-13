@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Paperclip } from 'lucide-react';
+import { Paperclip, ChevronLeft } from 'lucide-react';
 import { SessionSidebar } from './SessionSidebar';
 import { SessionEndModal } from './SessionEndModal';
 import { StudentMonitorGrid } from './StudentMonitorGrid';
@@ -467,7 +467,7 @@ const ActiveView: React.FC<ActiveProps> = ({
   <div className={styles.mainContent}>
     <div className={styles.chatCard}>
       <div className={styles.chatHeader}>
-        <button className={styles.chatBackBtn} onClick={onBack}>‹</button>
+        <button className={styles.chatBackBtn} onClick={onBack}><ChevronLeft size={20} /></button>
         <div className={styles.chatAvatar} />
         <div className={styles.chatTitleBlock}>
           <h2 className={styles.chatTitle}>{studentName} 학생과 AI 코치</h2>

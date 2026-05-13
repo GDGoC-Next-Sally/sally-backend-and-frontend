@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './design-system.module.css';
 
 export default function DesignSystemPage() {
@@ -156,9 +157,9 @@ export default function DesignSystemPage() {
                 </div>
               </div>
               <button className={styles.liveActionBtn}>
-                <span>◀</span>
+                <ChevronLeft size={16} />
                 실시간 관찰 및 코칭
-                <span>▶</span>
+                <ChevronRight size={16} />
               </button>
             </div>
 

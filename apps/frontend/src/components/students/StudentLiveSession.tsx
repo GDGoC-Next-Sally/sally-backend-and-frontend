@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Clock, Check } from 'lucide-react';
+import { Clock, Check, ChevronLeft } from 'lucide-react';
 import { getSession } from '@/actions/sessions';
 import { joinSession } from '@/actions/sessions';
 import { getClass } from '@/actions/classes';
@@ -332,7 +332,7 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
         <div className={styles.mainArea}>
           {/* Header */}
           <div className={styles.sessionHeader}>
-            <button className={styles.backBtn} onClick={() => setIsLeaveModalOpen(true)}>‹</button>
+            <button className={styles.backBtn} onClick={() => setIsLeaveModalOpen(true)}><ChevronLeft size={20} /></button>
             <div className={styles.headerInfo}>
               <div className={styles.sessionTitle}>{sessionTitle || '세션'}</div>
               <div className={styles.teacherName}>{teacherName}</div>
