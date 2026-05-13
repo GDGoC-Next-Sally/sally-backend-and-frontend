@@ -5,12 +5,14 @@ WORKDIR /app
 # pnpm 설치
 RUN npm install -g pnpm
 
-# 모노레포 설정 파일 복사
-COPY pnpm-lock.yaml pnpm-workspace.yaml ./
+# 모노레포 모든 설정 파일 및 package.json 복사 (캐싱 활용)
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/frontend/package.json ./apps/frontend/
 COPY apps/backend/package.json ./apps/backend/
+COPY apps/ai_server/package.json ./apps/ai_server/
 
-# 의존성 설치
-RUN pnpm install --filter backend
+# 전체 의존성 설치 (필터링 없이 전체 설치하여 링크 꼬임 방지)
+RUN pnpm install
 
 # 소스 코드 복사
 COPY apps/backend ./apps/backend
