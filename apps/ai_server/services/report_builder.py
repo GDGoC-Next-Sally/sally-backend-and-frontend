@@ -42,16 +42,18 @@ load_dotenv(dotenv_path=env_path)
 
 def _env_str(name: str, default: str) -> str:
     value = os.getenv(name)
-    return value.strip() if value and value.strip() else default
+    if not value or not value.strip():
+        return default
+    return value.strip().strip('"').strip("'")
 
 
-# ── 모델 설정 (Gemini OpenAI-compatible API) ────────────────────────────────
-GEMINI_BASE_URL = _env_str(
-    "GEMINI_BASE_URL",
-    "https://generativelanguage.googleapis.com/v1beta/openai/",
+# ── 모델 설정 (NVIDIA NIM OpenAI-compatible API) ────────────────────────────
+NVIDIA_BASE_URL = _env_str(
+    "NVIDIA_BASE_URL",
+    "https://integrate.api.nvidia.com/v1",
 )
-GEMINI_MODEL = _env_str("GEMINI_MODEL", "gemini-2.5-flash")
-REPORT_MODEL = _env_str("GEMINI_REPORT_MODEL", GEMINI_MODEL)
+NVIDIA_MODEL = _env_str("NVIDIA_MODEL", "google/gemma-4-31b-it")
+REPORT_MODEL = _env_str("NVIDIA_REPORT_MODEL", NVIDIA_MODEL)
 
 # 짧은 세션 기준 추정 토큰 수
 # rough estimate: 약 4글자 = 1토큰
@@ -78,16 +80,16 @@ LANGUAGE_RULE = """언어 및 표기 규칙:
 
 
 # ─────────────────────────────────────────────────────────────
-# OpenAI-compatible Gemini client
+# OpenAI-compatible NVIDIA NIM client
 # ─────────────────────────────────────────────────────────────
 
 def _get_client() -> AsyncOpenAI:
-    api_key = os.getenv("GEMINI_API_KEY")
+    api_key = os.getenv("NVIDIA_API_KEY")
     if not api_key:
-        raise RuntimeError(".env 파일에 GEMINI_API_KEY가 설정되어 있지 않습니다.")
+        raise RuntimeError(".env 파일에 NVIDIA_API_KEY가 설정되어 있지 않습니다.")
 
     return AsyncOpenAI(
-        base_url=GEMINI_BASE_URL,
+        base_url=NVIDIA_BASE_URL,
         api_key=api_key,
     )
 
