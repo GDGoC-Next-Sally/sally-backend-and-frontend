@@ -42,6 +42,7 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [isEndModalOpen, setIsEndModalOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const handleJoinRef = useRef<() => Promise<void>>(async () => {});
 
   const formatTime = (iso: string) => {
     const d = new Date(iso);
@@ -124,7 +125,7 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
       });
 
       socket.on('session_started', () => {
-        setPhase(prev => prev === 'waiting' ? 'waiting' : prev);
+        handleJoinRef.current();
       });
     };
     init();
@@ -166,6 +167,8 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
       setPhase('waiting');
     }
   };
+
+  useEffect(() => { handleJoinRef.current = handleJoin; });
 
   const fetchGreeting = async (dialog_id: number) => {
     setIsStreaming(true);
