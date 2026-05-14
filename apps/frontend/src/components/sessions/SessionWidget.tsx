@@ -171,7 +171,13 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
 
       socket.on('student_analysis_ready', (data: { dialog_id: number; student_id: string; analysis?: StudentAnalysis } & StudentAnalysis) => {
         const analysis: StudentAnalysis = data.analysis ?? data;
-        setAnalysisMap(prev => new Map(prev).set(data.student_id, analysis));
+        setAnalysisMap(prev => {
+          const existing = prev.get(data.student_id);
+          return new Map(prev).set(data.student_id, {
+            ...analysis,
+            need_intervention: existing?.need_intervention || analysis.need_intervention,
+          });
+        });
       });
 
       socket.on('student_warning', (data: { student_id: string }) => {
