@@ -2,7 +2,19 @@
 services/message_formatting.py — LLM 프롬프트용 발화자 라벨 포맷팅
 """
 
+from datetime import datetime, timezone, timedelta
 from typing import Optional
+
+_KST = timezone(timedelta(hours=9))
+
+
+def _format_time_kst(iso_string: str) -> str:
+    """ISO 8601 문자열을 KST HH:MM 형태로 변환합니다. 파싱 실패 시 빈 문자열 반환."""
+    try:
+        dt = datetime.fromisoformat(iso_string.replace("Z", "+00:00"))
+        return dt.astimezone(_KST).strftime("%H:%M")
+    except Exception:
+        return ""
 
 
 def clean_speaker_label(label: Optional[str]) -> Optional[str]:
@@ -57,10 +69,15 @@ def format_labeled_message(
     *,
     student_name: Optional[str] = None,
     default_student_label: str = "학생",
+    timestamp: Optional[str] = None,
 ) -> str:
     label = speaker_label(
         sender_type,
         student_name=student_name,
         default_student_label=default_student_label,
     )
+    if timestamp:
+        time_str = _format_time_kst(timestamp)
+        if time_str:
+            return f"[{time_str}] {label}: {content}"
     return f"{label}: {content}"

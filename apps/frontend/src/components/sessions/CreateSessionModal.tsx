@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Check, CloudUpload, Loader2 } from 'lucide-react';
+import dayjs from 'dayjs';
 import { type CreateSessionBody } from '@/actions/sessions';
 import { getPublishers, getTextbooks, getUnitPrompts } from '@/actions/supplementary';
 import type { Textbook, UnitPrompt } from '@/actions/supplementary';
@@ -140,9 +141,9 @@ export const CreateSessionModal: React.FC<Props> = ({
       objective,
       session_prompt: aiGuide,
       explanation,
-      ...(scheduledDate  && { scheduled_date:  scheduledDate }),
-      ...(scheduledStart && { scheduled_start: scheduledStart }),
-      ...(scheduledEnd   && { scheduled_end:   scheduledEnd }),
+      ...(scheduledDate  && { scheduled_date:  `${scheduledDate}T12:00:00.000Z` }),
+      ...(scheduledDate && scheduledStart && { scheduled_start: dayjs(`${scheduledDate}T${scheduledStart}`).toISOString() }),
+      ...(scheduledDate && scheduledEnd   && { scheduled_end:   dayjs(`${scheduledDate}T${scheduledEnd}`).toISOString() }),
     };
     await onSubmit(body);
     onClose();

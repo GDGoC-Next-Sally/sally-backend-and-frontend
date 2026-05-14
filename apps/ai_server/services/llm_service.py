@@ -325,6 +325,7 @@ async def stream_chat(
                 turn.text,
                 turn.sender_type,
                 student_name=turn.student_name,
+                timestamp=turn.timestamp,
             )
             messages.append({"role": "user", "content": labeled_text})
 

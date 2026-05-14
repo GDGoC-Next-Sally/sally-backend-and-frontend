@@ -17,6 +17,8 @@ class StudentProfile(BaseModel):
     forbidden_topics: Optional[str] = "미설정"
     topic_hints: List[str] = Field(default_factory=list)
     misconception_tag_hints: List[str] = Field(default_factory=list)
+    scheduled_start: Optional[str] = None  # ISO 8601 — 수업 시작 예정 시각
+    scheduled_end: Optional[str] = None    # ISO 8601 — 수업 종료 예정 시각
 
 
 # ── 대화 기록 한 턴 (JS의 conversationHistory 배열 원소에 대응) ──────────────
@@ -25,6 +27,7 @@ class ConversationTurn(BaseModel):
     text: str
     sender_type: str  # "STUDENT" | "TEACHER" | "AI" | "SYSTEM" (백엔드가 명찰로 추가)
     student_name: Optional[str] = None  # 학생 발화일 때 프롬프트 라벨로 사용할 학생 이름
+    timestamp: Optional[str] = None     # ISO 8601 — 메시지 발송 시각 (created_at)
 
 
 # ── /chat 및 /analyze API 요청 바디 ─────────────────────────────────────────────

@@ -89,7 +89,8 @@ export class LivechatService {
             .map(msg => ({
               role: msg.sender_type === 'AI' ? 'model' : 'user',
               text: msg.content,
-              sender_type: msg.sender_type
+              sender_type: msg.sender_type,
+              timestamp: msg.created_at.toISOString(),
             }));
 
           // 2. 학생 프로필(수업 컨텍스트) 구성
@@ -102,6 +103,8 @@ export class LivechatService {
             learning_style: "미설정",
             topic_hints: [],
             misconception_tag_hints: [],
+            scheduled_start: (dialog.sessions as any).scheduled_start?.toISOString() ?? null,
+            scheduled_end: (dialog.sessions as any).scheduled_end?.toISOString() ?? null,
           };
 
           // 3. AI 서버 스트리밍 요청
@@ -292,6 +295,8 @@ export class LivechatService {
             learning_objectives: session.objective || '미설정',
             key_concepts: session.explanation || '미설정',
             topic_hints: [],
+            scheduled_start: (session as any).scheduled_start?.toISOString() ?? null,
+            scheduled_end: (session as any).scheduled_end?.toISOString() ?? null,
           };
 
           // 2. 가상의 첫 발화(Prompt) 작성 (DB 저장 X, 학생 이름 포함하여 개인화)

@@ -7,8 +7,22 @@ JS의 buildTeacherSystemPrompt() 함수를 파이썬으로 이식합니다.
 - build_chat_few_shot_messages : 실제 대화 형식의 few-shot 예시 (user/assistant 턴)
 - build_analysis_system_prompt : 분석 전용 system 프롬프트
 """
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 from ai_server.models import StudentProfile
+
+_KST = timezone(timedelta(hours=9))
+
+
+def _fmt_kst(iso_string: Optional[str]) -> Optional[str]:
+    """ISO 8601 → KST HH:MM. 파싱 실패 또는 None이면 None 반환."""
+    if not iso_string:
+        return None
+    try:
+        dt = datetime.fromisoformat(iso_string.replace("Z", "+00:00"))
+        return dt.astimezone(_KST).strftime("%H:%M")
+    except Exception:
+        return None
 
 
 def build_chat_system_prompt(profile: Optional[StudentProfile] = None) -> str:
@@ -16,6 +30,7 @@ def build_chat_system_prompt(profile: Optional[StudentProfile] = None) -> str:
     if profile is None:
         subject = scope = key_concepts = learning_objectives = "미설정"
         learning_style = forbidden_topics = "미설정"
+        scheduled_start = scheduled_end = None
     else:
         subject = profile.subject or "미설정"
         scope = profile.scope or "미설정"
@@ -23,6 +38,17 @@ def build_chat_system_prompt(profile: Optional[StudentProfile] = None) -> str:
         learning_objectives = profile.learning_objectives or "미설정"
         learning_style = profile.learning_style or "미설정"
         forbidden_topics = profile.forbidden_topics or "미설정"
+        scheduled_start = _fmt_kst(profile.scheduled_start)
+        scheduled_end = _fmt_kst(profile.scheduled_end)
+
+    schedule_line = ""
+    if scheduled_start or scheduled_end:
+        parts = []
+        if scheduled_start:
+            parts.append(f"시작 {scheduled_start}")
+        if scheduled_end:
+            parts.append(f"종료 {scheduled_end}")
+        schedule_line = f"\n- 수업 예정 시각: {' / '.join(parts)}"
 
     return f"""# 역할
 당신은 Sally 플랫폼의 AI 선생님입니다.
@@ -35,7 +61,7 @@ def build_chat_system_prompt(profile: Optional[StudentProfile] = None) -> str:
 - 핵심 개념: {key_concepts}
 - 학습 목표: {learning_objectives}
 - 학습 스타일: {learning_style}
-- 금기 사항: {forbidden_topics}
+- 금기 사항: {forbidden_topics}{schedule_line}
 
 # 최우선 목표
 학생이 오늘의 학습 범위와 핵심 개념을 정확히 이해하도록 돕습니다.
