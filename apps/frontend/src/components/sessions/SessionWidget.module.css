@@ -323,11 +323,10 @@
 }
 
 .messageAvatar {
+  flex-shrink: 0;
+  line-height: 0;
   width: 36px;
   height: 36px;
-  border-radius: var(--radius-avatar);
-  background-color: #E5E7EB;
-  flex-shrink: 0;
 }
 
 .messageBubbleWrap {

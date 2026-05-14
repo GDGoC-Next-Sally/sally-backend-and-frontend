@@ -11,6 +11,9 @@ import { createClient } from '@/utils/supabase/client';
 import { computeSessionStatus } from '@/utils/sessionStatus';
 import { LeaveSessionModal } from './LeaveSessionModal';
 import { StudentSessionEndModal } from './StudentSessionEndModal';
+import ProfileSallyIcon from '@/components/icons/ProfileSallyIcon';
+import ProfileStudentIcon from '@/components/icons/ProfileStudentIcon';
+import ProfileTeacherIcon from '@/components/icons/ProfileTeacherIcon';
 import styles from './StudentLiveSession.module.css';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
@@ -389,9 +392,10 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
                 {messages.map((msg) => {
                   const isStudent = msg.sender_type === 'STUDENT';
                   const isTeacher = msg.sender_type === 'TEACHER';
+                  const LeftIcon = isTeacher ? ProfileTeacherIcon : ProfileSallyIcon;
                   return (
                     <div key={msg.id} className={`${styles.messageRow} ${isStudent ? styles.messageRowRight : ''}`}>
-                      {!isStudent && <div className={styles.msgAvatar} />}
+                      {!isStudent && <div className={styles.msgAvatar}><LeftIcon width={36} height={36} /></div>}
                       <div className={styles.msgBubbleContent}>
                         {isTeacher && <div className={styles.senderLabel}>선생님</div>}
                         <div className={`${styles.msgBubble} ${isStudent ? styles.bubbleRight : styles.bubbleLeft}`}>
@@ -399,7 +403,7 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
                         </div>
                       </div>
                       <span className={styles.msgTime}>{formatTime(msg.created_at)}</span>
-                      {isStudent && <div className={styles.msgAvatar} />}
+                      {isStudent && <div className={styles.msgAvatar}><ProfileStudentIcon width={36} height={36} /></div>}
                     </div>
                   );
                 })}
@@ -407,7 +411,7 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
                 {/* Streaming AI response */}
                 {isStreaming && (
                   <div className={styles.messageRow}>
-                    <div className={styles.msgAvatar} />
+                    <div className={styles.msgAvatar}><ProfileSallyIcon width={36} height={36} /></div>
                     <div className={styles.msgBubbleContent}>
                       <div className={`${styles.msgBubble} ${styles.bubbleLeft}`}>
                         {streamingContent || <span className={styles.typingDot}>●●●</span>}
