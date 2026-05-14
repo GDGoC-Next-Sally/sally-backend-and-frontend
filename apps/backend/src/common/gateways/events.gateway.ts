@@ -12,7 +12,16 @@ import { Logger } from '@nestjs/common';
 import { PrismaService } from '../../providers/prisma/prisma.service';
 import { SupabaseService } from '../../providers/supabase/supabase.service';
 
-@WebSocketGateway({ cors: { origin: '*' } })
+@WebSocketGateway({
+  cors: {
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      process.env.FRONTEND_URL,
+    ].filter(Boolean),
+    credentials: true,
+  },
+})
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;

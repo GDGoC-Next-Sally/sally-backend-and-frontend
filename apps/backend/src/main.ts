@@ -22,7 +22,14 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
   }));
 
-  app.enableCors();
+  app.enableCors({
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      process.env.FRONTEND_URL,
+    ].filter(Boolean),
+    credentials: true,
+  });
 
   const port = process.env.PORT ?? 3001;
   await app.listen(port, '0.0.0.0');
