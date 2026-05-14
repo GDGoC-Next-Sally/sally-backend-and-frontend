@@ -1,9 +1,13 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { type Session } from '@/actions/sessions';
-import { Users, Search, MessageSquare, MoreHorizontal, ChevronLeft } from 'lucide-react';
+import { Users, Search, User, MoreHorizontal, ChevronLeft } from 'lucide-react';
+import { DropdownMenu } from '../common/DropdownMenu';
+import { ChatModal } from '../reports/ChatModal';
+import { getStudentSessionReport } from '@/actions/reports';
 import { computeSessionStatus, type ComputedStatus } from '@/utils/sessionStatus';
 import styles from './StudentSessionList.module.css';
 
@@ -20,10 +24,10 @@ interface ClassInfo {
 
 type Tab = 'overview' | 'sessions' | 'materials';
 
-const STATUS_CONFIG: Record<ComputedStatus, { label: string; badgeClass: string; iconColor: string; iconBg: string }> = {
-  live: { label: '진행중', badgeClass: styles.badgeActive, iconColor: '#0ca678', iconBg: '#e6fcf5' },
-  upcoming: { label: '예정', badgeClass: styles.badgePlanning, iconColor: '#ff922b', iconBg: '#fff4e6' },
-  finished: { label: '종료', badgeClass: styles.badgeDone, iconColor: '#868e96', iconBg: '#f1f3f5' },
+const STATUS_CONFIG: Record<ComputedStatus, { label: string; badgeClass: string }> = {
+  live:     { label: '진행중',    badgeClass: 'badgeActive' },
+  upcoming: { label: '임시 예정', badgeClass: 'badgePending' },
+  finished: { label: '종료',      badgeClass: 'badgeClosed' },
 };
 
 function formatDate(dateStr?: string | null) {
@@ -32,20 +36,23 @@ function formatDate(dateStr?: string | null) {
   return d.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
 }
 
-function getTimeAgo(dateStr?: string | null, fallbackStr?: string | null) {
-  const targetDate = dateStr || fallbackStr;
-  if (!targetDate) return '';
+function formatRelativeTime(dateStr?: string | null): string {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
   const now = new Date();
-  const past = new Date(targetDate);
-  const diffMs = now.getTime() - past.getTime();
-  const diffMins = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffMins < 1) return '방금 전';
-  if (diffMins < 60) return `${diffMins}분 전`;
-  if (diffHours < 24) return `${diffHours}시간 전`;
-  return `${diffDays}일 전`;
+  const diff = now.getTime() - d.getTime();
+  if (diff < 0) {
+    const futureDays = Math.floor(-diff / (1000 * 60 * 60 * 24));
+    const futureHours = Math.floor(-diff / (1000 * 60 * 60));
+    if (futureDays > 0) return `${futureDays}일 후`;
+    if (futureHours > 0) return `${futureHours}시간 후`;
+    return '곧';
+  }
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  if (hours < 1) return '방금 전';
+  if (hours < 24) return `${hours}시간 전`;
+  return `${days}일 전`;
 }
 
 interface Props {
@@ -70,9 +77,9 @@ export const StudentSessionList: React.FC<Props> = ({
     if (initialTab === 'materials') return 'materials';
     return 'overview';
   });
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [search, setSearch] = useState('');
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [chatModal, setChatModal] = useState<{ dialogId: number; sessionName: string } | null>(null);
+  const [reviewLoading, setReviewLoading] = useState<number | null>(null);
 
   const handleJoin = async (sessionId: number) => {
     setJoining(sessionId);
@@ -81,6 +88,23 @@ export const StudentSessionList: React.FC<Props> = ({
     } catch (e) {
       alert(e instanceof Error ? e.message : '세션 참여에 실패했습니다.');
       setJoining(null);
+    }
+  };
+
+  const handleReview = async (sessionId: number, sessionName: string) => {
+    setReviewLoading(sessionId);
+    try {
+      const raw = await getStudentSessionReport(sessionId) as { dialog_id?: number } | null;
+      const dialogId = raw?.dialog_id ?? null;
+      if (dialogId) {
+        setChatModal({ dialogId, sessionName });
+      } else {
+        alert('채팅 기록을 찾을 수 없습니다.');
+      }
+    } catch {
+      alert('채팅 기록을 불러오는 데 실패했습니다.');
+    } finally {
+      setReviewLoading(null);
     }
   };
 
@@ -113,19 +137,22 @@ export const StudentSessionList: React.FC<Props> = ({
     });
 
   return (
+    <>
     <div className={styles.container}>
       <div className={styles.inner}>
         <button className={styles.backBtn} onClick={() => router.push('/s/classes')}>
           <ChevronLeft size={16} /> 클래스 목록으로
         </button>
 
-        <div className={styles.pageHeader}>
+        <div className={styles.classHeader}>
           <h1 className={styles.classTitle}>{classSubject}</h1>
           {classTag && (
-            <span className={styles.tag}>
-              <span className={styles.tagDot} />
-              {classTag}
-            </span>
+            <div className={styles.teacherBadge}>
+              <div className={styles.teacherAvatar}>
+                <Image src="/images/profile_color.png" alt="프로필" width={28} height={28} />
+              </div>
+              <span className={styles.teacherName}>{classTag}</span>
+            </div>
           )}
         </div>
 
@@ -191,27 +218,30 @@ export const StudentSessionList: React.FC<Props> = ({
                 {finishedSessions.length === 0 ? (
                   <p className={styles.emptyText}>지난 세션이 없습니다.</p>
                 ) : (
-                  finishedSessions.map((s, idx) => (
+                  finishedSessions.map((s) => (
                     <div key={s.id} className={styles.pastRow}>
-                      <div className={styles.pastCircle}>{idx + 1}</div>
-                      <div className={styles.pastInfo}>
-                        <div className={styles.pastMeta}>
-                          {formatDate(s.scheduled_date)} {s.period ? `${s.period}교시` : ''}
-                        </div>
-                        <div className={styles.pastTitle}>{s.session_name}</div>
+                      <div className={styles.sessionIcon}>
+                        <Image src="/images/sessionicon.png" alt="세션" width={30} height={30} />
                       </div>
-                      <div className={styles.pastStats}>
-                        <div className={styles.statItem}>
-                          <Users size={14} />
-                          완료
-                        </div>
+                      <div className={styles.sessionInfo}>
+                        <div className={styles.sessionTitle}>{s.session_name}</div>
+                        <div className={styles.sessionSubject}>{s.explanation ?? ''}</div>
                       </div>
-                      <div className={styles.timeAgo}>{getTimeAgo(s.finished_at, s.scheduled_date)}</div>
+                      {s.period != null && (
+                        <div className={styles.sessionMeta}>
+                          <User size={20} color="#626664" strokeWidth={1.8} />
+                          <span>{s.period}</span>
+                        </div>
+                      )}
+                      <div className={styles.sessionTime}>
+                        {formatRelativeTime(s.finished_at ?? s.scheduled_date)}
+                      </div>
                       <button
                         className={styles.reviewBtn}
-                        onClick={() => router.push(`/s/classes/${classId}/sessions/${s.id}`)}
+                        onClick={(e) => { e.stopPropagation(); handleReview(s.id, s.session_name); }}
+                        disabled={reviewLoading === s.id}
                       >
-                        복습하기
+                        {reviewLoading === s.id ? '불러오는 중...' : '복습하기'}
                       </button>
                     </div>
                   ))
@@ -240,7 +270,7 @@ export const StudentSessionList: React.FC<Props> = ({
               </select>
             </div>
 
-            <div className={styles.sessionList} ref={menuRef}>
+            <div className={styles.sessionList}>
               {filteredSessions.length === 0 ? (
                 <p className={styles.emptyText}>
                   {search ? '검색 결과가 없습니다.' : '등록된 세션이 없습니다.'}
@@ -255,47 +285,43 @@ export const StudentSessionList: React.FC<Props> = ({
                       className={styles.sessionRow}
                       onClick={() => router.push(`/s/classes/${classId}/sessions/${session.id}`)}
                     >
-                      <div className={styles.sessionIcon} style={{ backgroundColor: cfg.iconBg }}>
-                        <MessageSquare size={18} color={cfg.iconColor} />
+                      <div className={styles.sessionIcon}>
+                        <Image src="/images/sessionicon.png" alt="세션" width={30} height={30} />
                       </div>
                       <div className={styles.sessionInfo}>
                         <div className={styles.sessionTitle}>{session.session_name}</div>
                         <div className={styles.sessionSubject}>{session.explanation ?? ''}</div>
                       </div>
 
-                      {session.period && (
-                        <div className={styles.sessionMeta}>{session.period}교시</div>
+                      {session.period != null && (
+                        <div className={styles.sessionMeta}>
+                          <User size={20} color="#626664" strokeWidth={1.8} />
+                          <span>{session.period}</span>
+                        </div>
                       )}
 
-                      <div className={styles.sessionTime}>{formatDate(session.scheduled_date)}</div>
+                      <div className={styles.sessionTime}>
+                        {formatRelativeTime(session.scheduled_date ?? session.scheduled_start)}
+                      </div>
 
-                      <span className={`${styles.statusBadge} ${cfg.badgeClass}`}>
+                      <span className={`${styles.badge} ${styles[cfg.badgeClass]}`}>
                         {cfg.label}
                       </span>
-                      <div className={styles.menuWrapper}>
-                        <button
-                          className={styles.menuTrigger}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenMenuId(openMenuId === session.id ? null : session.id);
-                          }}
-                        >
-                          <MoreHorizontal size={18} />
-                        </button>
-                        {openMenuId === session.id && (
-                          <div className={styles.dropdownMenu}>
-                            <button
-                              className={styles.menuItem}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                router.push(`/s/classes/${classId}/sessions/${session.id}`);
-                                setOpenMenuId(null);
-                              }}
-                            >
-                              상세보기
+
+                      <div
+                        className={styles.menuContainer}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <DropdownMenu
+                          trigger={
+                            <button className={styles.moreBtn}>
+                              <MoreHorizontal size={20} color="#626664" />
                             </button>
-                          </div>
-                        )}
+                          }
+                          items={[
+                            { label: '상세보기', onClick: () => router.push(`/s/classes/${classId}/sessions/${session.id}`) },
+                          ]}
+                        />
                       </div>
                     </div>
                   );
@@ -312,5 +338,15 @@ export const StudentSessionList: React.FC<Props> = ({
         )}
       </div>
     </div>
+
+    {chatModal && (
+      <ChatModal
+        dialogId={chatModal.dialogId}
+        sessionTitle={chatModal.sessionName}
+        teacherName={classInfo?.users?.name ?? ''}
+        onClose={() => setChatModal(null)}
+      />
+    )}
+    </>
   );
 };
