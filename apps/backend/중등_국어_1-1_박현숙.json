@@ -1,0 +1,265 @@
+{
+  "publisher": "비상교육",
+  "textbook": {
+    "title": "중학교 국어 1-1",
+    "subtitle": "교사용 교과서",
+    "authors": ["박현숙", "김기옥", "김봉규", "김은정", "나혜정", "박동혁", "백윤애", "양은희", "유상은", "이윤정", "전순정", "호민애"],
+    "representative_author": "박현숙",
+    "curriculum": "2022 개정 교육과정",
+    "school_level": "중학교",
+    "grade": 1,
+    "semester": 1,
+    "subject": "국어",
+    "ibook_id": "4519",
+    "source_file": "[22개정]_중등_국어 1-1(박현숙)_교사용 교과서.pdf"
+  },
+  "units": [
+    {
+      "unit_number": 1,
+      "unit_title": "문학과 삶에서 만나는 의미",
+      "subunits": [
+        {
+          "subunit_number": 1,
+          "subunit_title": "운율, 비유, 상징의 즐거움",
+          "page_range": "p.10~27",
+          "page_start": 10,
+          "page_end": 27,
+          "domain": "문학",
+          "inquiry_question": "효과적으로 표현하는 방법에는 무엇이 있을까?",
+          "core_concepts": ["운율", "비유", "상징"],
+          "literary_works": {
+            "탐구": [
+              {"title": "3월", "author": "오규원", "genre": "시"},
+              {"title": "사랑하는 별 하나", "author": "이성선", "genre": "시"}
+            ],
+            "적용": [
+              {"title": "열보다 큰 아홉", "author": "이문구", "genre": "수필"}
+            ]
+          },
+          "learning_objective_summary": "운율, 비유, 상징의 특성과 효과에 유의하며 작품을 감상하고 창작할 수 있다.",
+          "learning_objectives_detailed": [
+            "운율, 비유, 상징의 특성과 효과를 이해한다.",
+            "운율과 비유를 중심으로 「3월」(오규원)을 감상한다.",
+            "운율과 상징을 중심으로 「사랑하는 별 하나」(이성선)를 감상한다.",
+            "비유나 상징을 활용하여 자신만의 표현을 창작하는 방법을 이해한다."
+          ],
+          "attitudes": [
+            "시에서 운율을 느끼고, 비유와 상징의 의미를 찾으며 작품을 감상한다.",
+            "일상에서 비유나 상징을 활용하여 생각이나 감정을 효과적으로 표현한다."
+          ]
+        },
+        {
+          "subunit_number": 2,
+          "subunit_title": "추론하며 듣기",
+          "page_range": "p.28~47",
+          "page_start": 28,
+          "page_end": 47,
+          "domain": "듣기·말하기",
+          "inquiry_question": "대화를 원활하게 하려면 어떠한 태도로 들어야 할까?",
+          "core_concepts": ["담화", "화자", "청자", "상황 맥락", "추론하며 듣기"],
+          "literary_works": null,
+          "activities": ["모둠별로 시집을 읽고, 선물하고 싶은 시 공유하기"],
+          "learning_objective_summary": "담화 맥락을 고려하여 화자의 의도와 관점을 추론하며 들을 수 있다.",
+          "learning_objectives_detailed": [
+            "담화 상황에서 고려해야 하는 요소를 이해한다.",
+            "상황 맥락의 개념과 구성 요소를 이해한다.",
+            "추론하며 듣기가 의사소통에 미치는 영향을 이해한다.",
+            "다양한 담화 상황에서 화자의 의도, 관점을 추론하는 방법을 파악한다."
+          ],
+          "attitudes": [
+            "담화 상황에서 화자의 말에 담긴 의도를 추론한다.",
+            "추론하며 듣기를 바탕으로 다른 사람과 원활하게 소통한다."
+          ]
+        }
+      ],
+      "creative_integration": {
+        "page": 48,
+        "topic": "자신에게 의미 있는 지역을 상징하는 캐릭터 만들기"
+      }
+    },
+    {
+      "unit_number": 2,
+      "unit_title": "정보를 판단하는 힘",
+      "subunits": [
+        {
+          "subunit_number": 1,
+          "subunit_title": "요약하며 읽기",
+          "page_range": "p.52~73",
+          "page_start": 52,
+          "page_end": 73,
+          "domain": "읽기",
+          "inquiry_question": "글을 효과적으로 간추리려면 어떻게 해야 할까?",
+          "core_concepts": ["요약", "글의 구조", "읽기 목적", "선택·삭제·일반화·재구성"],
+          "literary_works": {
+            "탐구": [
+              {"title": "스마트폰은 나의 뇌에 어떤 영향을 미칠까", "author": "양은우", "genre": "설명문"},
+              {"title": "지구에 옷이 쌓인다, 패스트 패션", "author": "성해인", "genre": "설명문"}
+            ],
+            "적용": [
+              {"title": "소나기의 유래", "author": "작자 미상", "genre": "설화"}
+            ]
+          },
+          "learning_objective_summary": "읽기 목적과 글의 구조를 고려하며 글을 효과적으로 요약할 수 있다.",
+          "learning_objectives_detailed": [
+            "글을 읽을 때 필요한 정보가 무엇인지 파악한다.",
+            "글의 구조를 고려하여 내용을 요약하는 방법을 이해한다.",
+            "읽기 목적에 따라 내용을 요약하는 방법을 이해한다.",
+            "요약한 내용을 자신의 말로 재구성한다."
+          ],
+          "attitudes": [
+            "교과 학습을 할 때 요약의 방법을 활용한다.",
+            "요약하기 과정과 결과를 공유하고, 더 효과적인 방법을 찾으려고 노력한다."
+          ]
+        },
+        {
+          "subunit_number": 2,
+          "subunit_title": "정보를 전달하는 글 쓰기",
+          "page_range": "p.74~95",
+          "page_start": 74,
+          "page_end": 95,
+          "domain": "쓰기",
+          "inquiry_question": "어떠한 정보를 고르고, 어떻게 전달해야 할까?",
+          "core_concepts": ["정보 전달 글", "자료 수집", "글쓰기 계획", "고쳐쓰기", "쓰기 윤리"],
+          "literary_works": {
+            "탐구": [
+              {"title": "은은한 전통의 맛, 너도 아니? 너비아니", "author": null, "genre": "정보 전달 글"}
+            ]
+          },
+          "learning_objective_summary": "복수의 자료를 활용하여 다양한 형식으로 정보를 전달하는 글을 쓸 수 있다.",
+          "learning_objectives_detailed": [
+            "정보를 전달하는 글을 쓰는 과정을 이해하고, 글쓰기 계획을 세운다.",
+            "다양한 매체에서 필요한 정보를 수집하고, 중요도를 분석한다.",
+            "문자 언어, 도표, 그림, 사진 등 다양한 형식을 활용하여 정보를 전달하는 글을 쓰고, 고쳐 쓴다."
+          ],
+          "attitudes": [
+            "쓰기 윤리를 지키며 수집한 정보를 활용한다.",
+            "다양한 유형의 정보를 전달하는 글을 쓰고, 다른 사람과 공유한다."
+          ]
+        }
+      ],
+      "creative_integration": {
+        "page": 96,
+        "topic": "숫자와 도형으로 정보 요약하기, 통계 그래프"
+      }
+    },
+    {
+      "unit_number": 3,
+      "unit_title": "세상을 담는 언어, 우리를 잇는 매체",
+      "subunits": [
+        {
+          "subunit_number": 1,
+          "subunit_title": "품사로 빚어낸 세상",
+          "page_range": "p.100~127",
+          "page_start": 100,
+          "page_end": 127,
+          "domain": "문법",
+          "inquiry_question": "수많은 단어를 어떻게 분류할 수 있을까?",
+          "core_concepts": ["품사", "형태", "기능", "의미", "체언", "용언", "관계언", "수식언", "독립언", "명사", "대명사", "수사", "동사", "형용사", "조사", "관형사", "부사", "감탄사"],
+          "literary_works": null,
+          "learning_objective_summary": "품사의 종류와 특성을 이해하고 국어 자료를 분석할 수 있다.",
+          "learning_objectives_detailed": [
+            "품사의 개념과 분류 기준(형태, 기능, 의미)을 이해한다.",
+            "우리말의 아홉 개 품사(명사, 대명사, 수사, 동사, 형용사, 조사, 관형사, 부사, 감탄사)의 종류와 특성을 이해한다.",
+            "품사 지식을 바탕으로 국어 자료를 분석할 수 있다.",
+            "단어를 품사별로 분류해야 하는 까닭을 설명할 수 있다."
+          ],
+          "attitudes": [
+            "단어의 품사를 고려하여 올바른 표현을 사용한다.",
+            "우리말의 단어를 깊이 있게 탐구하고 적절하게 사용한다."
+          ]
+        },
+        {
+          "subunit_number": 2,
+          "subunit_title": "상호 작용적 매체와 소통",
+          "page_range": "p.128~143",
+          "page_start": 128,
+          "page_end": 143,
+          "domain": "매체",
+          "inquiry_question": "매체를 활용하여 소통할 때 무엇을 고려해야 할까?",
+          "core_concepts": ["상호 작용적 매체", "누리집", "사회 관계망 서비스(SNS)", "온라인 대화방", "소통 맥락", "수용자"],
+          "literary_works": null,
+          "learning_objective_summary": "소통 맥락과 수용자 참여 양상을 고려하여 상호 작용적 매체를 분석할 수 있다.",
+          "learning_objectives_detailed": [
+            "상호 작용적 매체의 공통적인 특성을 이해한다.",
+            "누리집, 사회 관계망 서비스(SNS), 온라인 대화방의 특성을 각각 이해한다.",
+            "소통 목적이나 소통 공간의 특성에 따른 소통 방식의 차이를 파악한다.",
+            "매체 소통 방식이 적절한지 점검할 때 고려해야 할 요소를 파악한다."
+          ],
+          "attitudes": [
+            "소통 맥락을 고려하여 상황과 목적에 맞는 매체를 사용한다.",
+            "자신의 매체 소통 방식이 적절한지 점검하고 개선한다."
+          ]
+        }
+      ],
+      "creative_integration": {
+        "page": 144,
+        "topic": "몸으로 표현해요! 품사 영상 만들기 (체육 교과 결합)"
+      }
+    },
+    {
+      "unit_number": 4,
+      "unit_title": "갈등을 푸는 지혜",
+      "subunits": [
+        {
+          "subunit_number": 1,
+          "subunit_title": "문학과 갈등",
+          "page_range": "p.148~181",
+          "page_start": 148,
+          "page_end": 181,
+          "domain": "문학",
+          "inquiry_question": "문학 작품의 갈등을 파악하는 것은 왜 중요할까?",
+          "core_concepts": ["갈등", "내적 갈등", "외적 갈등", "인물", "사건", "주제"],
+          "literary_works": {
+            "탐구": [
+              {"title": "하늘은 맑건만", "author": "현덕", "genre": "소설"}
+            ],
+            "적용": [
+              {"title": "이파라파냐무냐무", "author": "이지은", "genre": "그림책"}
+            ]
+          },
+          "learning_objective_summary": "갈등의 진행과 해결 과정을 파악하며 작품을 감상할 수 있다.",
+          "learning_objectives_detailed": [
+            "인물의 말과 행동을 바탕으로 인물의 성격과 특성을 파악한다.",
+            "「하늘은 맑건만」(현덕) 속 갈등의 진행과 해결 과정을 파악한다.",
+            "「하늘은 맑건만」의 제목이 의미하는 바를 이해한다.",
+            "「하늘은 맑건만」 속 인물의 행동에 공감하거나 행동을 비판할 수 있다."
+          ],
+          "attitudes": [
+            "갈등의 진행과 해결 과정에 유의하여 문학 작품을 감상하기 위해 노력한다.",
+            "갈등에 대처하는 인물의 모습에 비추어 자신의 갈등 해결 방법을 성찰한다."
+          ]
+        },
+        {
+          "subunit_number": 2,
+          "subunit_title": "토의하기",
+          "page_range": "p.182~201",
+          "page_start": 182,
+          "page_end": 201,
+          "domain": "듣기·말하기",
+          "inquiry_question": "문제를 협력하여 해결하려면 어떻게 해야 할까?",
+          "core_concepts": ["토의", "토의자", "사회자", "의견 교환", "대안 마련"],
+          "literary_works": {
+            "탐구": [
+              {"title": "교실에서 자리를 어떻게 바꿀까?", "author": null, "genre": "토의 자료"}
+            ]
+          },
+          "learning_objective_summary": "토의에서 다양한 의견을 교환하여 대안을 마련하고 문제를 해결할 수 있다.",
+          "learning_objectives_detailed": [
+            "토의의 개념과 의의를 이해한다.",
+            "토의 목적에 따른 적절한 토의 진행 순서를 파악한다.",
+            "토의자와 사회자의 역할을 이해한다.",
+            "토의 주제에 따른 자신의 의견과 타당한 근거를 제시할 수 있다."
+          ],
+          "attitudes": [
+            "토의 과정에서 다른 사람의 의견을 경청하고 존중한다.",
+            "토의 과정에서 문제를 해결하기 위해 최선의 대안을 찾도록 노력한다."
+          ]
+        }
+      ],
+      "creative_integration": {
+        "page": 202,
+        "topic": "생활 속 문제, 아이디어로 해결하기"
+      }
+    }
+  ]
+}

@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../providers/prisma/prisma.service';
 import { SupabaseService } from '../../providers/supabase/supabase.service';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 
 @Injectable()
 export class DevService {
@@ -10,6 +12,46 @@ export class DevService {
     private readonly prisma: PrismaService,
     private readonly supabaseService: SupabaseService,
   ) {}
+
+  async importUnitPrompts() {
+    const creatorId = '6b8bf12d-cca8-4bf5-89d6-df8b82986d75';
+    // JSON 파일 경로 (사용자가 제공한 절대 경로 혹은 상대 경로)
+    const filePath = resolve('중등_국어_1-1_박현숙.json');
+    
+    try {
+      const fileData = readFileSync(filePath, 'utf-8');
+      const json = JSON.parse(fileData);
+      
+      const results: any[] = [];
+
+      for (const unit of json.units) {
+        for (const subunit of unit.subunits) {
+          const created = await this.prisma.unit_prompts.create({
+            data: {
+              creator_id: creatorId,
+              unit_number: unit.unit_number,
+              subunit_number: subunit.subunit_number,
+              unit_title: unit.unit_title,
+              subunit_title: subunit.subunit_title,
+              objective: subunit.learning_objective_summary,
+              textbook_id: 1,
+              prompt: JSON.stringify(subunit, null, 2), // subunit의 모든 내용을 문자열로 저장
+            }
+          });
+          results.push(created);
+        }
+      }
+
+      return {
+        message: '유닛 프롬프트 데이터 임포트 완료',
+        count: results.length,
+        data: results
+      };
+    } catch (err) {
+      this.logger.error(`Import failed: ${err.message}`);
+      throw err;
+    }
+  }
 
   async seedAndGetTokens() {
     const supabase = this.supabaseService.getClient();

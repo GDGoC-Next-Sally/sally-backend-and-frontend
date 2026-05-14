@@ -20,6 +20,12 @@ export class DevController {
     return this.devService.seedAndGetTokens();
   }
 
+  @Post('import-prompts')
+  @ApiOperation({ summary: 'JSON 파일로부터 유닛 프롬프트 임포트' })
+  async importPrompts() {
+    return this.devService.importUnitPrompts();
+  }
+
   @Post('dummy-chat/:dialogId')
   @ApiOperation({ summary: '더미 채팅 데이터 삽입' })
   async insertDummyChat(@Param('dialogId') dialogId: string) {
