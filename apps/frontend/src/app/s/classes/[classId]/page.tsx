@@ -14,7 +14,9 @@ interface ClassInfo {
   homeroom: string | null;
 }
 
-export default function StudentClassDetailPage() {
+import { Suspense } from 'react';
+
+function StudentClassDetailContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -50,5 +52,13 @@ export default function StudentClassDetailPage() {
         initialTab={tab}
       />
     </PageContainer>
+  );
+}
+
+export default function StudentClassDetailPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-gray-500">클래스 정보를 불러오는 중입니다...</div>}>
+      <StudentClassDetailContent />
+    </Suspense>
   );
 }

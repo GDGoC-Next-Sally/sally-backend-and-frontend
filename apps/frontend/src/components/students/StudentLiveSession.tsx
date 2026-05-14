@@ -16,7 +16,10 @@ import ProfileStudentIcon from '@/components/icons/ProfileStudentIcon';
 import ProfileTeacherIcon from '@/components/icons/ProfileTeacherIcon';
 import styles from './StudentLiveSession.module.css';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL 
+  || (typeof window !== 'undefined' && window.location.hostname === 'localhost' 
+      ? 'http://localhost:3001' 
+      : '');
 
 const QUICK_ACTIONS = ['도움이 필요해요', '예시를 보여주세요', '다시 설명해 주세요'];
 

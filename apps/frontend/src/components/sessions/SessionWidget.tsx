@@ -27,7 +27,10 @@ export interface StudentAnalysis {
   engagement_level?: string;
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL 
+  || (typeof window !== 'undefined' && window.location.hostname === 'localhost' 
+      ? 'http://localhost:3001' 
+      : '');
 
 function formatTimeOnly(iso?: string | null): string {
   if (!iso) return '';
