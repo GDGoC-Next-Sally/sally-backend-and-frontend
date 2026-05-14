@@ -382,3 +382,90 @@
 }
 
 .emptyText { padding: 48px 0; text-align: center; color: #adb5bd; font-size: var(--font-size-md); }
+
+/* ── Mobile (≤ 768px) ────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .inner {
+    padding: 20px 16px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* Live banner: 세로 스택 */
+  .liveBanner {
+    flex-direction: column;
+    padding: 20px 16px;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .liveTitle {
+    font-size: var(--font-size-lg);
+  }
+
+  .liveActions {
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .joinBtn,
+  .detailBtn {
+    width: 100%;
+    text-align: center;
+    padding: 12px;
+  }
+
+  /* Session rows */
+  .sessionRow,
+  .pastRow {
+    gap: 10px;
+    padding: 12px 8px;
+  }
+
+  .sessionIcon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  .sessionTitle {
+    font-size: var(--font-size-md);
+  }
+
+  .sessionSubject {
+    font-size: var(--font-size-sm);
+  }
+
+  /* period 정보 숨김 */
+  .sessionMeta {
+    display: none;
+  }
+
+  .sessionTime {
+    font-size: var(--font-size-sm);
+    min-width: 52px;
+  }
+
+  .badge {
+    font-size: var(--font-size-sm);
+    padding: 5px 10px;
+    min-width: 60px;
+  }
+
+  /* 세션 검색 필터바 */
+  .sessionsFilterBar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .searchBox {
+    width: 100%;
+  }
+
+  .sortSelect {
+    width: 100%;
+  }
+}

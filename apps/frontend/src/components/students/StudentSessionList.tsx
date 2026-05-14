@@ -123,7 +123,7 @@ export const StudentSessionList: React.FC<Props> = ({
   const filteredSessions = sessions
     .filter((s) =>
       s.session_name.toLowerCase().includes(search.toLowerCase()) ||
-      (s.explanation ?? '').toLowerCase().includes(search.toLowerCase())
+      (s.objective ?? '').toLowerCase().includes(search.toLowerCase())
     )
     .sort((a, b) => {
       const statusOrder = { live: 0, upcoming: 1, finished: 2 };
@@ -225,7 +225,7 @@ export const StudentSessionList: React.FC<Props> = ({
                       </div>
                       <div className={styles.sessionInfo}>
                         <div className={styles.sessionTitle}>{s.session_name}</div>
-                        <div className={styles.sessionSubject}>{s.explanation ?? ''}</div>
+                        <div className={styles.sessionSubject}>{s.objective ?? ''}</div>
                       </div>
                       {s.period != null && (
                         <div className={styles.sessionMeta}>
@@ -290,7 +290,7 @@ export const StudentSessionList: React.FC<Props> = ({
                       </div>
                       <div className={styles.sessionInfo}>
                         <div className={styles.sessionTitle}>{session.session_name}</div>
-                        <div className={styles.sessionSubject}>{session.explanation ?? ''}</div>
+                        <div className={styles.sessionSubject}>{session.objective ?? ''}</div>
                       </div>
 
                       {session.period != null && (
