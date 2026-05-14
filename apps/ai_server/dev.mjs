@@ -38,6 +38,8 @@ console.log(">>> Starting AI Server on http://localhost:8000 ...");
 const env = {
   ...process.env,
   PYTHONPATH: resolve(rootDir, "apps"),
+  PYTHONIOENCODING: "utf-8",
+  PYTHONUNBUFFERED: "1", // 로그를 버퍼링 없이 즉시 출력하도록 설정
 };
 
 const proc = spawn(

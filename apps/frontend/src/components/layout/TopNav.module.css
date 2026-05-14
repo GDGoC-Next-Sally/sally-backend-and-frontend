@@ -51,7 +51,7 @@
   gap: 4px;
   height: 40px;
   padding: 0 16px;
-  border-radius: 38px;
+  border-radius: var(--radius-pill);
   text-decoration: none;
   font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
   font-weight: var(--font-weight-semibold);
@@ -100,7 +100,7 @@
 .avatarImage {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   object-fit: cover;
   background-color: #ededed;
   flex-shrink: 0;
@@ -130,4 +130,28 @@
 /* Radix가 triggerWrapper span에 data-state="open"을 주입하므로 하위 chevron에 적용 */
 .profileWrapper [data-state="open"] .chevron {
   transform: rotate(180deg);
+}
+
+/* ── 모바일: 텍스트 숨기고 아이콘만 표시 ─────────────────────────────────────── */
+@media (max-width: 640px) {
+  .nav {
+    padding: 0 16px;
+  }
+
+  /* 네비 아이템: 텍스트 숨김, padding 축소 */
+  .navItem {
+    padding: 0 10px;
+    gap: 0;
+  }
+
+  .navItem span {
+    display: none;
+  }
+
+  /* 프로필: 이름·chevron 숨김 */
+  .userName,
+  .loginText,
+  .chevron {
+    display: none;
+  }
 }

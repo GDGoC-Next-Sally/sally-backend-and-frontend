@@ -66,7 +66,7 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   padding: 5px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
 }
 
 .liveChipRow {
@@ -81,7 +81,7 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   padding: 5px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-live-badge);
 }
 
 .elapsed {
@@ -141,7 +141,7 @@
   background: var(--color-live);
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-button);
   padding: 14px 48px;
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
@@ -159,7 +159,7 @@
   gap: 0;
   width: 100%;
   border: 1px solid #EBEBEA;
-  border-radius: 10px;
+  border-radius: var(--radius-button);
   overflow: hidden;
 }
 
@@ -215,7 +215,7 @@
 .msgAvatar {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   background: #D0CEC8;
   flex-shrink: 0;
 }
@@ -285,7 +285,7 @@
 .quickBtn {
   background: white;
   border: 1px solid #E0DED8;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
   padding: 7px 14px;
   font-size: var(--font-size-sm);
   color: #1A1A1A;

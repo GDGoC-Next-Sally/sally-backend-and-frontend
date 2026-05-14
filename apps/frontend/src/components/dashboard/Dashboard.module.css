@@ -99,9 +99,16 @@
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 24px;
+  align-items: stretch;
 }
 
 .leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.rightColumn {
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -277,52 +284,68 @@
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  flex: 1;
 }
 
 .quickLinksGrid {
   display: flex;
-  gap: 24px;
+  align-items: center;
   margin-top: 16px;
+}
+
+.quickLinkWrapper {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
 }
 
 .quickLinkItem {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+  flex: 1;
+  padding: 4px 0;
+  transition: opacity 0.15s;
+}
+
+.quickLinkItem:hover {
+  opacity: 0.75;
 }
 
 .quickLinkIcon {
-  width: 40px;
-  height: 40px;
+  width: 46px;
+  height: 46px;
   border-radius: 9999px;
-  background-color: var(--color-border-light);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background-color: #d9d9d9;
   flex-shrink: 0;
-  overflow: hidden;
+}
+
+.quickDivider {
+  width: 1px;
+  height: 56px;
+  background-color: var(--color-border-light);
+  flex-shrink: 0;
+  margin: 0 24px;
 }
 
 .quickLinkText {
   display: flex;
   flex-direction: column;
+  gap: 4px;
+  min-width: 0;
 }
 
 .quickLinkTitle {
   font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
+  white-space: nowrap;
 }
 
 .quickLinkSub {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-md);
   color: var(--color-text-secondary);
-}
-
-.rightColumn {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
 }
 
 .classCard {
@@ -385,7 +408,7 @@
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
-  border-radius: 5px;
+  border-radius: var(--radius-live-badge);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   line-height: 1.5;
@@ -629,4 +652,63 @@
 
 .viewAllBtn:hover {
   color: var(--color-text-primary);
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+
+/* 태블릿: 메인 그리드 → 1열, AI 인사이트 카드 내부 세로 스택 */
+@media (max-width: 900px) {
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .rightColumn {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .aiContent {
+    flex-direction: column;
+  }
+
+  .listsArea {
+    border-left: none;
+    border-top: 1px solid var(--color-border-light);
+    padding-left: 0;
+    padding-top: 24px;
+  }
+
+  .donutWrapper {
+    width: 160px;
+    height: 160px;
+  }
+}
+
+/* 모바일: 상단 배너 카드 세로 스택, 헤더 버튼 줄내림, 바로가기 wrap */
+@media (max-width: 640px) {
+  .topSection {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .rightColumn {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .quickLinksGrid {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .donutWrapper {
+    width: 140px;
+    height: 140px;
+  }
 }

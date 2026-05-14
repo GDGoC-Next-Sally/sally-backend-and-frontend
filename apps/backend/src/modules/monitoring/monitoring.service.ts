@@ -34,10 +34,10 @@ export class MonitoringService {
     });
 
     // 2. 학생에게 소켓으로 전송
-    this.eventsGateway.sendToUser(dialog.student_id, 'teacher_intervention', {
-      ...interventionMessage,
-      type: dto.type || 'ADVICE'
-    });
+    // this.eventsGateway.sendToUser(dialog.student_id, 'teacher_intervention', {
+    //   ...interventionMessage,
+    //   type: dto.type || 'ADVICE'
+    // });
 
     return interventionMessage;
   }

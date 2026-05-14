@@ -25,7 +25,7 @@ export class SupplementaryController {
   @Roles(UserRole.TEACHER)
   @ApiOperation({ summary: '단원 프롬프트 목록 조회 및 검색' })
   @ApiQuery({ name: 'textbookId', required: false, description: '특정 교과서의 프롬프트만 필터링' })
-  @ApiQuery({ name: 'query', required: false, description: '학습 목표 검색어' })
+  @ApiQuery({ name: 'query', required: false, description: '단원 제목 또는 학습 목표 검색어' })
   getUnitPrompts(@Query('textbookId') textbookId?: string, @Query('query') query?: string) {
     return this.supplementaryService.getUnitPrompts(textbookId ? +textbookId : undefined, query);
   }
@@ -62,12 +62,20 @@ export class SupplementaryController {
   // Textbooks
   // ────────────────────────────────────────────────────────────
 
+  @Get('publishers')
+  @Roles(UserRole.TEACHER)
+  @ApiOperation({ summary: '등록된 모든 출판사 목록 조회' })
+  getPublishers() {
+    return this.supplementaryService.getPublishers();
+  }
+
   @Get('textbooks')
   @Roles(UserRole.TEACHER)
-  @ApiOperation({ summary: '교과서 목록 조회 및 검색' })
+  @ApiOperation({ summary: '교과서 목록 조회 및 검색 (출판사 필터 지원)' })
   @ApiQuery({ name: 'query', required: false, description: '과목명 또는 출판사 검색어' })
-  getTextbooks(@Query('query') query?: string) {
-    return this.supplementaryService.getTextbooks(query);
+  @ApiQuery({ name: 'publisher', required: false, description: '특정 출판사 교과서만 필터링' })
+  getTextbooks(@Query('query') query?: string, @Query('publisher') publisher?: string) {
+    return this.supplementaryService.getTextbooks(query, publisher);
   }
 
   @Get('textbooks/:id')

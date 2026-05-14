@@ -259,7 +259,7 @@
   font-weight: var(--font-weight-bold);
   color: #40d294;
   background-color: rgba(180, 240, 213, 0.3);
-  border-radius: 5px;
+  border-radius: var(--radius-live-badge);
   padding: 2px 8px;
   white-space: nowrap;
   flex-shrink: 0;

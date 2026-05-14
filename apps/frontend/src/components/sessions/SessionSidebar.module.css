@@ -7,6 +7,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
+  min-height: 0;
   gap: 16px;
   overflow: hidden;
 }
@@ -105,7 +106,7 @@
   flex-direction: column;
   gap: 8px;
   padding: 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-button);
   border: 1.5px solid #F3F4F6;
   background: #FAFAFA;
   transition: background-color 0.15s, border-color 0.15s;
@@ -149,7 +150,7 @@
 .avatar {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   background: #e5f9f0;
   flex-shrink: 0;
   overflow: hidden;
@@ -173,35 +174,12 @@
   text-overflow: ellipsis;
 }
 
-.itemActions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.statusDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
   flex-shrink: 0;
-}
-
-.progressBadge {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: #22cb84;
-  background: #e5f9f0;
-  border-radius: 20px;
-  padding: 2px 8px;
-  white-space: nowrap;
-}
-
-.moreBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 2px;
-  display: flex;
-  align-items: center;
-  border-radius: 4px;
-}
-
-.moreBtn:hover {
-  background: #f3f4f6;
+  transition: background-color 0.3s ease;
 }
 
 .summaryText {
@@ -317,7 +295,7 @@
   background: #F0FDF4;
   color: #15803D;
   border: 1px solid #BBF7D0;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
   padding: 3px 10px;

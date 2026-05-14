@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Clock, Check } from 'lucide-react';
+import { Clock, Check, ChevronLeft } from 'lucide-react';
 import { getSession } from '@/actions/sessions';
 import { joinSession } from '@/actions/sessions';
 import { getClass } from '@/actions/classes';
@@ -42,6 +42,7 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [isEndModalOpen, setIsEndModalOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const handleJoinRef = useRef<() => Promise<void>>(async () => {});
 
   const formatTime = (iso: string) => {
     const d = new Date(iso);
@@ -124,7 +125,7 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
       });
 
       socket.on('session_started', () => {
-        setPhase(prev => prev === 'waiting' ? 'waiting' : prev);
+        handleJoinRef.current();
       });
     };
     init();
@@ -167,9 +168,12 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
     }
   };
 
+  useEffect(() => { handleJoinRef.current = handleJoin; });
+
   const fetchGreeting = async (dialog_id: number) => {
     setIsStreaming(true);
     setStreamingContent('');
+    let accumulated = '';
     try {
       const supabase = createClient();
       const { data: { session: authSession } } = await supabase.auth.getSession();
@@ -184,42 +188,52 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
         body: JSON.stringify({ dialog_id }),
       });
 
-      if (!response.body) return;
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let accumulated = '';
+      if (!response.ok || !response.body) {
+        console.error('Greeting request failed:', response.status);
+      } else {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          try {
-            const parsed = JSON.parse(line.slice(6));
-            accumulated += parsed.chunk ?? '';
-            setStreamingContent(accumulated);
-          } catch { /* ignore */ }
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() ?? '';
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            try {
+              const parsed = JSON.parse(line.slice(6));
+              accumulated += parsed.chunk ?? '';
+              setStreamingContent(accumulated);
+            } catch { /* ignore */ }
+          }
         }
-      }
 
-      if (accumulated) {
-        setMessages(prev => [...prev, {
-          id: Date.now(),
-          dialog_id,
-          sender_type: 'AI',
-          content: accumulated,
-          created_at: new Date().toISOString(),
-        }]);
+        if (accumulated) {
+          setMessages(prev => [...prev, {
+            id: Date.now(),
+            dialog_id,
+            sender_type: 'AI',
+            content: accumulated,
+            created_at: new Date().toISOString(),
+          }]);
+        }
       }
     } catch (err) {
       console.error('Greeting error:', err);
     } finally {
       setStreamingContent('');
       setIsStreaming(false);
+      // SSE 파싱 실패 폴백: DB에서 직접 로드
+      if (!accumulated) {
+        try {
+          await new Promise(r => setTimeout(r, 800));
+          const saved = await getMessages(dialog_id);
+          if (saved.length > 0) setMessages(saved);
+        } catch { /* ignore */ }
+      }
     }
   };
 
@@ -321,7 +335,7 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
         <div className={styles.mainArea}>
           {/* Header */}
           <div className={styles.sessionHeader}>
-            <button className={styles.backBtn} onClick={() => setIsLeaveModalOpen(true)}>‹</button>
+            <button className={styles.backBtn} onClick={() => setIsLeaveModalOpen(true)}><ChevronLeft size={20} /></button>
             <div className={styles.headerInfo}>
               <div className={styles.sessionTitle}>{sessionTitle || '세션'}</div>
               <div className={styles.teacherName}>{teacherName}</div>

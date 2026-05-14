@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../providers/prisma/prisma.service';
 import { SupabaseService } from '../../providers/supabase/supabase.service';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 
 @Injectable()
 export class DevService {
@@ -10,6 +12,46 @@ export class DevService {
     private readonly prisma: PrismaService,
     private readonly supabaseService: SupabaseService,
   ) {}
+
+  async importUnitPrompts() {
+    const creatorId = '6b8bf12d-cca8-4bf5-89d6-df8b82986d75';
+    // JSON 파일 경로 (사용자가 제공한 절대 경로 혹은 상대 경로)
+    const filePath = resolve('중등_국어_1-1_박현숙.json');
+    
+    try {
+      const fileData = readFileSync(filePath, 'utf-8');
+      const json = JSON.parse(fileData);
+      
+      const results: any[] = [];
+
+      for (const unit of json.units) {
+        for (const subunit of unit.subunits) {
+          const created = await this.prisma.unit_prompts.create({
+            data: {
+              creator_id: creatorId,
+              unit_number: unit.unit_number,
+              subunit_number: subunit.subunit_number,
+              unit_title: unit.unit_title,
+              subunit_title: subunit.subunit_title,
+              objective: subunit.learning_objective_summary,
+              textbook_id: 1,
+              prompt: JSON.stringify(subunit, null, 2), // subunit의 모든 내용을 문자열로 저장
+            }
+          });
+          results.push(created);
+        }
+      }
+
+      return {
+        message: '유닛 프롬프트 데이터 임포트 완료',
+        count: results.length,
+        data: results
+      };
+    } catch (err) {
+      this.logger.error(`Import failed: ${err.message}`);
+      throw err;
+    }
+  }
 
   async seedAndGetTokens() {
     const supabase = this.supabaseService.getClient();
@@ -63,8 +105,8 @@ export class DevService {
       devClass = await this.prisma.classes.create({
         data: {
           teacher_id: teacherId,
-          subject: '수학',
-          theme: 'Dev Test Class',
+          subject: '영어',
+          theme: '고등 영어 미래가정법 작문',
           invite_code: 'DEV123',
         }
       });
@@ -126,5 +168,42 @@ export class DevService {
       teacherToken: teacherAuth.session?.access_token,
       studentToken: studentAuth.session?.access_token,
     };
+  }
+  async insertDummyChat(dialogId: number) {
+    // 기존 채팅 및 리포트 삭제
+    await this.prisma.student_reports.deleteMany({ where: { dialog_id: dialogId } });
+    await this.prisma.chat_messages.deleteMany({
+      where: { dialog_id: dialogId }
+    });
+
+    const dummyData = [
+      { sender_type: 'AI', content: '안녕하세요! 오늘 배울 내용에 대해 설명해 드릴게요. 혹시 가정법에 대해 들어보신 적 있나요?' },
+      { sender_type: 'STUDENT', content: '아니요 잘 모르겠어요.' },
+      { sender_type: 'AI', content: '괜찮아요! 만약 내가 새라면, 너에게 날아갈 텐데. 이런 문장이 가정법이에요. 이해가 되나요?' },
+      { sender_type: 'STUDENT', content: '아 네 이해했어요.' },
+      { sender_type: 'AI', content: '그럼 방금 배운 문장을 영어로 어떻게 표현할 수 있을까요? 힌트: If I were a bird...' },
+      { sender_type: 'STUDENT', content: 'If I were a bird, I would fly to you?' },
+      { sender_type: 'AI', content: '완벽해요! 아주 잘 하셨습니다.' },
+    ];
+
+    for (const msg of dummyData) {
+      await this.prisma.chat_messages.create({
+        data: {
+          dialog_id: dialogId,
+          sender_type: msg.sender_type as any,
+          content: msg.content,
+        }
+      });
+      // 1초 간격을 줘서 생성 시간이 다르게 들어가도록 함 (정렬을 위해)
+      await new Promise(res => setTimeout(res, 100));
+    }
+    
+    // 다이얼로그 분석 상태 초기화
+    await this.prisma.dialogs.update({
+      where: { id: dialogId },
+      data: { is_analyzed: false }
+    });
+
+    return { message: '더미 채팅 데이터 생성 완료', data: dummyData };
   }
 }

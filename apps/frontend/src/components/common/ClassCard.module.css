@@ -1,6 +1,6 @@
 .card {
   background: var(--color-surface);
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   border: 1px solid #d9d9d9;
   padding: 16px;
   min-height: 218px;
@@ -108,7 +108,7 @@
   border: none;
   padding: 0 8px;
   height: 40px;
-  border-radius: 6px;
+  border-radius: var(--radius-button);
   color: var(--color-live);
   font-weight: var(--font-weight-bold);
   font-size: var(--font-size-sm);

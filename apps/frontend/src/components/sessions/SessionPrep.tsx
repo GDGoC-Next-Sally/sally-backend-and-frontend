@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Clock, Smartphone } from 'lucide-react';
+import { Clock, Smartphone, ChevronLeft } from 'lucide-react';
 import styles from './SessionPrep.module.css';
 
 export const SessionPrep = () => {
@@ -25,7 +25,7 @@ export const SessionPrep = () => {
       <div className={styles.topBar}>
         <div className={styles.topBarLeft}>
           <button className={styles.backBtn} onClick={handleBack}>
-            &lt;
+            <ChevronLeft size={20} />
           </button>
           <div>
             <div className={styles.sessionName}>5월 3일 영어 수업</div>

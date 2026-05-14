@@ -18,7 +18,7 @@ export interface SessionStudentMonitor {
   dialogId: number;
   studentId: string;
   name: string;
-  latestAnalysis: unknown | null;
+  latestAnalysis: Record<string, unknown> | null;
 }
 
 export async function getSessionStudents(sessionId: string): Promise<SessionStudentMonitor[]> {

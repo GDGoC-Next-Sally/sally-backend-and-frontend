@@ -27,10 +27,15 @@ export class LivechatService {
       throw new UnauthorizedException('권한이 없습니다.');
     }
 
-    return this.prisma.chat_messages.findMany({
+    const messages = await this.prisma.chat_messages.findMany({
       where: { dialog_id: dialogId },
       orderBy: { created_at: 'asc' }
     });
+
+    if (role === 'STUDENT') {
+      return messages.filter(msg => msg.sender_type !== 'TEACHER')
+    }
+    return messages;
   }
 
   // 학생 전용 메시지 전송
@@ -81,16 +86,11 @@ export class LivechatService {
           });
 
           const conversation_history = pastMessages
-            .filter(msg => msg.sender_type !== 'TEACHER')
             .map(msg => ({
               role: msg.sender_type === 'AI' ? 'model' : 'user',
-              text: msg.content
+              text: msg.content,
+              sender_type: msg.sender_type
             }));
-
-          // 선생님의 개입 메시지(TEACHER)를 시간순으로 topic_hints에 반영
-          const teacherHints = pastMessages
-            .filter(msg => msg.sender_type === 'TEACHER')
-            .map(msg => msg.content);
 
           // 2. 학생 프로필(수업 컨텍스트) 구성
           const student_profile = {
@@ -98,7 +98,10 @@ export class LivechatService {
             scope: dialog.sessions.session_name,
             learning_objectives: dialog.sessions.objective || "미설정",
             key_concepts: dialog.sessions.explanation || "미설정",
-            topic_hints: teacherHints,  // 선생님 개입 내용을 AI 힌트로 제공
+            forbidden_topics: "미설정",
+            learning_style: "미설정",
+            topic_hints: [],
+            misconception_tag_hints: [],
           };
 
           // 3. AI 서버 스트리밍 요청
@@ -150,7 +153,7 @@ export class LivechatService {
    * AI 서버는 session_id와 student_id를 기반으로 내부적으로 dialog를 찾아 처리합니다.
    */
   private requestAiAnalysis(history: any[], profile: any, sessionId: number, studentId: string, aiResponse: string) {
-    const updatedHistory = [...history, { role: 'model', text: aiResponse }];
+    const updatedHistory = [...history, { role: 'model', text: aiResponse, sender_type: 'AI' }];
 
     // AI 서버 규격에 맞춰 전송 (dialog_id, callback_url 대신 session_id, student_id 사용)
     axios.post(`${AI_SERVER_URL}/api/analyze`, {
@@ -295,7 +298,8 @@ export class LivechatService {
           const conversation_history = [
             {
               role: 'user',
-              text: `안녕하세요 선생님! 오늘 수업 시작할 준비가 되었습니다. 제 이름은 ${studentName}입니다. 오늘 배울 내용에 대해 저에게 개인화해서 친근하게 먼저 인사를 건네주세요.`
+              text: `안녕하세요 선생님! 오늘 수업 시작할 준비가 되었습니다. 제 이름은 ${studentName}입니다. 오늘 배울 내용에 대해 저에게 개인화해서 친근하게 먼저 인사를 건네주세요.`,
+              sender_type: 'STUDENT'
             }
           ];
 

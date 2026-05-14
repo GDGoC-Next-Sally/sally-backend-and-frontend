@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { type Session } from '@/actions/sessions';
 import { type ClassItem } from '@/actions/classes';
-import { User, MoreHorizontal } from 'lucide-react';
+import { User, MoreHorizontal, ChevronLeft } from 'lucide-react';
 import { SessionModal } from './SessionModal';
 import { CreateSessionModal } from './CreateSessionModal';
 import { ConfirmModal } from '../common/ConfirmModal';
@@ -98,7 +98,7 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
   return (
     <div className={styles.mainContent}>
       <button className={styles.backLink} onClick={() => router.push('/t/classes')}>
-        &lt; 클래스 목록으로
+        <ChevronLeft size={16} /> 클래스 목록으로
       </button>
 
       <div className={styles.classHeader}>

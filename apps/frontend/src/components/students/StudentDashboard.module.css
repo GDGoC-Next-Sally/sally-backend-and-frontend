@@ -16,83 +16,105 @@
   padding: 20px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
 .topCardContent {
   display: flex;
-  align-items: center;
-  gap: 16px;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
 }
 
-.iconCircle {
-  width: 48px;
-  height: 48px;
-  border-radius: 9999px;
-  background-color: var(--color-border-light);
+.topCardRow {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  overflow: hidden;
+  justify-content: space-between;
+  margin-bottom: 8px;
 }
 
 .cardTitle {
   font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
-  display: flex;
-  align-items: center;
-  gap: 8px;
   line-height: 1.5;
 }
 
-.highlightCount {
-  color: var(--color-red);
-}
-
 .cardSubtitle {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  margin-top: 4px;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: #797c7c;
 }
 
 .cardDate {
+  font-size: var(--font-size-md);
+  color: #c2c2c2;
+  margin-top: 2px;
+}
+
+.noticeDate {
   font-size: var(--font-size-sm);
-  color: var(--color-done);
-  margin-top: 4px;
+  color: #c2c2c2;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .moreLink {
   font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+  color: #797c7c;
   text-decoration: none;
+}
+
+/* 나의 학습 진도 카드 */
+.progressCardContent {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
-.dotRow {
+.progressNumRow {
   display: flex;
-  gap: 5px;
-  justify-content: flex-end;
-  margin-bottom: 4px;
+  align-items: baseline;
+  gap: 2px;
+  line-height: 1.4;
 }
 
-.dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--color-border);
-  transition: background 0.3s;
+.progressNum {
+  font-size: var(--font-size-display);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
 }
 
-.dotActive {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--color-live);
-  transition: background 0.3s;
+.progressUnit {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.progressMeta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.progressLabel {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: #797c7c;
+}
+
+.progressDelta {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: #49d098;
+}
+
+.progressRing {
+  flex-shrink: 0;
 }
 
 .mainGrid {
@@ -123,153 +145,99 @@
 
 .sectionTitle {
   font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   line-height: 1.4;
 }
 
 .sectionSubtitle {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  margin-top: 4px;
-}
-
-.reportBtn {
-  padding: 8px 16px;
-  border: 1px solid var(--color-border);
-  border-radius: 9999px;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  background: none;
-  cursor: pointer;
-}
-
-.aiContent {
-  display: flex;
-  gap: 24px;
-}
-
-.chartArea {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.chartTitle {
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  margin-bottom: 24px;
+  color: #797c7c;
+  margin-top: 2px;
 }
 
-.donutWrapper {
-  position: relative;
-  width: 200px;
-  height: 200px;
-  margin: 0 auto;
-}
-
-.donutCircle {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 16px solid var(--color-border-light);
-  border-top-color: var(--color-live);
-  border-right-color: var(--color-live);
-  border-bottom-color: var(--color-live);
-  transform: rotate(-45deg);
-}
-
-.donutText {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: var(--font-size-display);
+.detailBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: white;
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
+  cursor: pointer;
+  white-space: nowrap;
 }
 
-.donutSmall {
-  font-size: var(--font-size-lg);
+.detailBtn:hover {
+  background: var(--color-bg);
 }
 
-.chartFooter {
-  margin-top: 24px;
-  height: 60px;
-  background-color: var(--color-bg);
-  border-radius: 8px;
-}
-
-.listsArea {
-  flex: 1;
+/* AI 피드백 카드 */
+.feedbackList {
   display: flex;
   flex-direction: column;
+  gap: 10px;
+}
+
+.feedbackCard {
+  display: flex;
+  align-items: center;
   gap: 24px;
-  border-left: 1px solid var(--color-border-light);
-  padding-left: 24px;
+  padding: 16px 24px;
+  border: 1px solid #dbdded;
+  border-radius: 12px;
+  background: white;
+}
+
+.feedbackIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 9999px;
+  background: #f0fdf4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.feedbackBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.feedbackCategory {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: #3eb476;
+  line-height: 1.5;
+}
+
+.feedbackTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.feedbackDesc {
+  font-size: var(--font-size-lg);
+  color: #a9afad;
+  line-height: 1.5;
+  margin: 0;
 }
 
 .listTitle {
   font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin-bottom: 16px;
-}
-
-.listItem {
-  display: flex;
-  align-items: center;
-  margin-bottom: 12px;
-  font-size: var(--font-size-sm);
-}
-
-.listRank {
-  width: 20px;
-  font-weight: var(--font-weight-bold);
-  color: var(--color-live);
-}
-
-.listName {
-  flex: 1;
-  color: var(--color-text-secondary);
-}
-
-.progressBar {
-  width: 100px;
-  height: 4px;
-  background-color: var(--color-border-light);
-  border-radius: 2px;
-  margin-right: 12px;
-  position: relative;
-}
-
-.progressFill {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  background-color: var(--color-live);
-  border-radius: 2px;
-  width: 86%;
-}
-
-.progressText {
-  color: var(--color-text-secondary);
-}
-
-.listReason {
-  color: var(--color-text-secondary);
-  flex: 2;
-}
-
-.badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  background-color: var(--color-red-bg);
-  color: var(--color-red);
 }
 
 .quickLinksCard {
@@ -281,42 +249,51 @@
 
 .quickLinksGrid {
   display: flex;
-  gap: 24px;
+  align-items: center;
+  gap: 0;
   margin-top: 16px;
 }
 
 .quickLinkItem {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+  flex: 1;
 }
 
 .quickLinkIcon {
-  width: 40px;
-  height: 40px;
+  width: 46px;
+  height: 46px;
   border-radius: 9999px;
-  background-color: var(--color-border-light);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background-color: #d9d9d9;
   flex-shrink: 0;
-  overflow: hidden;
 }
 
 .quickLinkText {
   display: flex;
   flex-direction: column;
+  gap: 4px;
 }
 
 .quickLinkTitle {
   font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
+  line-height: 1.5;
 }
 
 .quickLinkSub {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+  color: #797c7c;
+  line-height: 1.5;
+}
+
+.quickDivider {
+  width: 1px;
+  height: 56px;
+  background: var(--color-border-light);
+  margin: 0 24px;
+  flex-shrink: 0;
 }
 
 .rightColumn {
@@ -385,7 +362,7 @@
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
-  border-radius: 5px;
+  border-radius: var(--radius-live-badge);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   line-height: 1.5;
@@ -629,4 +606,68 @@
 
 .viewAllBtn:hover {
   color: var(--color-text-primary);
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+
+/* 태블릿: 메인 그리드 → 1열, AI 인사이트 카드 내부 세로 스택 */
+@media (max-width: 900px) {
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .rightColumn {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .aiContent {
+    flex-direction: column;
+  }
+
+  .listsArea {
+    border-left: none;
+    border-top: 1px solid var(--color-border-light);
+    padding-left: 0;
+    padding-top: 24px;
+  }
+
+  .donutWrapper {
+    width: 160px;
+    height: 160px;
+  }
+}
+
+/* 모바일: 상단 배너 카드 세로 스택, 헤더 버튼 줄내림, 바로가기 wrap */
+@media (max-width: 640px) {
+  .topSection {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .rightColumn {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .quickLinksGrid {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .donutWrapper {
+    width: 140px;
+    height: 140px;
+  }
+
+  .noSessionText {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+  }
 }
