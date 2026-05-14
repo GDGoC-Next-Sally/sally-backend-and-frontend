@@ -3,15 +3,15 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronRight as ChevronRightIcon, Calendar, Clock, User, Users, Bell, BookOpen, LayoutGrid, BarChart2, Archive, Video, GraduationCap } from 'lucide-react';
+import { ChevronRight as ChevronRightIcon, Calendar, Clock, User, Users, BarChart2, Archive, Video, GraduationCap } from 'lucide-react';
 import styles from './Dashboard.module.css';
 import type { RecentSessionInfo } from '@/app/t/home/page';
 import { computeSessionStatus } from '@/utils/sessionStatus';
 
 const NOTICES = [
-  { text: '3월 학습 리포트 업데이트 안내\n새로운 분석 항목이 추가되었어요.', date: '2026.03.04' },
-  { text: '4월 학사 일정 공지\n4월 3일(목) 전체 교사 회의가 있습니다.', date: '2026.03.28' },
-  { text: '수업 녹화 기능 베타 오픈\nLIVE 세션 중 녹화 버튼이 활성화됩니다.', date: '2026.04.01' },
+  { title: '3월 학습 리포트 업데이트 안내', content: '새로운 분석 항목이 추가되었어요.', date: '2026.03.04' },
+  { title: '4월 학사 일정 공지', content: '4월 3일(목) 전체 교사 회의가 있습니다.', date: '2026.03.28' },
+  { title: '수업 녹화 기능 베타 오픈', content: 'LIVE 세션 중 녹화 버튼이 활성화됩니다.', date: '2026.04.01' },
 ];
 
 const STUDENT_ALERTS = [
@@ -154,27 +154,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass, recen
       <div className={styles.topSection}>
         <div className={styles.topCard}>
           <div className={styles.topCardContent}>
-            <div className={styles.iconCircle}>
-              <Bell size={20} color="#10b981" />
-            </div>
-            <div>
+            <div className={styles.topCardRow}>
               <h3 className={styles.cardTitle}>공지사항</h3>
-              <p className={styles.cardSubtitle}>{notice.text.split('\n').map((line, i) => <span key={i}>{line}{i === 0 && <br/>}</span>)}</p>
+              <a href="#" className={styles.moreLink}>더보기 &gt;</a>
             </div>
+            <p className={styles.cardSubtitle}>{notice.title}</p>
+            <p className={styles.cardDate}>{notice.content}</p>
           </div>
-          <div>
-            <div className={styles.dotRow}>
-              {NOTICES.map((_, i) => <span key={i} className={i === noticeIdx ? styles.dotActive : styles.dot} />)}
-            </div>
-            <p className={styles.cardDate}>{notice.date}</p>
-          </div>
+          <p className={styles.noticeDate}>{notice.date}</p>
         </div>
 
         <div className={styles.topCard}>
           <div className={styles.topCardContent}>
-            <div className={styles.iconCircle}>
-              <Users size={20} color="#10b981" />
-            </div>
             <div>
               <h3 className={styles.cardTitle}>도움이 필요한 학생 <span className={styles.highlightCount}>{alert.count}</span></h3>
               <p className={styles.cardSubtitle}>{alert.desc}</p>
