@@ -16,7 +16,12 @@ export class SupplementaryService {
   async getUnitPrompts(textbookId?: number, query?: string) {
     const where: any = {};
     if (textbookId) where.textbook_id = textbookId;
-    if (query) where.objective = { contains: query, mode: 'insensitive' };
+    if (query) {
+      where.OR = [
+        { unit_title: { contains: query, mode: 'insensitive' } },
+        { subunit_title: { contains: query, mode: 'insensitive' } },
+      ];
+    }
 
     return this.prisma.unit_prompts.findMany({
       where,
@@ -24,8 +29,21 @@ export class SupplementaryService {
         textbooks: { select: { subject: true, publisher: true } },
         users: { select: { id: true, name: true } },
       },
-      orderBy: [{ unit_number: 'asc' }, { created_at: 'desc' }],
+      orderBy: [
+        { unit_number: 'asc' },
+        { subunit_number: 'asc' },
+        { created_at: 'desc' }
+      ],
     });
+  }
+
+  // 1. 모든 출판사 목록 조회 (중복 제거)
+  async getPublishers() {
+    const result = await this.prisma.textbooks.findMany({
+      select: { publisher: true },
+      distinct: ['publisher'],
+    });
+    return result.map((r) => r.publisher).filter(Boolean);
   }
 
   async getUnitPromptById(id: number) {
@@ -88,14 +106,20 @@ export class SupplementaryService {
   // Textbooks CRUD
   // ────────────────────────────────────────────────────────────
 
-  async getTextbooks(query?: string) {
-    return this.prisma.textbooks.findMany({
-      where: query ? {
+  async getTextbooks(query?: string, publisher?: string) {
+    const where: any = { AND: [] };
+    if (publisher) where.AND.push({ publisher });
+    if (query) {
+      where.AND.push({
         OR: [
           { subject: { contains: query, mode: 'insensitive' } },
           { publisher: { contains: query, mode: 'insensitive' } },
         ],
-      } : undefined,
+      });
+    }
+
+    return this.prisma.textbooks.findMany({
+      where: where.AND.length > 0 ? where : undefined,
       include: { _count: { select: { unit_prompts: true } } },
       orderBy: { id: 'desc' },
     });
