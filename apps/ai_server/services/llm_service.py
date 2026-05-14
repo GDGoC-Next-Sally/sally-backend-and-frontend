@@ -1,6 +1,6 @@
 """
 services/llm_service.py — LLM API 호출 및 TEACHER_SUMMARY 파싱
-JS의 callGeminiAPI() 함수를 파이썬으로 이식합니다.
+NVIDIA NIM OpenAI-compatible API를 사용합니다.
 """
 import re
 import json
@@ -34,18 +34,24 @@ def _env_int(name: str, default: int) -> int:
 
 def _env_str(name: str, default: str) -> str:
     value = os.getenv(name)
-    return value.strip() if value and value.strip() else default
+    if not value or not value.strip():
+        return default
+    return value.strip().strip('"').strip("'")
 
-# ── 모델 설정 (채팅용 / 분석용 분리) ──────────────────────────────────────────
-NVIDIA_BASE_URL = _env_str("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
-CHAT_MODEL = _env_str("NVIDIA_CHAT_MODEL", "meta/llama-3.3-70b-instruct")
-#ANALYZE_MODEL = "nvidia/llama-3.3-nemotron-super-49b-v1.5"  # 분석용: 추론 능력이 뛰어난 무거운 모델
-ANALYZE_MODEL = _env_str("NVIDIA_ANALYZE_MODEL", "meta/llama-3.3-70b-instruct")
-#ANALYZE_MODEL = "nvidia/llama-3.1-nemotron-nano-8b-v1"     # 8B: 너무 단순하여 분석 정확도 낮음
+# ── 모델 설정 (NVIDIA NIM OpenAI-compatible API) ────────────────────────────
+NVIDIA_BASE_URL = _env_str(
+    "NVIDIA_BASE_URL",
+    "https://integrate.api.nvidia.com/v1",
+)
+NVIDIA_MODEL = _env_str("NVIDIA_MODEL", "google/gemma-4-31b-it")
+CHAT_MODEL = _env_str("NVIDIA_CHAT_MODEL", "google/gemma-4-31b-it")
+ANALYZE_MODEL = _env_str("NVIDIA_ANALYZE_MODEL", "nemotron-3-super-120b-a12b")
 
 CHAT_HISTORY_MAX_TURNS = _env_int("CHAT_HISTORY_MAX_TURNS", 12)
 CHAT_HISTORY_MAX_CHARS = _env_int("CHAT_HISTORY_MAX_CHARS", 6000)
 CHAT_SUMMARY_MAX_CHARS = _env_int("CHAT_SUMMARY_MAX_CHARS", 1200)
+CHAT_TEACHER_DIRECTIVE_MAX_ITEMS = _env_int("CHAT_TEACHER_DIRECTIVE_MAX_ITEMS", 3)
+CHAT_TEACHER_DIRECTIVE_MAX_CHARS = _env_int("CHAT_TEACHER_DIRECTIVE_MAX_CHARS", 900)
 
 # 한국어, 영어, 숫자, 기본 문장부호 외 문자를 강제 필터링합니다.
 # 라틴 확장 문자(vẫn, thường, relação 등)와 한자/일본어/중국어 조각을 모두 잡습니다.
@@ -79,8 +85,8 @@ def _select_recent_chat_history(
 ) -> list[ConversationTurn]:
     """
     채팅 응답 생성에는 최근 대화만 사용합니다.
-    고정 system/few-shot prefix는 매 요청 동일하게 유지하고, 변하는 suffix를 제한하면
-    NIM prefix/KV cache가 재사용되기 쉽고 대화가 길어질수록 커지는 prefill 비용도 줄어듭니다.
+    고정 system/few-shot prefix는 매 요청 동일하게 유지하고 변하는 suffix를 제한하여,
+    대화가 길어질수록 커지는 prefill 비용을 줄입니다.
     """
     if not conversation_history:
         return []
@@ -196,6 +202,35 @@ def _build_chat_memory_summary(
     return _build_extract_summary_from_old_history(old_history)
 
 
+def _build_teacher_directive_block(
+    conversation_history: list[ConversationTurn],
+) -> str | None:
+    """
+    선생님/시스템 개입은 학생에게 보인 발화가 아니라 AI의 다음 응답 정책입니다.
+    일반 대화 턴보다 높은 우선순위의 별도 지침으로 다시 주입해 반영력을 높입니다.
+    """
+    if CHAT_TEACHER_DIRECTIVE_MAX_ITEMS <= 0:
+        return None
+
+    directives: list[str] = []
+    for turn in conversation_history:
+        if not _is_teacher_memory_turn(turn):
+            continue
+
+        text = _clip_text(turn.text, 260)
+        if not text:
+            continue
+
+        label = speaker_label(turn.sender_type, student_name=turn.student_name)
+        directives.append(f"- {label}: {text}")
+
+    if not directives:
+        return None
+
+    latest_directives = directives[-CHAT_TEACHER_DIRECTIVE_MAX_ITEMS:]
+    return _clip_block("\n".join(latest_directives), CHAT_TEACHER_DIRECTIVE_MAX_CHARS)
+
+
 def _remove_foreign_text(text: str) -> str:
     cleaned = FOREIGN_TOKEN_PATTERN.sub("", text)
     cleaned = re.sub(r"[ \t]{2,}", " ", cleaned)
@@ -276,9 +311,25 @@ async def stream_chat(
             ),
         })
 
+    teacher_directive_block = _build_teacher_directive_block(conversation_history)
+    if teacher_directive_block:
+        messages.append({
+            "role": "system",
+            "content": (
+                "담당 선생님의 최신 비공개 지도 지침입니다.\n"
+                "아래 지침은 학생에게 그대로 말하거나 존재를 언급하지 말고, "
+                "다음 답변의 설명 방식, 난이도, 질문 전략에 우선 반영하십시오.\n"
+                "여러 지침이 충돌하면 가장 최근 지침을 우선하되, 학생 보호와 사실 정확성을 해치지 마십시오.\n"
+                f"{teacher_directive_block}"
+            ),
+        })
+
     # 실제 대화 기록 이어 붙이기
     # TEACHER는 학생에게 보인 발화가 아니라 AI용 비공개 지도 방향으로 라벨링합니다. (방향 A)
     for turn in recent_history:
+        if _is_teacher_memory_turn(turn):
+            continue
+
         if turn.role == "model":
             messages.append({"role": "assistant", "content": turn.text})
         else:
@@ -293,8 +344,6 @@ async def stream_chat(
         model=CHAT_MODEL,
         messages=messages,
         temperature=0.6,          # 반복 방지를 위해 온도 약간 상승 (0.4 -> 0.6)
-        presence_penalty=0.2,     # 새로운 주제를 말하도록 유도
-        frequency_penalty=0.4,    # 똑같은 단어/구조 반복 억제
         max_tokens=400,           # 무한 반복 방지용 하드 리밋
         stream=True,
     )
@@ -712,8 +761,35 @@ async def analyze_student(
             "잘 안 돼",
             "잘 안되",
             "안 풀",
+            "부족",
         )
         return _has_signal_match(text, stuck_keywords)
+
+    def _has_clear_misconception_student_turn(turn: ConversationTurn) -> bool:
+        if not _is_student_turn(turn):
+            return False
+
+        text = turn.text.strip().lower()
+        if not text:
+            return False
+
+        misconception_patterns = (
+            ("다시 써야", ("it", "him", "her", "대명사")),
+            ("또 써야", ("it", "him", "her", "대명사")),
+            ("써야 뜻이", ("it", "him", "her", "대명사")),
+            ("쓰면 뜻", ("it", "him", "her", "대명사")),
+            ("더 분명", ("it", "him", "her", "대명사")),
+            ("있어야", ("it", "him", "her", "대명사")),
+            ("넣고 싶", ("it", "him", "her", "대명사")),
+            ("넣게", ("it", "him", "her", "대명사")),
+            ("써도 돼", ("it", "him", "her", "대명사")),
+            ("써도 되", ("it", "him", "her", "대명사")),
+            ("목적어가 두 번", ("맞", "괜찮", "가능")),
+        )
+        return any(
+            phrase in text and any(marker in text for marker in markers)
+            for phrase, markers in misconception_patterns
+        )
 
     recent_student_turns_with_context = [
         (index, turn, _previous_model_turn(index))
@@ -737,8 +813,22 @@ async def analyze_student(
         1 for turn in recent_student_turns
         if _is_confusion_or_stuck_student_turn(turn)
     )
+    recent_clear_misconception_count = sum(
+        1 for turn in recent_student_turns
+        if _has_clear_misconception_student_turn(turn)
+    )
     last_student_turn = recent_student_turns[-1] if recent_student_turns else None
     last_student_text = last_student_turn.text.strip() if last_student_turn else ""
+    last_student_has_clear_misconception = (
+        _has_clear_misconception_student_turn(last_student_turn)
+        if last_student_turn
+        else False
+    )
+    last_student_is_self_blame_or_helpless = (
+        _is_self_blame_or_helpless_student_turn(last_student_turn)
+        if last_student_turn
+        else False
+    )
 
     user_content = ""
 
@@ -808,9 +898,8 @@ async def analyze_student(
                 model=ANALYZE_MODEL,
                 messages=messages,
                 temperature=0,
-                max_tokens=512,
-                presence_penalty=0,
-                frequency_penalty=0,
+                max_tokens=1024,
+                response_format={"type": "json_object"},
             )
             break
         except (RateLimitError, APIConnectionError, APITimeoutError) as e:
@@ -850,8 +939,114 @@ async def analyze_student(
     raw_text = re.sub(r'"(?:[^"\\]|\\.)*"', _escape_in_string, raw_text, flags=re.DOTALL)
     raw_text = re.sub(r'//.*', '', raw_text)
 
+    def _parse_analysis_json(text: str) -> dict:
+        text = text.strip()
+        if text.startswith("```json"):
+            text = text[7:]
+        if text.startswith("```"):
+            text = text[3:]
+        if text.endswith("```"):
+            text = text[:-3]
+        text = text.strip()
+        text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', text)
+        text = re.sub(r'"(?:[^"\\]|\\.)*"', _escape_in_string, text, flags=re.DOTALL)
+        text = re.sub(r'//.*', '', text)
+
+        start = text.find("{")
+        end = text.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            text = text[start:end + 1]
+
+        return json.loads(text)
+
+    async def _retry_analysis_json() -> dict:
+        retry_messages = messages + [
+            {
+                "role": "user",
+                "content": (
+                    "이전 응답이 유효한 JSON이 아니었습니다. "
+                    "같은 분석을 다시 수행하되, 반드시 완전한 JSON 객체 하나만 출력하세요. "
+                    "줄임표, 코드블록, 설명문은 금지입니다."
+                ),
+            }
+        ]
+        retry_response = await client.chat.completions.create(
+            model=ANALYZE_MODEL,
+            messages=retry_messages,
+            temperature=0,
+            max_tokens=1024,
+            response_format={"type": "json_object"},
+        )
+        retry_text = retry_response.choices[0].message.content or ""
+        return _parse_analysis_json(retry_text)
+
+    def _fallback_analysis_data() -> dict:
+        topic = "관계대명사의 주격과 목적격 구분"
+        if last_student_has_clear_misconception:
+            return {
+                "understanding_score": 3,
+                "current_topic": "목적격 관계대명사 뒤 대명사 반복 금지",
+                "student_emotion": "혼란",
+                "one_line_summary": "관계대명사 뒤 대명사 중복 사용을 혼동함",
+                "need_intervention": False,
+            }
+        if recent_nonresponsive_count >= 2:
+            return {
+                "understanding_score": None,
+                "current_topic": "응답 없음",
+                "student_emotion": "무반응",
+                "one_line_summary": "단답과 무반응이 반복됨",
+                "need_intervention": True,
+            }
+        if recent_self_blame_or_helpless_count >= 1:
+            return {
+                "understanding_score": None,
+                "current_topic": topic,
+                "student_emotion": "좌절",
+                "one_line_summary": "강한 자책과 학습 무력감을 표현함",
+                "need_intervention": True,
+            }
+        if recent_confusion_or_stuck_count >= 2:
+            return {
+                "understanding_score": 4,
+                "current_topic": topic,
+                "student_emotion": "혼란",
+                "one_line_summary": "같은 개념에서 반복적으로 막힘",
+                "need_intervention": True,
+            }
+        if recent_confusion_or_stuck_count == 1:
+            return {
+                "understanding_score": 5,
+                "current_topic": topic,
+                "student_emotion": "혼란",
+                "one_line_summary": "개념 이해에 혼란을 표현함",
+                "need_intervention": False,
+            }
+        return {
+            "understanding_score": None,
+            "current_topic": topic,
+            "student_emotion": "중립",
+            "one_line_summary": "분석 응답 파싱 실패",
+            "need_intervention": False,
+        }
+
     try:
-        data = json.loads(raw_text)
+        data = _parse_analysis_json(raw_text)
+    except json.JSONDecodeError as e:
+        print(
+            "[WARN] 분석 JSON 1차 파싱 실패. 재요청 시도 "
+            f"error={e}, raw_preview={raw_text[:120]}"
+        )
+        try:
+            data = await _retry_analysis_json()
+        except Exception as retry_error:
+            print(
+                "[ERROR] 분석 JSON 재요청도 실패. 휴리스틱 fallback 사용 "
+                f"error={retry_error}, raw_preview={raw_text[:120]}"
+            )
+            data = _fallback_analysis_data()
+
+    try:
         if recent_nonresponsive_count >= 2:
             data["understanding_score"] = None
             data["current_topic"] = "응답 없음"
@@ -864,7 +1059,7 @@ async def analyze_student(
                 data["student_emotion"] = "지루함"
             data["one_line_summary"] = "수업 외 주제로 반복 이탈함"
             data["need_intervention"] = True
-        elif recent_self_blame_or_helpless_count >= 1:
+        elif last_student_is_self_blame_or_helpless:
             if data.get("student_emotion") in {None, "중립", "집중", "흥미", "자신감", "혼란"}:
                 data["student_emotion"] = "좌절"
             if data.get("current_topic") == "수업 외 대화":
@@ -876,6 +1071,13 @@ async def analyze_student(
                 data["student_emotion"] = "혼란"
             data["one_line_summary"] = "같은 개념에서 반복적으로 막힘"
             data["need_intervention"] = True
+        elif last_student_has_clear_misconception:
+            if data.get("student_emotion") in {None, "자신감", "흥미", "집중"}:
+                data["student_emotion"] = "혼란"
+            if recent_clear_misconception_count >= 2 or recent_confusion_or_stuck_count >= 2:
+                data["need_intervention"] = True
+            else:
+                data["need_intervention"] = False
         elif data.get("current_topic") == "수업 외 대화" and len(last_student_text) > 2:
             data["understanding_score"] = None
             if data.get("student_emotion") == "무반응":
@@ -888,7 +1090,7 @@ async def analyze_student(
         ):
             data["need_intervention"] = False
         return RealtimeAnalysis(**data)
-    except json.JSONDecodeError as e:
-        error_msg = f"LLM 분석 응답을 JSON으로 파싱할 수 없습니다: {e}\nRaw Response: {raw_text}"
+    except (TypeError, ValueError) as e:
+        error_msg = f"LLM 분석 응답 스키마가 올바르지 않습니다: {e}\nRaw Response: {raw_text}"
         print(f"[ERROR] {error_msg}")
         raise ValueError(error_msg)

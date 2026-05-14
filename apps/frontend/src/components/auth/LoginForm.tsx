@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ConfirmModal } from '../common/ConfirmModal';
 import styles from './LoginForm.module.css';
 
@@ -12,6 +13,7 @@ interface LoginFormProps {
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSignin, onSignup }) => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>('student');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,12 +37,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSignin, onSignup }) => {
           return;
         }
         await onSignup(email, password, nickname, signupRole.toUpperCase());
-        setModal({
-          title: '회원가입이 완료되었습니다!',
-          description: '이제 로그인해주세요.',
-        });
-        setIsSignup(false);
-        setPassword('');
+        router.push('/');
       } else {
         await onSignin(email, password, activeTab);
       }

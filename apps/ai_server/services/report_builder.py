@@ -39,7 +39,21 @@ from ai_server.services.message_formatting import format_labeled_message
 env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-REPORT_MODEL = "meta/llama-3.3-70b-instruct"
+
+def _env_str(name: str, default: str) -> str:
+    value = os.getenv(name)
+    if not value or not value.strip():
+        return default
+    return value.strip().strip('"').strip("'")
+
+
+# ── 모델 설정 (NVIDIA NIM OpenAI-compatible API) ────────────────────────────
+NVIDIA_BASE_URL = _env_str(
+    "NVIDIA_BASE_URL",
+    "https://integrate.api.nvidia.com/v1",
+)
+NVIDIA_MODEL = _env_str("NVIDIA_MODEL", "google/gemma-4-31b-it")
+REPORT_MODEL = _env_str("NVIDIA_REPORT_MODEL", NVIDIA_MODEL)
 
 # 짧은 세션 기준 추정 토큰 수
 # rough estimate: 약 4글자 = 1토큰
@@ -66,7 +80,7 @@ LANGUAGE_RULE = """언어 및 표기 규칙:
 
 
 # ─────────────────────────────────────────────────────────────
-# OpenAI-compatible NVIDIA client
+# OpenAI-compatible NVIDIA NIM client
 # ─────────────────────────────────────────────────────────────
 
 def _get_client() -> AsyncOpenAI:
@@ -75,7 +89,7 @@ def _get_client() -> AsyncOpenAI:
         raise RuntimeError(".env 파일에 NVIDIA_API_KEY가 설정되어 있지 않습니다.")
 
     return AsyncOpenAI(
-        base_url="https://integrate.api.nvidia.com/v1",
+        base_url=NVIDIA_BASE_URL,
         api_key=api_key,
     )
 
@@ -248,7 +262,7 @@ def _build_report_prompt(conversation_text: str, realtime_context: str = "") -> 
 리포트 목적:
 - 세션 주요 학습 주제와 학생의 최종 취약 개념을 정리합니다.
 - 세션 종료 시점에도 남아 있는 오개념과 구체적 약점을 요약합니다.
-- 교사가 빠르게 볼 수 있는 세션 상태 요약과 상세 줄글 리포트를 생성합니다.
+- 교사가 빠르게 볼 수 있는 세션 상태 요약과 마크다운 형식의 상세 리포트를 생성합니다.
 
 핵심 판단 원칙:
 - 최종 리포트는 세션 중간의 일시적 오류가 아니라, 세션 종료 시점의 이해 상태를 기준으로 작성하세요.
@@ -264,7 +278,8 @@ def _build_report_prompt(conversation_text: str, realtime_context: str = "") -> 
 - 학생을 비난하거나 낙인찍지 말고, 교사가 지도에 참고할 수 있는 표현으로 작성하세요.
 - 학습과 관련 없는 잡담은 핵심 근거로 사용하지 마세요.
 - 수치형 지표는 포함하지 마세요.
-- 출력은 반드시 JSON 형식으로만 작성하고, 마크다운/코드블록/설명문은 출력하지 마세요.
+- 출력 전체는 반드시 JSON 형식으로만 작성하고, 코드블록이나 JSON 바깥 설명문은 출력하지 마세요.
+- 단, detailed_report 값은 마크다운 문자열로 작성하세요.
 - JSON에는 key_concepts, misconception_summary, session_summary, detailed_report 4개 필드만 포함하세요.
 
 {LANGUAGE_RULE}
@@ -298,12 +313,14 @@ def _build_report_prompt(conversation_text: str, realtime_context: str = "") -> 
 - 교사용 한 줄 요약입니다.
 - 세션 종료 시점 기준의 학습 상태, 확인된 강점, 남은 취약점, 다음 지도 필요성을 80자 이내 1문장으로 작성하세요.
 
-4. detailed_report = AI가 생성하는 줄글 형식 리포트
-- 세션에서 다룬 내용, 학생의 이해 수준, 확인된 장점, 해결된 혼란, 마지막까지 남은 약점, 다음 지도 방향을 자연스러운 하나의 문단으로 작성하세요.
-- 긍정/부정 평가는 실제 대화의 근거 비율을 반영하세요.
-- 오개념이나 약점이 확인되지 않았다면 "뚜렷한 오개념은 확인되지 않았습니다"라고 작성하세요.
-- 세션 내용이 복잡하면 6~10문장까지 작성할 수 있습니다.
-- 줄바꿈 없이 하나의 문단으로 작성하세요.
+4. detailed_report = 교사용 마크다운 상세 리포트
+- 반드시 마크다운 문자열로 작성하세요. JSON 문자열 안에서 줄바꿈은 \n으로 표현될 수 있습니다.
+- 가능한 한 자세히 작성하되, 실제 대화에서 확인된 근거를 중심으로 작성하세요.
+- 다음 섹션을 포함하세요: "## 수업 흐름 요약", "## 학생 강점", "## 학생 취약점", "## 이해 변화와 남은 오개념", "## 보완 지도 제안", "## 다음 수업 확인 질문".
+- 학생 강점에는 학생이 스스로 정정한 부분, 질문을 통해 확인한 이해, 풀이 전략을 받아들인 흔적을 작성하세요.
+- 학생 취약점에는 세션 종료 시점에도 남은 혼란, 반복 실수, 추가 확인이 필요한 개념을 구체적으로 작성하세요.
+- 보완 지도 제안에는 다음 수업에서 교사가 바로 사용할 수 있는 지도 순서, 예문 유형, 확인 질문을 작성하세요.
+- 오개념이나 약점이 확인되지 않았다면 해당 섹션에 "뚜렷한 오개념은 확인되지 않았습니다"라고 작성하세요.
 - 한자 표기를 사용하지 말고, 설명문은 한글 한국어로만 작성하세요.
 
 채팅 기록:
@@ -327,7 +344,7 @@ def _build_chunk_summary_prompt(
 - 세션 종료 시점에도 남을 수 있는 오개념·약점 후보
 - 이 chunk 안에서 해결된 혼란 또는 정정된 오개념
 - 세션 상태 요약에 반영할 학습 상태
-- 줄글 리포트에 반영할 이해 변화, 장점, 약점, 다음 지도 방향
+- 마크다운 상세 리포트에 반영할 이해 변화, 장점, 약점, 다음 지도 방향
 
 중요:
 - 학생의 이해 상태와 오개념은 반드시 학생 이름 또는 학생 라벨로 표시된 발화를 중심으로 판단하세요.
@@ -401,7 +418,7 @@ def _build_synthesis_prompt(chunk_summaries: list[str], realtime_context: str = 
 리포트 목적:
 - 세션 주요 학습 주제와 학생의 최종 취약 개념을 정리합니다.
 - 세션 종료 시점에도 남아 있는 오개념과 구체적 약점을 요약합니다.
-- 교사가 빠르게 볼 수 있는 세션 상태 요약과 상세 줄글 리포트를 생성합니다.
+- 교사가 빠르게 볼 수 있는 세션 상태 요약과 마크다운 형식의 상세 리포트를 생성합니다.
 
 핵심 판단 원칙:
 - 최종 리포트는 중간의 일시적 오류가 아니라, 세션 종료 시점의 이해 상태를 기준으로 작성하세요.
@@ -414,7 +431,8 @@ def _build_synthesis_prompt(chunk_summaries: list[str], realtime_context: str = 
 - 학생을 비난하거나 낙인찍지 말고, 교사가 지도에 참고할 수 있는 표현으로 작성하세요.
 - 학습과 관련 없는 잡담은 핵심 근거로 사용하지 마세요.
 - 수치형 지표는 포함하지 마세요.
-- 출력은 반드시 JSON 형식으로만 작성하고, 마크다운/코드블록/설명문은 출력하지 마세요.
+- 출력 전체는 반드시 JSON 형식으로만 작성하고, 코드블록이나 JSON 바깥 설명문은 출력하지 마세요.
+- 단, detailed_report 값은 마크다운 문자열로 작성하세요.
 - JSON에는 key_concepts, misconception_summary, session_summary, detailed_report 4개 필드만 포함하세요.
 
 {LANGUAGE_RULE}
@@ -455,11 +473,14 @@ def _build_synthesis_prompt(chunk_summaries: list[str], realtime_context: str = 
 - 교사용 한 줄 요약입니다.
 - 세션 종료 시점 기준의 학습 상태, 확인된 강점, 남은 취약점, 다음 지도 필요성을 80자 이내 1문장으로 작성하세요.
 
-4. detailed_report = AI가 생성하는 줄글 형식 리포트
-- 세션에서 다룬 내용, 학생의 이해 수준, 확인된 장점, 해결된 혼란, 마지막까지 남은 약점, 다음 지도 방향을 자연스러운 하나의 문단으로 작성하세요.
-- 긍정/부정 평가는 파트별 요약의 근거 비율을 반영하세요.
-- 오개념이나 약점이 확인되지 않았다면 "뚜렷한 오개념은 확인되지 않았습니다"라고 작성하세요.
-- 세션 내용의 분량에는 제한이 없습니다. 
+4. detailed_report = 교사용 마크다운 상세 리포트
+- 반드시 마크다운 문자열로 작성하세요. JSON 문자열 안에서 줄바꿈은 \n으로 표현될 수 있습니다.
+- 가능한 한 자세히 작성하되, 파트별 요약에서 확인된 근거를 중심으로 작성하세요.
+- 다음 섹션을 포함하세요: "## 수업 흐름 요약", "## 학생 강점", "## 학생 취약점", "## 이해 변화와 남은 오개념", "## 보완 지도 제안", "## 다음 수업 확인 질문".
+- 학생 강점에는 스스로 정정한 부분, 질문을 통해 드러난 이해, 풀이 전략을 받아들인 흔적을 작성하세요.
+- 학생 취약점에는 세션 종료 시점에도 남은 혼란, 반복 실수, 추가 확인이 필요한 개념을 구체적으로 작성하세요.
+- 보완 지도 제안에는 다음 수업에서 교사가 바로 사용할 수 있는 지도 순서, 예문 유형, 확인 질문을 작성하세요.
+- 오개념이나 약점이 확인되지 않았다면 해당 섹션에 "뚜렷한 오개념은 확인되지 않았습니다"라고 작성하세요.
 - 한자 표기를 사용하지 마세요.
 
 파트별 요약:
@@ -480,11 +501,13 @@ def _build_repair_json_prompt(raw_text: str) -> str:
 - detailed_report: string
 
 규칙:
-- 마크다운, 코드블록, 설명문, 주석은 출력하지 마세요.
+- 코드블록, JSON 바깥 설명문, 주석은 출력하지 마세요.
+- detailed_report 값 안의 마크다운은 유지하거나 생성할 수 있습니다.
 - JSON 객체 하나만 출력하세요.
 - key_concepts는 반드시 객체로 출력하고, 판단하기 어려운 하위 필드는 ["없음"]으로 두세요.
 - misconception_summary가 없거나 판단하기 어려운 경우 ["없음"]으로 두세요.
-- session_summary와 detailed_report가 없으면 주어진 텍스트를 바탕으로 짧게 생성하세요.
+- session_summary가 없으면 주어진 텍스트를 바탕으로 짧게 생성하세요.
+- detailed_report가 없으면 학생별 수업 흐름, 강점, 취약점, 이해 변화, 보완 지도 제안, 다음 확인 질문을 포함한 마크다운 문자열로 생성하세요.
 - 모든 설명은 현대 한국어의 한글 문장으로 작성하세요.
 - 한자, 일본어, 중국어 표기를 절대 사용하지 마세요.
 - 예: "學生", "關係代名詞", "目的格", "主格", "理解", "文法"처럼 쓰지 말고 "학생", "관계대명사", "목적격", "주격", "이해", "문법"처럼 작성하세요.
@@ -505,7 +528,8 @@ def _build_remove_foreign_chars_prompt(report_json: str) -> str:
 - 한자, 일본어, 중국어 표기를 절대 사용하지 마세요.
 - 예: "學生", "關係代名詞", "目的格", "主格", "理解", "文法" 등은 각각 "학생", "관계대명사", "목적격", "주격", "이해", "문법"으로 바꾸세요.
 - 영어 예문과 영어 문법 용어 자체는 유지해도 됩니다.
-- 마크다운, 코드블록, 설명문 없이 JSON 객체만 출력하세요.
+- 코드블록, JSON 바깥 설명문 없이 JSON 객체만 출력하세요.
+- detailed_report 값 안의 마크다운은 유지하세요.
 - JSON에는 key_concepts, misconception_summary, session_summary, detailed_report 4개 필드만 포함하세요.
 
 입력 JSON:
@@ -727,7 +751,7 @@ async def _repair_and_parse_report_json(
         model=REPORT_MODEL,
         messages=[{"role": "user", "content": repair_prompt}],
         temperature=0.0,
-        max_tokens=2048,
+        max_tokens=4096,
     )
 
     repaired_text = response.choices[0].message.content or ""
@@ -737,14 +761,18 @@ async def _repair_and_parse_report_json(
 
 def _fallback_parse_error_report(raw_text: str) -> FinalReport:
     """파싱 및 repair까지 실패했을 때 반환할 fallback 리포트입니다."""
+    preview = raw_text[:1000] if raw_text else "리포트 생성 중 오류가 발생했습니다."
     return FinalReport(
         key_concepts=_default_key_concepts(),
         misconception_summary=["없음"],
         session_summary="리포트 파싱 오류",
         detailed_report=(
-            raw_text[:1000]
-            if raw_text
-            else "리포트 생성 중 오류가 발생했습니다."
+            "## 리포트 생성 상태\n"
+            "리포트 JSON 파싱 중 오류가 발생했습니다.\n\n"
+            "## 원본 응답 일부\n"
+            f"{preview}\n\n"
+            "## 보완 필요 사항\n"
+            "원본 대화 또는 LLM 응답 형식을 확인한 뒤 리포트를 다시 생성하는 것이 좋습니다."
         ),
     )
 
@@ -756,10 +784,17 @@ def _empty_student_report() -> FinalReport:
         misconception_summary=["없음"],
         session_summary="학생 발화 기록 없음",
         detailed_report=(
-            "이번 세션에서 학생의 학습 관련 발화 기록이 충분하지 않아 "
-            "주요 개념, 오개념, 취약점을 판단하기 어렵습니다. "
-            "다음 세션에서는 개념 설명 후 확인 질문이나 짧은 문제 풀이를 통해 "
-            "학생의 이해 상태를 확인하는 것이 좋습니다."
+            "## 수업 흐름 요약\n"
+            "이번 세션에서 학생의 학습 관련 발화 기록이 충분하지 않아 수업 흐름을 판단하기 어렵습니다.\n\n"
+            "## 학생 강점\n"
+            "대화 근거가 부족하여 뚜렷한 강점을 판단하기 어렵습니다.\n\n"
+            "## 학생 취약점\n"
+            "주요 개념, 오개념, 취약점을 판단할 학생 발화가 충분하지 않습니다.\n\n"
+            "## 보완 지도 제안\n"
+            "다음 세션에서는 개념 설명 후 확인 질문이나 짧은 문제 풀이를 통해 학생의 이해 상태를 확인하는 것이 좋습니다.\n\n"
+            "## 다음 수업 확인 질문\n"
+            "- 오늘 배운 개념을 네 말로 한 문장으로 설명해볼래?\n"
+            "- 예문에서 어떤 성분이 빠졌는지 찾아볼래?"
         ),
     )
 
@@ -770,7 +805,12 @@ def _llm_call_failed_report() -> FinalReport:
         key_concepts=_default_key_concepts(),
         misconception_summary=["없음"],
         session_summary="리포트 생성 실패",
-        detailed_report="LLM 호출 중 오류가 발생하여 리포트를 생성하지 못했습니다.",
+        detailed_report=(
+            "## 리포트 생성 상태\n"
+            "LLM 호출 중 오류가 발생하여 학생별 상세 리포트를 생성하지 못했습니다.\n\n"
+            "## 보완 필요 사항\n"
+            "네트워크, API 키, 모델 응답 상태를 확인한 뒤 리포트를 다시 생성하세요."
+        ),
     )
 
 
@@ -881,7 +921,7 @@ async def generate_final_report(
             raw_text = await _call_llm(
                 client=client,
                 prompt=prompt,
-                max_tokens=2048,
+                max_tokens=4096,
                 temperature=0.2,
             )
 
@@ -923,7 +963,7 @@ async def generate_final_report(
             raw_text = await _call_llm(
                 client=client,
                 prompt=synthesis_prompt,
-                max_tokens=2048,
+                max_tokens=4096,
                 temperature=0.2,
             )
 

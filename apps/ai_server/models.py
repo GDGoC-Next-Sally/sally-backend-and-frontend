@@ -83,7 +83,7 @@ class FinalReport(BaseModel):
     )
     detailed_report: str = Field(
         default="",
-        description="AI가 생성한 상세 줄글 리포트"
+        description="AI가 생성한 마크다운 상세 리포트"
     )                    # 전체 수업 자동 생성 총평
 
 
@@ -108,6 +108,10 @@ class SessionAggregateReport(BaseModel):
     weak_concepts_top5: list[str] = Field(
         default_factory=list,
         description="취약개념 TOP 5"
+    )
+    detailed_report: str = Field(
+        default="",
+        description="세션 전체 내용과 반 전체 강점/취약점/보완 방향을 정리한 마크다운 상세 리포트"
     )
 
 

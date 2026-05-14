@@ -1,7 +1,23 @@
 import { redirect } from 'next/navigation';
+import { createClient } from '@/utils/supabase/server';
+import { getProfile } from '@/actions/auth';
 
+export default async function RootPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-export default function RootPage() {
-  // 기본적으로 로그인 페이지로 리다이렉트
-  redirect('/login');
+  if (!user) {
+    redirect('/login');
+  }
+
+  try {
+    const profile = await getProfile();
+    if (profile?.role === 'TEACHER' || profile?.role === 'ADMIN') {
+      redirect('/t/home');
+    } else {
+      redirect('/s/home');
+    }
+  } catch {
+    redirect('/login');
+  }
 }
