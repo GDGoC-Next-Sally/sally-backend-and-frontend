@@ -170,6 +170,7 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
   const fetchGreeting = async (dialog_id: number) => {
     setIsStreaming(true);
     setStreamingContent('');
+    let accumulated = '';
     try {
       const supabase = createClient();
       const { data: { session: authSession } } = await supabase.auth.getSession();
@@ -184,42 +185,52 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
         body: JSON.stringify({ dialog_id }),
       });
 
-      if (!response.body) return;
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let accumulated = '';
+      if (!response.ok || !response.body) {
+        console.error('Greeting request failed:', response.status);
+      } else {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          try {
-            const parsed = JSON.parse(line.slice(6));
-            accumulated += parsed.chunk ?? '';
-            setStreamingContent(accumulated);
-          } catch { /* ignore */ }
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() ?? '';
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            try {
+              const parsed = JSON.parse(line.slice(6));
+              accumulated += parsed.chunk ?? '';
+              setStreamingContent(accumulated);
+            } catch { /* ignore */ }
+          }
         }
-      }
 
-      if (accumulated) {
-        setMessages(prev => [...prev, {
-          id: Date.now(),
-          dialog_id,
-          sender_type: 'AI',
-          content: accumulated,
-          created_at: new Date().toISOString(),
-        }]);
+        if (accumulated) {
+          setMessages(prev => [...prev, {
+            id: Date.now(),
+            dialog_id,
+            sender_type: 'AI',
+            content: accumulated,
+            created_at: new Date().toISOString(),
+          }]);
+        }
       }
     } catch (err) {
       console.error('Greeting error:', err);
     } finally {
       setStreamingContent('');
       setIsStreaming(false);
+      // SSE 파싱 실패 폴백: DB에서 직접 로드
+      if (!accumulated) {
+        try {
+          await new Promise(r => setTimeout(r, 800));
+          const saved = await getMessages(dialog_id);
+          if (saved.length > 0) setMessages(saved);
+        } catch { /* ignore */ }
+      }
     }
   };
 

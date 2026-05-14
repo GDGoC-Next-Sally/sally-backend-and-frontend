@@ -1,9 +1,6 @@
 .overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background-color: rgba(0, 0, 0, 0.55);
   display: flex;
   justify-content: center;
@@ -12,37 +9,47 @@
 }
 
 .modal {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   border-radius: 16px;
   width: 100%;
-  max-width: 440px;
-  padding: 24px;
+  max-width: 460px;
+  padding: 28px 24px 24px;
   position: relative;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.14);
 }
 
 .closeBtn {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 18px;
+  right: 18px;
   background: none;
   border: none;
-  color: #6B6B6B;
+  color: #6b6b6b;
   cursor: pointer;
   padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
 }
 
 .closeBtn:hover {
-  color: #1A1A1A;
+  color: #1a1a1a;
+  background-color: #f5f4f2;
 }
 
 .title {
   text-align: center;
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
-  color: #1A1A1A;
-  margin-bottom: 28px;
+  color: #1a1a1a;
+  margin: 0 0 20px;
   line-height: 1.4;
+}
+
+.separator {
+  height: 1px;
+  background-color: #ebebea;
+  margin-bottom: 16px;
 }
 
 .infoRow {
@@ -55,27 +62,26 @@
 .sessionTitle {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
-  color: #1A1A1A;
+  color: #1a1a1a;
   line-height: 1.5;
 }
 
 .badge {
-  background-color: #FDF0ED;
-  color: #E8593C;
-  padding: 4px 8px;
+  background-color: #ffecec;
+  color: #ff7979;
+  padding: 2px 8px;
   border-radius: 4px;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
+  flex-shrink: 0;
 }
 
 .metaRow {
   display: flex;
   gap: 16px;
   font-size: var(--font-size-sm);
-  color: #6B6B6B;
+  color: #6b6b6b;
   margin-bottom: 24px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid #EBEBEA;
 }
 
 .metaItem {
@@ -84,64 +90,63 @@
   gap: 4px;
 }
 
+/* ── Stats ─────────────────────────────────────────────── */
+
 .statsGrid {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 32px;
-  padding-bottom: 32px;
-  border-bottom: 1px solid #EBEBEA;
+  margin-bottom: 20px;
 }
 
 .statItem {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex: 1;
 }
 
 .statTitle {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
-  color: #1A1A1A;
+  color: #1a1a1a;
 }
 
 .statSub {
   font-size: var(--font-size-sm);
-  color: #6B6B6B;
+  color: #6b6b6b;
+  text-align: center;
 }
 
+/* Donut */
 .donutWrapper {
   position: relative;
   width: 72px;
   height: 72px;
 }
 
-.donutCircle {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 6px solid #EBEBEA;
-  border-top-color: var(--color-live);
-  border-right-color: var(--color-live);
-  border-bottom-color: var(--color-live);
-  transform: rotate(-45deg);
+.donutSvg {
+  display: block;
 }
 
 .donutText {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
-  color: #1A1A1A;
+  color: #1a1a1a;
 }
 
 .donutSmall {
   font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  margin-left: 1px;
 }
 
+/* Text stat (개입 필요) */
 .textStat {
   width: 72px;
   height: 72px;
@@ -150,32 +155,16 @@
   align-items: center;
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
-  color: #1A1A1A;
+  color: #1a1a1a;
 }
 
 .textStatSmall {
   font-size: var(--font-size-md);
+  font-weight: var(--font-weight-regular);
   margin-left: 2px;
 }
 
-.insights {
-  margin-bottom: 32px;
-}
-
-.insightsTitle {
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-bold);
-  color: #1A1A1A;
-  margin-bottom: 12px;
-}
-
-.insightsList {
-  margin: 0;
-  padding-left: 16px;
-  font-size: var(--font-size-sm);
-  color: #6B6B6B;
-  line-height: 1.6;
-}
+/* ── Footer ────────────────────────────────────────────── */
 
 .footer {
   display: flex;
@@ -183,28 +172,31 @@
 }
 
 .cancelBtn,
-.nextBtn {
+.confirmBtn {
   flex: 1;
-  height: 40px;
-  padding: 12px 24px;
+  height: 44px;
   border-radius: 8px;
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
+  border: none;
 }
 
 .cancelBtn {
-  background-color: #F5F4F0;
-  border: 1px solid #E0DED8;
-  color: #6B6B6B;
+  background-color: #f5f4f0;
+  border: 1.5px solid #e0ded8;
+  color: #6b6b6b;
 }
 
-.nextBtn {
-  background-color: #E8593C;
-  border: none;
-  color: white;
+.cancelBtn:hover {
+  background-color: #ebebea;
 }
 
-.nextBtn:hover {
-  background-color: #CF4E35;
+.confirmBtn {
+  background-color: #22c55e;
+  color: #ffffff;
+}
+
+.confirmBtn:hover {
+  background-color: #16a34a;
 }

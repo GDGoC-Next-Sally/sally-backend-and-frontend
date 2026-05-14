@@ -99,9 +99,16 @@
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 24px;
+  align-items: stretch;
 }
 
 .leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.rightColumn {
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -277,52 +284,68 @@
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  flex: 1;
 }
 
 .quickLinksGrid {
   display: flex;
-  gap: 24px;
+  align-items: center;
   margin-top: 16px;
+}
+
+.quickLinkWrapper {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
 }
 
 .quickLinkItem {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+  flex: 1;
+  padding: 4px 0;
+  transition: opacity 0.15s;
+}
+
+.quickLinkItem:hover {
+  opacity: 0.75;
 }
 
 .quickLinkIcon {
-  width: 40px;
-  height: 40px;
+  width: 46px;
+  height: 46px;
   border-radius: 9999px;
-  background-color: var(--color-border-light);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background-color: #d9d9d9;
   flex-shrink: 0;
-  overflow: hidden;
+}
+
+.quickDivider {
+  width: 1px;
+  height: 56px;
+  background-color: var(--color-border-light);
+  flex-shrink: 0;
+  margin: 0 24px;
 }
 
 .quickLinkText {
   display: flex;
   flex-direction: column;
+  gap: 4px;
+  min-width: 0;
 }
 
 .quickLinkTitle {
   font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
+  white-space: nowrap;
 }
 
 .quickLinkSub {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-md);
   color: var(--color-text-secondary);
-}
-
-.rightColumn {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
 }
 
 .classCard {

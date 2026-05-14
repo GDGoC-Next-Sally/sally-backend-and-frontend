@@ -21,7 +21,7 @@ interface RawStudentReport {
   id: number;
   session_id: number;
   student_id: string;
-  report: {
+  content: {
     key_concepts?: { main_concepts?: string[]; weak_concepts?: string[] };
     misconception_summary?: string[];
     session_summary?: string;
@@ -31,11 +31,14 @@ interface RawStudentReport {
   users?: { id: string; name: string; email: string };
 }
 
-interface RawSummaryReport {
-  top_weak_concepts?: string[];
-  key_questions?: Array<string | { topic?: string; question: string }>;
-  overall_summary?: string;
-  ai_report?: string;
+interface RawSessionReport {
+  session_id: number;
+  content: {
+    top_weak_concepts?: string[];
+    key_questions?: Array<string | { topic?: string; question: string }>;
+    overall_summary?: string;
+    ai_report?: string;
+  } | null;
 }
 
 interface SessionEntry {
@@ -54,13 +57,14 @@ function parseQuestion(raw: string | { topic?: string; question: string }): KeyQ
   return { question: raw };
 }
 
-function toSummaryReportData(raw: RawSummaryReport | null): SummaryReportData | null {
-  if (!raw) return null;
+function toSummaryReportData(raw: RawSessionReport | null): SummaryReportData | null {
+  if (!raw?.content) return null;
+  const c = raw.content;
   return {
-    overallSummary: raw.overall_summary ?? '',
-    keyQuestions: (raw.key_questions ?? []).map(parseQuestion),
-    topWeakConcepts: raw.top_weak_concepts ?? [],
-    aiReport: raw.ai_report ?? '',
+    overallSummary: c.overall_summary ?? '',
+    keyQuestions: (c.key_questions ?? []).map(parseQuestion),
+    topWeakConcepts: c.top_weak_concepts ?? [],
+    aiReport: c.ai_report ?? '',
   };
 }
 
@@ -80,7 +84,7 @@ function toStudentDetailData(
   sr: RawStudentReport,
   sessionInfo: SessionEntry | null,
 ): StudentDetailData {
-  const r = sr.report;
+  const r = sr.content;
   const weakConcepts = r?.key_concepts?.weak_concepts?.filter(c => c !== '없음') ?? [];
   const misconceptions = r?.misconception_summary?.filter(c => c !== '없음') ?? [];
   const mainConcepts = r?.key_concepts?.main_concepts?.filter(c => c !== '없음') ?? [];
@@ -114,7 +118,7 @@ export default function TeacherReportsPage() {
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
   const [rawStudentReports, setRawStudentReports] = useState<RawStudentReport[]>([]);
-  const [rawSummary, setRawSummary] = useState<RawSummaryReport | null>(null);
+  const [rawSummary, setRawSummary] = useState<RawSessionReport | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingReport, setIsLoadingReport] = useState(false);
   const [activeTab, setActiveTab] = useState<'summary' | 'students'>('summary');
@@ -160,7 +164,7 @@ export default function TeacherReportsPage() {
     ])
       .then(([students, summary]) => {
         setRawStudentReports(students as RawStudentReport[]);
-        setRawSummary(summary as RawSummaryReport);
+        setRawSummary(summary as RawSessionReport);
       })
       .catch(() => {
         setRawStudentReports([]);

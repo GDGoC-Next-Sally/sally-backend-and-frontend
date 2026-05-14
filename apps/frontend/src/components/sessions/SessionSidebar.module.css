@@ -7,6 +7,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
+  min-height: 0;
   gap: 16px;
   overflow: hidden;
 }
@@ -173,35 +174,12 @@
   text-overflow: ellipsis;
 }
 
-.itemActions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.statusDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
   flex-shrink: 0;
-}
-
-.progressBadge {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: #22cb84;
-  background: #e5f9f0;
-  border-radius: var(--radius-pill);
-  padding: 2px 8px;
-  white-space: nowrap;
-}
-
-.moreBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 2px;
-  display: flex;
-  align-items: center;
-  border-radius: 4px;
-}
-
-.moreBtn:hover {
-  background: #f3f4f6;
+  transition: background-color 0.3s ease;
 }
 
 .summaryText {

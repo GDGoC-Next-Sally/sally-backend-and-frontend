@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Download, Search, ChevronLeft } from 'lucide-react';
+import { Download, Search, ChevronLeft, BookOpen, Lightbulb, Smile, MessageSquare } from 'lucide-react';
 import styles from './TeacherReport.module.css';
+import { ReportExportModal } from './ReportExportModal';
 
 /* ─────────────────────────────────────────── Types ── */
 
@@ -403,30 +404,39 @@ function StudentDetailView({
           <div className={styles.detailStats}>
             <div className={styles.detailStat}>
               <span className={styles.statLabel}>참여도</span>
-              <span className={styles.statValue}>
-                {student.participation > 0 ? `${student.participation}%` : '—'}
-              </span>
+              <div className={styles.statValueRow}>
+                <BookOpen size={24} strokeWidth={1.5} color="#626664" />
+                <span className={styles.statNum}>
+                  {student.participation > 0 ? `${student.participation}%` : '—'}
+                </span>
+              </div>
             </div>
-            <div className={styles.detailStatDivider} />
             <div className={styles.detailStat}>
               <span className={styles.statLabel}>이해도</span>
-              <span className={styles.statValue}>
-                {student.comprehension > 0 ? `${student.comprehension}%` : '—'}
-              </span>
+              <div className={styles.statValueRow}>
+                <Lightbulb size={24} strokeWidth={1.5} color="#626664" />
+                <span className={styles.statNum}>
+                  {student.comprehension > 0 ? `${student.comprehension}%` : '—'}
+                </span>
+              </div>
             </div>
-            <div className={styles.detailStatDivider} />
             <div className={styles.detailStat}>
               <span className={styles.statLabel}>주요 감정</span>
-              <span className={styles.statValue}>
-                {student.mainEmotion && student.mainEmotion !== '—'
-                  ? student.mainEmotion
-                  : '—'}
-              </span>
+              <div className={styles.statValueRow}>
+                <Smile size={24} strokeWidth={1.5} color="#626664" />
+                <span className={styles.statNum}>
+                  {student.mainEmotion && student.mainEmotion !== '—' ? student.mainEmotion : '—'}
+                </span>
+              </div>
             </div>
-            <div className={styles.detailStatDivider} />
             <div className={styles.detailStat}>
               <span className={styles.statLabel}>개입 횟수</span>
-              <span className={styles.statValue}>{student.interventionCount}회</span>
+              <div className={styles.statValueRow}>
+                <MessageSquare size={24} strokeWidth={1.5} color="#626664" />
+                <span className={styles.statNum}>
+                  {student.interventionCount > 0 ? `${student.interventionCount}회` : '—'}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -436,9 +446,11 @@ function StudentDetailView({
       <div className={styles.twoColDetail}>
         {/* 학습 주제 + 타임라인 + AI 상태요약 */}
         <div className={styles.card}>
-          <div className={styles.sectionRow}>
-            <span className={styles.sectionTitle}>학습 주제</span>
-            <span className={styles.learningTopicText}>{student.learningTopic || '—'}</span>
+          <div>
+            <div className={styles.sectionHeader}>
+              <span className={styles.sectionTitle}>학습 주제</span>
+            </div>
+            <p className={styles.learningTopicText}>{student.learningTopic || '—'}</p>
           </div>
 
           <div className={styles.timelineSectionHeader}>
@@ -496,7 +508,7 @@ function StudentDetailView({
         </div>
         {student.aiReport ? (
           <>
-            <p className={`${styles.bodyText} ${reportExpanded ? '' : styles.clampText}`}>
+            <p className={`${styles.reportText} ${reportExpanded ? '' : styles.clampText}`}>
               {student.aiReport}
             </p>
             <button
@@ -535,12 +547,16 @@ export function TeacherReport({
   onSearchChange,
   onExport,
 }: TeacherReportProps) {
+  const [isExportOpen, setIsExportOpen] = useState(false);
+
   return (
     <div className={styles.page}>
+      {isExportOpen && <ReportExportModal onClose={() => setIsExportOpen(false)} />}
+
       {/* 헤더 */}
       <div className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>AI 분석 리포트</h1>
-        <button className={styles.exportBtn} onClick={onExport}>
+        <button className={styles.exportBtn} onClick={() => { onExport?.(); setIsExportOpen(true); }}>
           내보내기
           <Download size={16} strokeWidth={2} />
         </button>

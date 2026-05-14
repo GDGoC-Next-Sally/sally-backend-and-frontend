@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronRight as ChevronRightIcon, Calendar, Clock, Bell, Activity, BookOpen, LayoutGrid } from 'lucide-react';
+import { ChevronRight as ChevronRightIcon, Calendar, Clock, Sparkles } from 'lucide-react';
 import styles from './StudentDashboard.module.css';
 import type { RecentSessionInfo, TodayClassData } from '@/app/s/home/page';
 import { computeSessionStatus } from '@/utils/sessionStatus';
@@ -23,16 +23,28 @@ interface StudentDashboardProps {
   recentSessions?: RecentSessionInfo[];
 }
 
-const FEEDBACK_ITEMS = [
-  '영어 수업 참여도가 지난주보다 12% 향상되었어요.',
-  '수학 퀴즈 정답률이 평균보다 낮아요. 복습이 필요해요.',
-  '국어 토론 참여 빈도가 꾸준히 증가하고 있어요.',
+const AI_FEEDBACK_ITEMS = [
+  {
+    category: '내가 막힌 부분',
+    title: '영어 지문에서 핵심 문장을 찾는 과정에서 오답률이 높아요.',
+    desc: '특히 문맥 속 단어 의미와 글의 흐름을 연결하는 유형에서 어려움을 겪고 있어요.',
+  },
+  {
+    category: '신경쓰면 좋을 점',
+    title: '문장의 구조를 먼저 나누어 읽는 습관을 들여보세요.',
+    desc: '접속사와 대명사의 연결 관계를 체크하면 독해 정확도가 더 올라갈 거예요.',
+  },
+  {
+    category: '잘하고 있는 점',
+    title: '꾸준히 지문을 끝까지 읽어내는 집중력이 정말 좋아졌어요!',
+    desc: '조금만 더 자신감을 가지면 영어 독해 실력이 훨씬 빠르게 성장할 거예요 🙂',
+  },
 ];
 
-const PROGRESS_ALERTS = [
-  { count: '78%', desc: '지난주 대비 6%p 상승했어요.' },
-  { count: '82%', desc: '영어 단어 퀴즈 정답률이 많이 올랐어요.' },
-  { count: '100%', desc: '이번 주 과제를 모두 제출했어요!' },
+const QUICK_LINKS = [
+  { label: '내 클래스 관리', sub: '클래스 및 학생 관리', href: '/s/classes' },
+  { label: '학습 리포트', sub: '성장추이와 집중 분석보기', href: '/s/reports' },
+  { label: '학습 아카이브', sub: '지난 수업 기록과 대화 확인', href: '/s/classes' },
 ];
 
 /* ── 상태별 설정 맵 ──────────────────────────────────────── */
@@ -102,48 +114,46 @@ function StudentTodayClassContent({ todayClass }: { todayClass?: TodayClassData 
   );
 }
 
-export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classes, todayClass, recentSessions = [] }) => {
+export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classes: _classes, todayClass, recentSessions = [] }) => {
   const router = useRouter();
-  const [alertIdx, setAlertIdx] = useState(0);
-
-  useEffect(() => {
-    const t = setInterval(() => setAlertIdx((i) => (i + 1) % PROGRESS_ALERTS.length), 5000);
-    return () => clearInterval(t);
-  }, []);
-
-  const progressAlert = PROGRESS_ALERTS[alertIdx];
 
   return (
     <div className={styles.container}>
       <div className={styles.topSection}>
         <div className={styles.topCard}>
           <div className={styles.topCardContent}>
-            <div className={styles.iconCircle}>
-              <Bell size={20} color="#10b981" />
-            </div>
             <div>
-              <h3 className={styles.cardTitle}>공지사항</h3>
-              <p className={styles.cardSubtitle}>3월 학습 리포트 업데이트 안내<br />새로운 분석 항목이 추가되었어요.</p>
+              <div className={styles.topCardRow}>
+                <h3 className={styles.cardTitle}>공지사항</h3>
+                <a href="#" className={styles.moreLink}>더보기 &gt;</a>
+              </div>
+              <p className={styles.cardSubtitle}>3월 학습 리포트 업데이트 안내</p>
+              <p className={styles.cardDate}>새로운 분석 항목이 추가되었어요.</p>
             </div>
           </div>
-          <div>
-            <a href="#" className={styles.moreLink}>더보기 &gt;</a>
-            <p className={styles.cardDate}>2026.03.04</p>
-          </div>
+          <p className={styles.noticeDate}>2026.03.04</p>
         </div>
 
         <div className={styles.topCard}>
-          <div className={styles.topCardContent}>
-            <div className={styles.iconCircle}>
-              <Activity size={20} color="#10b981" />
-            </div>
+          <div className={styles.progressCardContent}>
             <div>
-              <h3 className={styles.cardTitle}>나의 학습 진도 <span className={styles.highlightCount}>{progressAlert.count}</span></h3>
-              <p className={styles.cardSubtitle}>{progressAlert.desc}</p>
+              <div className={styles.progressNumRow}>
+                <span className={styles.progressNum}>78</span>
+                <span className={styles.progressUnit}>%</span>
+              </div>
+              <div className={styles.progressMeta}>
+                <span className={styles.progressLabel}>지난주 대비</span>
+                <span className={styles.progressDelta}>▲ 6%p</span>
+              </div>
             </div>
-          </div>
-          <div className={styles.dotRow}>
-            {PROGRESS_ALERTS.map((_, i) => <span key={i} className={i === alertIdx ? styles.dotActive : styles.dot} />)}
+            <div className={styles.progressRing}>
+              <svg width="56" height="56" viewBox="0 0 56 56">
+                <circle cx="28" cy="28" r="22" fill="none" stroke="#EBEBEA" strokeWidth="6" />
+                <circle cx="28" cy="28" r="22" fill="none" stroke="#22CB84" strokeWidth="6"
+                  strokeDasharray={`${2 * Math.PI * 22 * 0.78} ${2 * Math.PI * 22}`}
+                  strokeLinecap="round" transform="rotate(-90 28 28)" />
+              </svg>
+            </div>
           </div>
         </div>
       </div>
@@ -153,89 +163,47 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classe
           <div className={styles.aiInsightCard}>
             <div className={styles.sectionHeader}>
               <div>
-                <h2 className={styles.sectionTitle}>주간 AI 인사이트 요약</h2>
-                <p className={styles.sectionSubtitle}>최근 7일간 나의 학습 데이터를 분석했어요.</p>
+                <h2 className={styles.sectionTitle}>AI 학습 피드백 요약</h2>
+                <p className={styles.sectionSubtitle}>최근 학습 데이터를 분석했어요.</p>
               </div>
-              <button className={styles.reportBtn} onClick={() => router.push('/s/reports')}>전체 분석 리포트로 이동 &gt;</button>
+              <button className={styles.detailBtn} onClick={() => router.push('/s/reports')}>
+                상세보기 <ChevronRight />
+              </button>
             </div>
 
-            <div className={styles.aiContent}>
-              <div className={styles.chartArea}>
-                <h3 className={styles.chartTitle}>나의 종합 참여도</h3>
-                <div className={styles.donutWrapper}>
-                  <div className={styles.donutCircle}></div>
-                  <div className={styles.donutText}>78<span className={styles.donutSmall}>%</span></div>
-                </div>
-                <div className={styles.chartFooter}></div>
-              </div>
-
-              <div className={styles.listsArea}>
-                <div>
-                  <h3 className={styles.listTitle}>이번 주 피드백</h3>
-                  {FEEDBACK_ITEMS.map((item, i) => (
-                    <div className={styles.listItem} key={i}>
-                      <span className={styles.listRank}>{i + 1}</span>
-                      <span className={styles.listName}>{item}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div style={{ marginTop: '16px' }}>
-                  <h3 className={styles.listTitle}>도움이 필요한 과목 Top 3</h3>
-                  <div className={styles.listItem}>
-                    <span className={styles.listRank}>1</span>
-                    <span className={styles.listName}>수학</span>
-                    <span className={styles.listReason}>퀴즈 정답률 낮음</span>
-                    <span className={styles.badge}>관심필요</span>
+            <div className={styles.feedbackList}>
+              {AI_FEEDBACK_ITEMS.map((item, i) => (
+                <div className={styles.feedbackCard} key={i}>
+                  <div className={styles.feedbackIcon}>
+                    <Sparkles size={28} color="#22CB84" strokeWidth={1.5} />
                   </div>
-                  <div className={styles.listItem}>
-                    <span className={styles.listRank}>2</span>
-                    <span className={styles.listName}>과학</span>
-                    <span className={styles.listReason}>실험 보고서 미제출</span>
-                    <span className={styles.badge}>관심필요</span>
-                  </div>
-                  <div className={styles.listItem}>
-                    <span className={styles.listRank}>3</span>
-                    <span className={styles.listName}>역사</span>
-                    <span className={styles.listReason}>참여도 저조</span>
-                    <span className={styles.badge}>관심필요</span>
+                  <div className={styles.feedbackBody}>
+                    <span className={styles.feedbackCategory}>{item.category}</span>
+                    <p className={styles.feedbackTitle}>{item.title}</p>
+                    <p className={styles.feedbackDesc}>{item.desc}</p>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
 
           <div className={styles.quickLinksCard}>
             <h3 className={styles.listTitle}>바로가기</h3>
             <div className={styles.quickLinksGrid}>
-              {classes.slice(0, 5).map((cls) => (
-                <Link href={`/s/classes/${cls.id}`} key={cls.id} style={{ textDecoration: 'none' }}>
-                  <div className={styles.quickLinkItem}>
-                    <div className={styles.quickLinkIcon}>
-                      <BookOpen size={20} color="#10b981" />
+              {QUICK_LINKS.map((link, i) => (
+                <React.Fragment key={link.label}>
+                  <Link href={link.href} style={{ textDecoration: 'none' }}>
+                    <div className={styles.quickLinkItem}>
+                      <div className={styles.quickLinkIcon} />
+                      <div className={styles.quickLinkText}>
+                        <span className={styles.quickLinkTitle}>{link.label}</span>
+                        <span className={styles.quickLinkSub}>{link.sub}</span>
+                      </div>
                     </div>
-                    <div className={styles.quickLinkText}>
-                      <span className={styles.quickLinkTitle}>{cls.subject}</span>
-                      <span className={styles.quickLinkSub}>
-                        {cls.grade ? `${cls.grade}학년 ` : ''}{cls.homeroom ?? ''}
-                      </span>
-                    </div>
-                  </div>
-                </Link>
+                  </Link>
+                  {i < QUICK_LINKS.length - 1 && <div className={styles.quickDivider} />}
+                </React.Fragment>
               ))}
-              {classes.length === 0 && (
-                <Link href="/s/classes" style={{ textDecoration: 'none' }}>
-                  <div className={styles.quickLinkItem}>
-                    <div className={styles.quickLinkIcon}>
-                      <LayoutGrid size={20} color="#64748b" />
-                    </div>
-                    <div className={styles.quickLinkText}>
-                      <span className={styles.quickLinkTitle}>클래스 참여하기</span>
-                      <span className={styles.quickLinkSub}>초대 코드로 입장</span>
-                    </div>
-                  </div>
-                </Link>
-              )}
             </div>
           </div>
         </div>

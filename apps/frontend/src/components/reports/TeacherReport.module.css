@@ -192,10 +192,9 @@
   margin-bottom: 16px;
 }
 
-/* t-card: 18px / 600 — 카드 제목, 그룹 헤더 */
 .sectionTitle {
   font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-bold);
   color: #151E1E;
 }
 
@@ -216,10 +215,9 @@
   margin-bottom: 4px;
 }
 
-/* t-body: 14px / 400 */
 .learningTopicText {
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   color: #626664;
 }
 
@@ -239,29 +237,35 @@
 
 /* ── AI 표시 ──────────────────────────────────────────────────────────────── */
 
-/* t-caption-strong: 12px / 600 */
 .aiSummaryTitle {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: var(--font-size-sm);
+  gap: 8px;
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
-  color: #151E1E;
-  margin-bottom: 10px;
+  color: #626664;
+  margin-bottom: 8px;
 }
 
 .aiStar {
   color: #22CB84;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-lg);
   line-height: 1;
   flex-shrink: 0;
 }
 
 /* ── 텍스트 ───────────────────────────────────────────────────────────────── */
 
-/* t-body: 14px / 400 */
 .bodyText {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-regular);
+  color: #797C7C;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.reportText {
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-regular);
   color: #626664;
   line-height: 1.7;
@@ -275,9 +279,8 @@
   overflow: hidden;
 }
 
-/* t-caption: 12px / 400 */
 .empty {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-regular);
   color: #626664;
   padding: 12px 0;
@@ -354,7 +357,7 @@
 .weakList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .weakItem {
@@ -363,14 +366,13 @@
   gap: 12px;
 }
 
-/* 순위 원형 — Pill(9999px) */
 .weakRank {
-  width: 28px;
-  height: 28px;
-  border-radius: 9999px;
-  background: #DBDDED;
-  color: #626664;
-  font-size: var(--font-size-sm);
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #E0F5EB;
+  color: #22CB84;
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   display: flex;
   align-items: center;
@@ -379,15 +381,14 @@
 }
 
 .weakRankTop {
-  background: #22CB84;
-  color: #FFFFFF;
+  background: #E0F5EB;
+  color: #22CB84;
 }
 
-/* t-body: 14px / 400 */
 .weakLabel {
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-regular);
-  color: #151E1E;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: #626664;
 }
 
 /* ── 학생 테이블 ──────────────────────────────────────────────────────────── */
@@ -530,19 +531,15 @@
 .detailHeader {
   display: flex;
   align-items: center;
-  gap: 32px;
-  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .detailProfile {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex: 1;
-  min-width: 180px;
+  gap: 24px;
 }
 
-/* Avatar: 9999px */
 .detailAvatar {
   width: 56px;
   height: 56px;
@@ -551,17 +548,15 @@
   flex-shrink: 0;
 }
 
-/* t-section: 22px / 700 */
 .detailName {
-  font-size: var(--font-size-2xl);
+  font-size: 20px;
   font-weight: var(--font-weight-bold);
   color: #151E1E;
 }
 
-/* t-caption: 12px / 400 */
 .detailClass {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   color: #626664;
   margin-top: 4px;
 }
@@ -569,6 +564,7 @@
 .detailStats {
   display: flex;
   align-items: center;
+  gap: 70px;
 }
 
 .detailStat {
@@ -576,27 +572,23 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 0 24px;
 }
 
-.detailStatDivider {
-  width: 1px;
-  height: 40px;
-  background: #DBDDED;
-  flex-shrink: 0;
-}
-
-/* t-caption: 12px / 400 */
 .statLabel {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   color: #626664;
   white-space: nowrap;
 }
 
-/* t-display: 32px / 700 — 통계 숫자 */
-.statValue {
-  font-size: var(--font-size-display);
+.statValueRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statNum {
+  font-size: 24px;
   font-weight: var(--font-weight-bold);
   color: #151E1E;
   line-height: 1;
@@ -725,16 +717,16 @@
 /* ── AI 요약/약점 박스 ────────────────────────────────────────────────────── */
 
 .aiStatusBox {
-  margin-top: 20px;
-  padding: 16px;
-  background: #E9F7F0;
+  margin-top: 16px;
+  padding: 18px 24px;
+  background: #F5F6F8;
   border-radius: 8px;
 }
 
 .aiWeaknessBox {
-  margin-top: 20px;
-  padding: 16px;
-  background: #E9F7F0;
+  margin-top: 16px;
+  padding: 18px 24px;
+  background: #F5F6F8;
   border-radius: 8px;
 }
 
