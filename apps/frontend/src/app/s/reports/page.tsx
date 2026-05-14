@@ -11,6 +11,7 @@ export default function StudentReportsPage() {
   const [sessions, setSessions] = useState<SessionListItem[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
   const [report, setReport] = useState<StudentReportContent | null>(null);
+  const [dialogId, setDialogId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingReport, setIsLoadingReport] = useState(false);
 
@@ -28,13 +29,31 @@ export default function StudentReportsPage() {
     if (!selectedSessionId) return;
     setIsLoadingReport(true);
     setReport(null);
-    getStudentSessionReport(selectedSessionId)
-      .then(r => {
-        const raw = r as { content?: StudentReportContent } | null;
-        setReport(raw?.content ?? null);
-      })
-      .catch(() => setReport(null))
-      .finally(() => setIsLoadingReport(false));
+    setDialogId(null);
+
+    const fetchReport = () =>
+      getStudentSessionReport(selectedSessionId)
+        .then(r => {
+          const raw = r as { content?: StudentReportContent; dialog_id?: number } | null;
+          const content = raw?.content ?? null;
+          setReport(content);
+          if (raw?.dialog_id) setDialogId(raw.dialog_id);
+          return content;
+        })
+        .catch(() => { setReport(null); return null; });
+
+    let intervalId: ReturnType<typeof setInterval>;
+
+    fetchReport().then(content => {
+      setIsLoadingReport(false);
+      if (!content) {
+        intervalId = setInterval(() => {
+          fetchReport().then(c => { if (c) clearInterval(intervalId); });
+        }, 5000);
+      }
+    });
+
+    return () => clearInterval(intervalId);
   }, [selectedSessionId]);
 
   return (
@@ -43,6 +62,7 @@ export default function StudentReportsPage() {
         sessions={sessions}
         selectedSessionId={selectedSessionId}
         report={report}
+        dialogId={dialogId}
         isLoading={isLoading || isLoadingReport}
         studentName={user?.name ?? ''}
         onSessionChange={setSelectedSessionId}

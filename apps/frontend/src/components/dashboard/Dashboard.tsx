@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronRight as ChevronRightIcon, Calendar, Clock, User, Users, Bell, BookOpen, LayoutGrid } from 'lucide-react';
+import { ChevronRight as ChevronRightIcon, Calendar, Clock, User, Users, Bell, BookOpen, LayoutGrid, BarChart2, Archive, Video, GraduationCap } from 'lucide-react';
 import styles from './Dashboard.module.css';
 import type { RecentSessionInfo } from '@/app/t/home/page';
 import { computeSessionStatus } from '@/utils/sessionStatus';
@@ -194,7 +194,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass, recen
                 <h2 className={styles.sectionTitle}>주간 AI 인사이트 요약</h2>
                 <p className={styles.sectionSubtitle}>최근 7일간 우리 반 학습 데이터를 분석했어요.</p>
               </div>
-              <button className={styles.reportBtn}>전체 분석 리포트로 이동 <ChevronRightIcon size={14} /></button>
+              <button className={styles.reportBtn} onClick={() => router.push('/t/reports')}>전체 분석 리포트로 이동 <ChevronRightIcon size={14} /></button>
             </div>
 
             <div className={styles.aiContent}>
@@ -262,15 +262,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass, recen
             <h3 className={styles.listTitle}>바로가기</h3>
             <div className={styles.quickLinksGrid}>
               {[
-                { href: '/t/classes', title: '내 클래스 관리', sub: '클래스 및 학생 관리' },
-                { href: '/t/reports', title: '학습 리포트', sub: '성장추이와 집중 분석보기' },
-                { href: '/t/classes', title: '학습 아카이브', sub: '지난 수업 기록과 대화 확인' },
-                { href: '/t/classes', title: '수업 세션', sub: '세션 생성 및 관리' },
+                { href: '/t/classes', title: '내 클래스 관리', sub: '클래스 및 학생 관리', icon: <Users size={20} color="#22C55E" strokeWidth={1.5} /> },
+                { href: '/t/reports', title: '학습 리포트', sub: '성장추이와 집중 분석보기', icon: <BarChart2 size={20} color="#22C55E" strokeWidth={1.5} /> },
+                { href: '/t/classes', title: '학습 아카이브', sub: '지난 수업 기록과 대화 확인', icon: <Archive size={20} color="#22C55E" strokeWidth={1.5} /> },
+                { href: '/t/classes', title: '수업 세션', sub: '세션 생성 및 관리', icon: <Video size={20} color="#22C55E" strokeWidth={1.5} /> },
               ].map((item, i, arr) => (
                 <div key={item.title} className={styles.quickLinkWrapper}>
                   <Link href={item.href} style={{ textDecoration: 'none' }}>
                     <div className={styles.quickLinkItem}>
-                      <div className={styles.quickLinkIcon} />
+                      <div className={styles.quickLinkIcon}>{item.icon}</div>
                       <div className={styles.quickLinkText}>
                         <span className={styles.quickLinkTitle}>{item.title}</span>
                         <span className={styles.quickLinkSub}>{item.sub}</span>
@@ -291,7 +291,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass, recen
                 <h2 className={styles.sectionTitle}>오늘의 클래스</h2>
                 <p className={styles.sectionSubtitle}>실시간 현황 및 예정 수업</p>
               </div>
-              <span className={styles.classDate}>5월 8일 목요일</span>
             </div>
             <TodayClassContent todayClass={todayClass} />
           </div>
@@ -312,7 +311,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass, recen
                     style={{ cursor: 'pointer' }}
                     onClick={() => router.push(`/t/classes/${item.classId}/sessions/${item.id}`)}
                   >
-                    <div className={styles.recentAvatar} />
+                    <div className={styles.recentAvatar}><GraduationCap size={18} color="#22C55E" strokeWidth={1.5} /></div>
                     <div className={styles.recentInfo}>
                       <div className={styles.recentTitle}>{item.sessionName}</div>
                       <div className={styles.recentTeacher}>

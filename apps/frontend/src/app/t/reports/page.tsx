@@ -158,19 +158,35 @@ export default function TeacherReportsPage() {
     if (!selectedSessionId) return;
     setIsLoadingReport(true);
     setSelectedRaw(null);
-    Promise.all([
-      getSessionStudentReports(selectedSessionId),
-      getSessionSummaryReport(selectedSessionId),
-    ])
-      .then(([students, summary]) => {
-        setRawStudentReports(students as RawStudentReport[]);
-        setRawSummary(summary as RawSessionReport);
-      })
-      .catch(() => {
-        setRawStudentReports([]);
-        setRawSummary(null);
-      })
-      .finally(() => setIsLoadingReport(false));
+
+    const fetchReports = () =>
+      Promise.all([
+        getSessionStudentReports(selectedSessionId),
+        getSessionSummaryReport(selectedSessionId),
+      ])
+        .then(([students, summary]) => {
+          setRawStudentReports(students as RawStudentReport[]);
+          setRawSummary(summary as RawSessionReport);
+          return summary as RawSessionReport;
+        })
+        .catch(() => {
+          setRawStudentReports([]);
+          setRawSummary(null);
+          return null;
+        });
+
+    let intervalId: ReturnType<typeof setInterval>;
+
+    fetchReports().then(summary => {
+      setIsLoadingReport(false);
+      if (!summary?.content) {
+        intervalId = setInterval(() => {
+          fetchReports().then(s => { if (s?.content) clearInterval(intervalId); });
+        }, 5000);
+      }
+    });
+
+    return () => clearInterval(intervalId);
   }, [selectedSessionId]);
 
   /* ── 뷰 모델 변환 ─────────────────────────────────────────────── */
