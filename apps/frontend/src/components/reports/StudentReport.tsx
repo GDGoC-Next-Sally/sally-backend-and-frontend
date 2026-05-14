@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Download, BookOpen, Lightbulb, Smile, MessageSquare } from 'lucide-react';
+import { Download, BookOpen, Lightbulb, Smile, MessageSquare, FileSearch } from 'lucide-react';
 import type { SessionListItem } from '@/actions/reports';
 import { ReportExportModal } from './ReportExportModal';
 import styles from './StudentReport.module.css';
@@ -100,7 +100,14 @@ export function StudentReport({
       ) : !selectedSessionId ? (
         <div className={styles.emptyCard}>세션을 선택하면 리포트가 표시됩니다.</div>
       ) : !report ? (
-        <div className={styles.emptyCard}>아직 리포트가 생성되지 않았습니다.</div>
+        <div className={styles.reportGenerating}>
+          <FileSearch size={120} strokeWidth={1} color="#22CB84" />
+          <p className={styles.reportGenTitle}>리포트 생성 중...</p>
+          <p className={styles.reportGenSub}>리포트가 생성 중입니다. 조금만 기다려주세요.</p>
+          <div className={styles.progressTrack}>
+            <div className={styles.progressFill} />
+          </div>
+        </div>
       ) : (
         <>
           {/* 프로필 카드 */}

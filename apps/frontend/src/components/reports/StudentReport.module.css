@@ -2,6 +2,7 @@
   background: #ffffff;
   border-radius: 12px;
   padding: 32px;
+  min-height: 850px;
 }
 
 .page {
@@ -368,6 +369,59 @@
 @keyframes shimmer {
   0%   { background-position: -400px 0; }
   100% { background-position:  400px 0; }
+}
+
+/* ── 리포트 생성 중 ────────────────────────────────────────────────────────── */
+
+.reportGenerating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 80px 24px;
+}
+
+.reportGenIcon {
+  width: 120px;
+  height: 120px;
+  color: #22CB84;
+}
+
+.reportGenTitle {
+  font-size: 24px;
+  font-weight: var(--font-weight-regular);
+  color: #151E1E;
+  margin: 0;
+}
+
+.reportGenSub {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-regular);
+  color: #626664;
+  margin: 0;
+}
+
+.progressTrack {
+  width: 400px;
+  height: 8px;
+  background: #D9D9D9;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+@keyframes progressSlide {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.progressFill {
+  width: 60%;
+  height: 100%;
+  background: #22CB84;
+  border-radius: 12px;
+  animation: progressSlide 1.6s ease-in-out infinite;
 }
 
 .skeletonLine {
