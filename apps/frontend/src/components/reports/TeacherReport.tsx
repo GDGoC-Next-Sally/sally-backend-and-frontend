@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Download, Search, ChevronLeft, BookOpen, Lightbulb, Smile, MessageSquare } from 'lucide-react';
+import { Download, Search, ChevronLeft, BookOpen, Lightbulb, Smile, MessageSquare, FileSearch } from 'lucide-react';
 import styles from './TeacherReport.module.css';
 import { ReportExportModal } from './ReportExportModal';
 
@@ -210,6 +210,19 @@ function SummaryView({
             <span className={styles.sectionTitle}>AI 리포트</span>
           </div>
           <p className={styles.empty}>세션을 선택하면 AI 리포트가 표시됩니다.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (selectedSessionId && !summaryReport) {
+    return (
+      <div className={styles.reportGenerating}>
+        <FileSearch size={120} strokeWidth={1} color="#22CB84" />
+        <p className={styles.reportGenTitle}>리포트 생성 중...</p>
+        <p className={styles.reportGenSub}>리포트가 생성 중입니다. 조금만 기다려주세요.</p>
+        <div className={styles.progressTrack}>
+          <div className={styles.progressFill} />
         </div>
       </div>
     );
@@ -550,6 +563,7 @@ export function TeacherReport({
   const [isExportOpen, setIsExportOpen] = useState(false);
 
   return (
+    <div className={styles.whiteBg}>
     <div className={styles.page}>
       {isExportOpen && <ReportExportModal onClose={() => setIsExportOpen(false)} />}
 
@@ -637,6 +651,7 @@ export function TeacherReport({
           )}
         </>
       )}
+    </div>
     </div>
   );
 }
