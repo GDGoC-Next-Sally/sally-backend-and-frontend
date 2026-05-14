@@ -10,6 +10,7 @@ const meta: Meta<typeof CreateSessionModal> = {
     nextjs: { appDirectory: true },
   },
   args: {
+    open: true,
     classId: 1,
     onClose: () => console.log('close'),
     onSubmit: (body) => console.log('submit', body),

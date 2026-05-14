@@ -20,12 +20,20 @@ export interface ClassItem {
   };
 }
 
+export type DayOfWeek = 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI' | 'SAT' | 'SUN' | 'FLEXIBLE';
+
+export interface ScheduleEntry {
+  day: DayOfWeek;
+  period?: number;
+}
+
 export interface CreateClassBody {
   subject: string;
   grade: number;
   homeroom?: string;
   explanation?: string;
   theme?: string;
+  schedule?: ScheduleEntry[];
 }
 
 // ── Teacher ──────────────────────────────────────────────────────────────────
