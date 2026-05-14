@@ -9,6 +9,11 @@ main.sallycoach.kro.kr {
         reverse_proxy backend:3001
     }
 
+    # 라이브챗 요청 라우팅 (프론트엔드에서 /livechat으로 직접 요청하므로 추가)
+    handle /livechat* {
+        reverse_proxy backend:3001
+    }
+
     # 나머지 모든 요청은 프론트엔드로 전달
     handle {
         reverse_proxy frontend:3000
