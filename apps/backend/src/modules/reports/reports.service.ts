@@ -128,8 +128,14 @@ export class ReportsService {
 
   async handleStudentFinalReportCallback(sessionId: number, studentId: string, report: any) {
     try {
-      const session = await this.prisma.sessions.findUnique({ where: { id: sessionId } });
-      if (!session) return;
+      const session = await this.prisma.sessions.findUnique({
+        where: { id: sessionId },
+        select: { teacher_id: true }
+      });
+      if (!session) {
+        this.logger.error(`세션 ${sessionId}를 찾을 수 없습니다.`);
+        return;
+      }
 
       const reportData = {
         session_id: sessionId,
@@ -190,13 +196,18 @@ export class ReportsService {
 
   async handleSessionFinalReportCallback(sessionId: number, report: any) {
     try {
-      const session = await this.prisma.sessions.findUnique({ where: { id: sessionId } });
-      if (session) {
-        this.eventsGateway.sendToUser(session.teacher_id, 'session_report_ready', {
-          session_id: sessionId,
-          report: report
-        });
+      const session = await this.prisma.sessions.findUnique({ 
+        where: { id: sessionId }, 
+        select: { teacher_id: true } 
+      });
+      if (!session) {
+        this.logger.error(`세션 ${sessionId}를 찾을 수 없습니다.`);
+        return;
       }
+      this.eventsGateway.sendToUser(session.teacher_id, 'session_report_ready', {
+        session_id: sessionId,
+        report: report
+      });
 
       this.logger.log(`세션 ${sessionId} 전체 리포트 수신 및 저장 완료`);
     } catch (e) {
