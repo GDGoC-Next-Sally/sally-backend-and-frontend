@@ -207,7 +207,7 @@
   background: #FFFFFF;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #E0DED8;
 }
 
 /* ── 레이아웃 ─────────────────────────────────────────────────────────────── */
@@ -451,7 +451,7 @@
 .tableWrap {
   background: #FFFFFF;
   border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #E0DED8;
   overflow: hidden;
 }
 
@@ -692,7 +692,6 @@
   border: 1px solid #DBDDED;
   border-radius: 8px;
   padding: 10px 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 /* 개입(아래) 카드 */
@@ -706,7 +705,6 @@
   border: 1px solid #DBDDED;
   border-radius: 8px;
   padding: 10px 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 /* t-caption-strong: 12px / 600 */
