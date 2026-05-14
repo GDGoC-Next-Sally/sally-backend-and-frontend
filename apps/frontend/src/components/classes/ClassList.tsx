@@ -17,7 +17,6 @@ interface ClassListProps {
   onUpdateClass: (id: number, data: Partial<CreateClassBody>) => void;
   onDeleteClass: (id: number) => void;
   onRefreshCode: (classId: number) => void;
-  onToggleRegisterable: (classId: number) => void;
 }
 
 export const ClassList: React.FC<ClassListProps> = ({
@@ -26,7 +25,6 @@ export const ClassList: React.FC<ClassListProps> = ({
   onUpdateClass,
   onDeleteClass,
   onRefreshCode,
-  onToggleRegisterable,
 }) => {
   const router = useRouter();
   const [search, setSearch] = useState('');
@@ -144,9 +142,7 @@ export const ClassList: React.FC<ClassListProps> = ({
           onClose={() => setCodeManageClass(null)}
           classId={codeManageClass.id}
           inviteCode={codeManageClass.invite_code}
-          registerable={codeManageClass.registerable}
           onRefreshCode={() => onRefreshCode(codeManageClass.id)}
-          onToggleRegisterable={() => onToggleRegisterable(codeManageClass.id)}
         />
       )}
       {deleteClassId !== null && (

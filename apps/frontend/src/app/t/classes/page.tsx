@@ -7,7 +7,6 @@ import {
   updateClass,
   deleteClass,
   refreshInviteCode,
-  toggleRegisterable,
   type ClassItem,
   type CreateClassBody,
 } from '@/actions/classes';
@@ -61,15 +60,6 @@ export default function TeacherClassesPage() {
     }
   };
 
-  const handleToggleRegisterable = async (classId: number) => {
-    try {
-      await toggleRegisterable(classId);
-      setClasses((prev) => prev.map((c) => c.id === classId ? { ...c, registerable: !c.registerable } : c));
-    } catch {
-      alert('설정 변경에 실패했습니다.');
-    }
-  };
-
   return (
     <PageContainer>
       <ClassList
@@ -78,7 +68,6 @@ export default function TeacherClassesPage() {
         onUpdateClass={handleUpdateClass}
         onDeleteClass={handleDeleteClass}
         onRefreshCode={handleRefreshCode}
-        onToggleRegisterable={handleToggleRegisterable}
       />
     </PageContainer>
   );

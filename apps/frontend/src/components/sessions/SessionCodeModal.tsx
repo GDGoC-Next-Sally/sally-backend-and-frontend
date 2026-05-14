@@ -9,21 +9,16 @@ interface SessionCodeModalProps {
   onClose: () => void;
   classId: number;
   inviteCode?: string;
-  registerable?: boolean;
   onRefreshCode: () => void;
-  onToggleRegisterable: () => void;
 }
 
 export const SessionCodeModal: React.FC<SessionCodeModalProps> = ({
   onClose,
   classId,
   inviteCode,
-  registerable = false,
   onRefreshCode,
-  onToggleRegisterable,
 }) => {
   const [code, setCode] = useState(inviteCode ?? '--------');
-  const [blockNew, setBlockNew] = useState(!registerable);
 
   // Sync code when parent refreshes invite_code after regeneration
   useEffect(() => {
@@ -48,11 +43,6 @@ export const SessionCodeModal: React.FC<SessionCodeModalProps> = ({
   const handleReissueConfirm = () => {
     setIsReissueConfirmOpen(false);
     onRefreshCode();
-  };
-
-  const handleToggle = () => {
-    setBlockNew((v) => !v);
-    onToggleRegisterable();
   };
 
   return (
@@ -84,36 +74,6 @@ export const SessionCodeModal: React.FC<SessionCodeModalProps> = ({
             {codeChars.map((char, i) => (
               <div key={i} className={styles.digitBox}>{char}</div>
             ))}
-          </div>
-        </div>
-
-        <div className={styles.settingRow}>
-          <div className={styles.settingInfo}>
-            <span className={styles.settingTitle}>신규 진입 차단</span>
-            <span className={styles.settingDesc}>코드를 알고 있어도 새로운 학생의 진입을 차단합니다.</span>
-          </div>
-          <div
-            className={`${styles.toggle} ${blockNew ? styles.toggleOn : ''}`}
-            onClick={handleToggle}
-          >
-            <div className={styles.toggleKnob} />
-          </div>
-        </div>
-
-        <div className={styles.usageSection}>
-          <div className={styles.usageTitle}>코드 사용 현황</div>
-          <div className={styles.countRow}>
-            <div>
-              <div className={styles.countLabel}>현재 접속 학생</div>
-              <div className={styles.countValue}>26명</div>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <div className={styles.countLabel}>최대 허용 학생</div>
-              <div className={styles.countValue}>50명</div>
-            </div>
-          </div>
-          <div className={styles.progressBar}>
-            <div className={styles.progressFill} style={{ width: '52%' }} />
           </div>
         </div>
 
