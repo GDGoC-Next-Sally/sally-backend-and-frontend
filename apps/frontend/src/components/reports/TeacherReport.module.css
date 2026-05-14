@@ -7,6 +7,14 @@
   min-height: 850px;
 }
 
+@media (max-width: 640px) {
+  .whiteBg {
+    border-radius: 20px 20px 0 0;
+    padding: 20px 16px 32px;
+    min-height: calc(100vh - 56px);
+  }
+}
+
 .page {
   display: flex;
   flex-direction: column;
@@ -19,6 +27,19 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+@media (max-width: 640px) {
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .exportBtn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 /* t-section: 22px / 700 */
@@ -98,6 +119,13 @@
   gap: 12px;
 }
 
+@media (max-width: 640px) {
+  .filterRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
 /* Input/Default spec: 40px height, 12px H padding, 8px radius */
 .filterSelect {
   height: 40px;
@@ -141,6 +169,19 @@
   min-width: 200px;
   margin-left: auto;
   transition: border-color 0.15s;
+}
+
+@media (max-width: 640px) {
+  .filterSelect {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .searchBox {
+    margin-left: 0;
+    min-width: 0;
+    width: 100%;
+  }
 }
 
 .searchBox:focus-within {
@@ -188,6 +229,13 @@
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .twoCol,
+  .twoColDetail {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── 섹션 헤더 ────────────────────────────────────────────────────────────── */

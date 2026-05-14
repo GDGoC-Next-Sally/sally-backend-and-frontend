@@ -140,7 +140,11 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
             <div
               key={session.id}
               className={styles.sessionRow}
-              onClick={() => router.push(`/t/classes/${classId}/sessions/${session.id}`)}
+              onClick={() =>
+                computed === 'finished'
+                  ? router.push(`/t/reports?classId=${classId}&sessionId=${session.id}`)
+                  : router.push(`/t/classes/${classId}/sessions/${session.id}`)
+              }
             >
               <div className={styles.sessionIcon}>
                 <Image src="/images/sessionicon.png" alt="세션" width={30} height={30} />
@@ -175,7 +179,12 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
                     </button>
                   }
                   items={[
-                    { label: '상세보기', onClick: () => router.push(`/t/classes/${classId}/sessions/${session.id}`) },
+                    {
+                      label: computed === 'finished' ? '리포트 보기' : '상세보기',
+                      onClick: () => computed === 'finished'
+                        ? router.push(`/t/reports?classId=${classId}&sessionId=${session.id}`)
+                        : router.push(`/t/classes/${classId}/sessions/${session.id}`),
+                    },
                     { label: '정보 수정', onClick: () => setEditTarget(session) },
                     { label: '삭제', danger: true, onClick: () => handleDelete(session.id) },
                   ]}
