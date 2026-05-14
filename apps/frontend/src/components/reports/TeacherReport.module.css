@@ -7,6 +7,14 @@
   min-height: 850px;
 }
 
+@media (max-width: 640px) {
+  .whiteBg {
+    border-radius: 20px 20px 0 0;
+    padding: 20px 16px 32px;
+    min-height: calc(100vh - 56px);
+  }
+}
+
 .page {
   display: flex;
   flex-direction: column;
@@ -19,6 +27,19 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+@media (max-width: 640px) {
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .exportBtn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 /* t-section: 22px / 700 */
@@ -98,6 +119,13 @@
   gap: 12px;
 }
 
+@media (max-width: 640px) {
+  .filterRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
 /* Input/Default spec: 40px height, 12px H padding, 8px radius */
 .filterSelect {
   height: 40px;
@@ -143,6 +171,19 @@
   transition: border-color 0.15s;
 }
 
+@media (max-width: 640px) {
+  .filterSelect {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .searchBox {
+    margin-left: 0;
+    min-width: 0;
+    width: 100%;
+  }
+}
+
 .searchBox:focus-within {
   border-color: #22CB84;
 }
@@ -166,7 +207,7 @@
   background: #FFFFFF;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #E0DED8;
 }
 
 /* ── 레이아웃 ─────────────────────────────────────────────────────────────── */
@@ -188,6 +229,13 @@
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .twoCol,
+  .twoColDetail {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── 섹션 헤더 ────────────────────────────────────────────────────────────── */
@@ -403,7 +451,7 @@
 .tableWrap {
   background: #FFFFFF;
   border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #E0DED8;
   overflow: hidden;
 }
 
@@ -644,7 +692,6 @@
   border: 1px solid #DBDDED;
   border-radius: 8px;
   padding: 10px 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 /* 개입(아래) 카드 */
@@ -658,7 +705,6 @@
   border: 1px solid #DBDDED;
   border-radius: 8px;
   padding: 10px 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 /* t-caption-strong: 12px / 600 */

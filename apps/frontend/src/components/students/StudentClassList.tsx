@@ -47,9 +47,11 @@ export const StudentClassList: React.FC<StudentClassListProps> = ({
     `${c.subject} ${c.grade ?? ''} ${c.homeroom ?? ''}`.toLowerCase().includes(search.toLowerCase())
   );
 
-  /** 학년 + 반 + 과목을 하나의 타이틀로 합침 (피그마 기준) */
   const formatTitle = (c: ClassItem) =>
-    [c.grade ? `${c.grade}학년` : '', c.homeroom ?? '', c.subject].filter(Boolean).join(' ');
+    [c.grade ? `${c.grade}학년` : '', c.homeroom ?? ''].filter(Boolean).join(' ') || '미지정';
+
+  const formatSubtitle = (c: ClassItem) =>
+    [c.subject, c.teacher ? `${c.teacher} 선생님` : ''].filter(Boolean).join(' | ');
 
   return (
     <>
@@ -77,7 +79,7 @@ export const StudentClassList: React.FC<StudentClassListProps> = ({
             <ClassCard
               key={cls.id}
               title={formatTitle(cls)}
-              subtitle={cls.teacher ? `| ${cls.teacher} 선생님` : undefined}
+              subtitle={formatSubtitle(cls)}
               schedule={cls.schedule}
               onNavigate={() => router.push(`/s/classes/${cls.id}`)}
               menuItems={[

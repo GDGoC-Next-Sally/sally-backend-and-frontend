@@ -83,6 +83,7 @@ export const ClassList: React.FC<ClassListProps> = ({
               key={cls.id}
               title={`${cls.grade ? `${cls.grade}학년 ` : ''}${cls.homeroom ?? '미지정'}`}
               subtitle={`| ${cls.subject}`}
+              schedule={cls.schedule}
               onNavigate={() => router.push(`/t/classes/${cls.id}`)}
               menuItems={[
                 { label: '입장 코드 관리', onClick: () => setCodeManageClass(cls) },
@@ -102,28 +103,42 @@ export const ClassList: React.FC<ClassListProps> = ({
       </div>
 
       {/* 모달들 */}
-      {isCreateModalOpen && (
-        <CreateClassModal
-          mode="create"
-          onClose={() => setIsCreateModalOpen(false)}
-          onSubmit={(body) => {
-            onCreateClass(body);
-            setIsCreateModalOpen(false);
-          }}
-        />
-      )}
-      {editClass && (
-        <CreateClassModal
-          mode="edit"
-          classId={editClass.id}
-          initialData={{ subject: editClass.subject, theme: 0 }}
-          onClose={() => setEditClass(null)}
-          onSubmit={(body) => {
-            onUpdateClass(editClass.id, body);
-            setEditClass(null);
-          }}
-        />
-      )}
+      <CreateClassModal
+        open={isCreateModalOpen}
+        mode="create"
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={(body) => {
+          onCreateClass(body);
+          setIsCreateModalOpen(false);
+        }}
+      />
+      <CreateClassModal
+        key={editClass?.id ?? 'edit'}
+        open={editClass !== null}
+        mode="edit"
+        classId={editClass?.id}
+        initialData={editClass ? {
+          subject: editClass.subject,
+          grade: String(editClass.grade ?? 1),
+          homeroom: editClass.homeroom ?? '',
+          explanation: editClass.explanation ?? '',
+          theme: ['slate', 'lavender', 'mint', 'peach', 'sky'].indexOf(editClass.theme ?? 'slate') < 0
+            ? 0
+            : ['slate', 'lavender', 'mint', 'peach', 'sky'].indexOf(editClass.theme ?? 'slate'),
+          schedule: (() => {
+            const s = editClass.schedule;
+            if (!s) return [];
+            if (Array.isArray(s)) return s;
+            try { return JSON.parse(s as string); }
+            catch { return []; }
+          })(),
+        } : undefined}
+        onClose={() => setEditClass(null)}
+        onSubmit={(body) => {
+          if (editClass) onUpdateClass(editClass.id, body);
+          setEditClass(null);
+        }}
+      />
       {codeManageClass && (
         <SessionCodeModal
           onClose={() => setCodeManageClass(null)}

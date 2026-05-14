@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronRight as ChevronRightIcon, Calendar, Clock, Sparkles } from 'lucide-react';
+import { ChevronRight as ChevronRightIcon, Calendar, Clock, Sparkles, Users, BarChart2, Archive, GraduationCap } from 'lucide-react';
 import styles from './StudentDashboard.module.css';
 import type { RecentSessionInfo, TodayClassData } from '@/app/s/home/page';
 import { computeSessionStatus } from '@/utils/sessionStatus';
@@ -41,10 +41,16 @@ const AI_FEEDBACK_ITEMS = [
   },
 ];
 
+const NOTICES = [
+  { title: '3월 학습 리포트 업데이트 안내', content: '새로운 분석 항목이 추가되었어요.', date: '2026.03.04' },
+  { title: '4월 학사 일정 공지', content: '4월 3일(목) 전체 교사 회의가 있습니다.', date: '2026.03.28' },
+  { title: '수업 녹화 기능 베타 오픈', content: 'LIVE 세션 중 녹화 버튼이 활성화됩니다.', date: '2026.04.01' },
+];
+
 const QUICK_LINKS = [
-  { label: '내 클래스 관리', sub: '클래스 및 학생 관리', href: '/s/classes' },
-  { label: '학습 리포트', sub: '성장추이와 집중 분석보기', href: '/s/reports' },
-  { label: '학습 아카이브', sub: '지난 수업 기록과 대화 확인', href: '/s/classes' },
+  { label: '내 클래스 관리', sub: '클래스 및 학생 관리', href: '/s/classes', icon: <Users size={20} color="#22C55E" strokeWidth={1.5} /> },
+  { label: '학습 리포트', sub: '성장추이와 집중 분석보기', href: '/s/reports', icon: <BarChart2 size={20} color="#22C55E" strokeWidth={1.5} /> },
+  { label: '학습 아카이브', sub: '지난 수업 기록과 대화 확인', href: '/s/classes', icon: <Archive size={20} color="#22C55E" strokeWidth={1.5} /> },
 ];
 
 /* ── 상태별 설정 맵 ──────────────────────────────────────── */
@@ -116,22 +122,28 @@ function StudentTodayClassContent({ todayClass }: { todayClass?: TodayClassData 
 
 export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classes: _classes, todayClass, recentSessions = [] }) => {
   const router = useRouter();
+  const [noticeIdx, setNoticeIdx] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setNoticeIdx((i) => (i + 1) % NOTICES.length), 4000);
+    return () => clearInterval(t);
+  }, []);
+
+  const notice = NOTICES[noticeIdx];
 
   return (
     <div className={styles.container}>
       <div className={styles.topSection}>
         <div className={styles.topCard}>
           <div className={styles.topCardContent}>
-            <div>
-              <div className={styles.topCardRow}>
-                <h3 className={styles.cardTitle}>공지사항</h3>
-                <a href="#" className={styles.moreLink}>더보기 &gt;</a>
-              </div>
-              <p className={styles.cardSubtitle}>3월 학습 리포트 업데이트 안내</p>
-              <p className={styles.cardDate}>새로운 분석 항목이 추가되었어요.</p>
+            <div className={styles.topCardRow}>
+              <h3 className={styles.cardTitle}>공지사항</h3>
+              <a href="#" className={styles.moreLink}>더보기 &gt;</a>
             </div>
+            <p className={styles.cardSubtitle}>{notice.title}</p>
+            <p className={styles.cardDate}>{notice.content}</p>
           </div>
-          <p className={styles.noticeDate}>2026.03.04</p>
+          <p className={styles.noticeDate}>{notice.date}</p>
         </div>
 
         <div className={styles.topCard}>
@@ -194,7 +206,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classe
                 <React.Fragment key={link.label}>
                   <Link href={link.href} style={{ textDecoration: 'none' }}>
                     <div className={styles.quickLinkItem}>
-                      <div className={styles.quickLinkIcon} />
+                      <div className={styles.quickLinkIcon}>{link.icon}</div>
                       <div className={styles.quickLinkText}>
                         <span className={styles.quickLinkTitle}>{link.label}</span>
                         <span className={styles.quickLinkSub}>{link.sub}</span>
@@ -235,7 +247,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({ user, classe
                     style={{ cursor: 'pointer' }}
                     onClick={() => router.push(`/s/classes/${item.classId}/sessions/${item.id}`)}
                   >
-                    <div className={styles.recentAvatar} />
+                    <div className={styles.recentAvatar}><GraduationCap size={18} color="#22C55E" strokeWidth={1.5} /></div>
                     <div className={styles.recentInfo}>
                       <div className={styles.recentTitle}>{item.sessionName}</div>
                       <div className={styles.recentTeacher}>

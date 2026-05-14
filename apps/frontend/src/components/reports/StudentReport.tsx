@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Download, BookOpen, Lightbulb, Smile, MessageSquare, FileSearch } from 'lucide-react';
 import type { SessionListItem } from '@/actions/reports';
 import { ReportExportModal } from './ReportExportModal';
+import { ChatModal } from './ChatModal';
 import styles from './StudentReport.module.css';
 
 /* ── 타입 ────────────────────────────────────────────────────────────────── */
@@ -22,6 +23,7 @@ export interface StudentReportProps {
   sessions: SessionListItem[];
   selectedSessionId: number | null;
   report: StudentReportContent | null;
+  dialogId: number | null;
   isLoading: boolean;
   studentName: string;
   onSessionChange: (id: number) => void;
@@ -33,12 +35,14 @@ export function StudentReport({
   sessions,
   selectedSessionId,
   report,
+  dialogId,
   isLoading,
   studentName,
   onSessionChange,
 }: StudentReportProps) {
   const [reportExpanded, setReportExpanded] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showChatModal, setShowChatModal] = useState(false);
 
   const selectedSession = sessions.find(s => s.sessionId === selectedSessionId);
 
@@ -61,13 +65,25 @@ export function StudentReport({
   return (
     <>
     {showExportModal && <ReportExportModal onClose={() => setShowExportModal(false)} />}
+    {showChatModal && dialogId && selectedSession && (
+      <ChatModal
+        dialogId={dialogId}
+        sessionTitle={`${selectedSession.subject} ${selectedSession.sessionName}`}
+        teacherName={selectedSession.teacherName}
+        onClose={() => setShowChatModal(false)}
+      />
+    )}
     <div className={styles.whiteBg}>
     <div className={styles.page}>
       {/* 헤더 */}
       <div className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>AI 분석 리포트</h1>
         <div className={styles.headerBtns}>
-          <button className={styles.chatBtn}>
+          <button
+            className={styles.chatBtn}
+            onClick={() => setShowChatModal(true)}
+            disabled={!dialogId}
+          >
             채팅방 보기
           </button>
           <button className={styles.exportBtn} onClick={() => setShowExportModal(true)}>

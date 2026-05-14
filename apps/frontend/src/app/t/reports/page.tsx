@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { getTeacherClasses, type ClassItem } from '@/actions/classes';
 import { getSessionsByClass, type Session } from '@/actions/sessions';
 import { getSessionStudentReports, getSessionSummaryReport } from '@/actions/reports';
@@ -34,10 +35,16 @@ interface RawStudentReport {
 interface RawSessionReport {
   session_id: number;
   content: {
-    top_weak_concepts?: string[];
-    key_questions?: Array<string | { topic?: string; question: string }>;
+    // AI 서버 SessionAggregateReport 필드명
+    class_summary?: string;
+    weak_concepts_top5?: string[];
+    detailed_report?: string;
+    // 구버전 호환
     overall_summary?: string;
+    top_weak_concepts?: string[];
     ai_report?: string;
+    // 공통
+    key_questions?: Array<string | { topic?: string; question: string }>;
   } | null;
 }
 
@@ -61,10 +68,10 @@ function toSummaryReportData(raw: RawSessionReport | null): SummaryReportData | 
   if (!raw?.content) return null;
   const c = raw.content;
   return {
-    overallSummary: c.overall_summary ?? '',
+    overallSummary: c.class_summary ?? c.overall_summary ?? '',
     keyQuestions: (c.key_questions ?? []).map(parseQuestion),
-    topWeakConcepts: c.top_weak_concepts ?? [],
-    aiReport: c.ai_report ?? '',
+    topWeakConcepts: c.weak_concepts_top5 ?? c.top_weak_concepts ?? [],
+    aiReport: c.detailed_report ?? c.ai_report ?? '',
   };
 }
 
@@ -113,6 +120,12 @@ function toStudentDetailData(
 /* ── 메인 페이지 ────────────────────────────────────────────────────── */
 
 export default function TeacherReportsPage() {
+  const searchParams = useSearchParams();
+  const initParams = useRef({
+    classId: searchParams.get('classId') ? Number(searchParams.get('classId')) : null,
+    sessionId: searchParams.get('sessionId') ? Number(searchParams.get('sessionId')) : null,
+  });
+
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [sessions, setSessions] = useState<SessionEntry[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
@@ -129,7 +142,7 @@ export default function TeacherReportsPage() {
     getTeacherClasses()
       .then(cls => {
         setClasses(cls);
-        if (cls.length > 0) setSelectedClassId(cls[0].id);
+        if (cls.length > 0) setSelectedClassId(initParams.current.classId ?? cls[0].id);
       })
       .catch(() => setClasses([]))
       .finally(() => setIsLoading(false));
@@ -137,40 +150,65 @@ export default function TeacherReportsPage() {
 
   useEffect(() => {
     if (!selectedClassId) return;
+    let cancelled = false;
     setSelectedSessionId(null);
     setRawSummary(null);
     setRawStudentReports([]);
     setSelectedRaw(null);
     getSessionsByClass(selectedClassId)
       .then(ss => {
+        if (cancelled) return;
         const finished = ss
           .filter(s => s.finished_at)
           .sort((a, b) => (b.finished_at ?? '').localeCompare(a.finished_at ?? ''));
         const cls = classes.find(c => c.id === selectedClassId)!;
         const entries = finished.map(s => ({ session: s, cls }));
         setSessions(entries);
-        if (entries.length > 0) setSelectedSessionId(entries[0].session.id);
+        if (entries.length > 0) {
+          const urlSessionId = initParams.current.sessionId;
+          const targetId = (urlSessionId && entries.some(e => e.session.id === urlSessionId))
+            ? urlSessionId
+            : entries[0].session.id;
+          setSelectedSessionId(targetId);
+        }
       })
-      .catch(() => setSessions([]));
+      .catch(() => { if (!cancelled) setSessions([]); });
+    return () => { cancelled = true; };
   }, [selectedClassId, classes]);
 
   useEffect(() => {
     if (!selectedSessionId) return;
     setIsLoadingReport(true);
     setSelectedRaw(null);
-    Promise.all([
-      getSessionStudentReports(selectedSessionId),
-      getSessionSummaryReport(selectedSessionId),
-    ])
-      .then(([students, summary]) => {
-        setRawStudentReports(students as RawStudentReport[]);
-        setRawSummary(summary as RawSessionReport);
-      })
-      .catch(() => {
-        setRawStudentReports([]);
-        setRawSummary(null);
-      })
-      .finally(() => setIsLoadingReport(false));
+
+    const fetchReports = () =>
+      Promise.all([
+        getSessionStudentReports(selectedSessionId),
+        getSessionSummaryReport(selectedSessionId),
+      ])
+        .then(([students, summary]) => {
+          setRawStudentReports(students as RawStudentReport[]);
+          setRawSummary(summary as RawSessionReport);
+          return summary as RawSessionReport;
+        })
+        .catch(() => {
+          setRawStudentReports([]);
+          setRawSummary(null);
+          return null;
+        });
+
+    let intervalId: ReturnType<typeof setInterval>;
+
+    fetchReports().then(summary => {
+      setIsLoadingReport(false);
+      if (!summary?.content) {
+        intervalId = setInterval(() => {
+          fetchReports().then(s => { if (s?.content) clearInterval(intervalId); });
+        }, 5000);
+      }
+    });
+
+    return () => clearInterval(intervalId);
   }, [selectedSessionId]);
 
   /* ── 뷰 모델 변환 ─────────────────────────────────────────────── */
@@ -180,13 +218,10 @@ export default function TeacherReportsPage() {
     label: `${cls.grade ? cls.grade + '학년 ' : ''}${cls.homeroom ?? ''} ${cls.subject}`.trim(),
   }));
 
-  const sessionOptions: SessionOption[] = sessions.map(({ session }) => {
-    const d = session.started_at ? new Date(session.started_at) : null;
-    const label = d
-      ? `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일${session.period ? ` ${session.period}교시` : ''}`
-      : session.session_name;
-    return { id: session.id, label };
-  });
+  const sessionOptions: SessionOption[] = sessions.map(({ session }) => ({
+    id: session.id,
+    label: session.session_name || `세션 ${session.id}`,
+  }));
 
   const currentSession = sessions.find(e => e.session.id === selectedSessionId) ?? null;
 

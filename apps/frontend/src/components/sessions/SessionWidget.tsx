@@ -10,6 +10,9 @@ import { StudentMonitorGrid } from './StudentMonitorGrid';
 import { type AttendanceStudent } from '@/actions/sessions';
 import { getSessionStudents, getStudentDetail, sendIntervention, type ChatMessage } from '@/actions/livechat';
 import { createClient } from '@/utils/supabase/client';
+import ProfileSallyIcon from '@/components/icons/ProfileSallyIcon';
+import ProfileStudentIcon from '@/components/icons/ProfileStudentIcon';
+import ProfileTeacherIcon from '@/components/icons/ProfileTeacherIcon';
 import styles from './SessionWidget.module.css';
 
 type Phase = 'waiting' | 'active';
@@ -504,12 +507,13 @@ const ActiveView: React.FC<ActiveProps> = ({
               messages.map((msg) => {
                 const isStudent = msg.sender_type === 'STUDENT';
                 const isTeacher = msg.sender_type === 'TEACHER';
+                const LeftIcon = isTeacher ? ProfileTeacherIcon : ProfileSallyIcon;
                 return (
                   <div
                     key={msg.id}
                     className={`${styles.messageRow} ${isStudent ? styles.messageRowRight : ''}`}
                   >
-                    {!isStudent && <div className={styles.messageAvatar} />}
+                    {!isStudent && <div className={styles.messageAvatar}><LeftIcon width={36} height={36} /></div>}
                     <div className={styles.messageBubbleWrap}>
                       {isTeacher && <div className={styles.senderLabel}>선생님 개입</div>}
                       <div
@@ -521,7 +525,7 @@ const ActiveView: React.FC<ActiveProps> = ({
                         {formatTime(msg.created_at)}
                       </div>
                     </div>
-                    {isStudent && <div className={styles.messageAvatar} />}
+                    {isStudent && <div className={styles.messageAvatar}><ProfileStudentIcon width={36} height={36} /></div>}
                   </div>
                 );
               })
