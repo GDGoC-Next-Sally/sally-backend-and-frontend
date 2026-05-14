@@ -57,7 +57,8 @@
     }
 
     .log-box {
-      flex: 1;
+      height: 250px;
+      flex: none;
       background: #222;
       color: #4af626;
       font-family: monospace;
@@ -161,6 +162,15 @@
     </div>
 
     <div class="log-box" id="teacherLog">대기 중...</div>
+
+    <div class="test-reports" style="margin-top: 15px; padding: 15px; background: white; border: 1px solid #ccc; border-radius: 8px;">
+      <div style="margin-bottom: 10px; font-weight: bold; font-size: 14px; color: #333;">📊 리포트 생성 테스트</div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button id="dummyChatBtn" onclick="insertDummyChat()" disabled style="background: #28a745;">1. 더미 채팅 생성</button>
+        <button id="studentReportBtn" onclick="requestStudentReport()" disabled style="background: #17a2b8;">2. 학생 개별 리포트 요청</button>
+        <button id="sessionReportBtn" onclick="requestSessionReport()" disabled style="background: #6f42c1;">3. 세션 전체 리포트 요청</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -215,11 +225,15 @@
         document.getElementById('sessionNameInput').disabled = false;
         document.getElementById('sessionExplanationInput').disabled = false;
         document.getElementById('updateSessionBtn').disabled = false;
-        document.getElementById('sessionNameInput').value = 'Dev Test Session';
+        document.getElementById('sessionNameInput').value = '미래 가정법 작문';
         
         document.getElementById('classSubjectInput').disabled = false;
         document.getElementById('updateClassBtn').disabled = false;
-        document.getElementById('classSubjectInput').value = '수학';
+        document.getElementById('classSubjectInput').value = '영어';
+
+        document.getElementById('dummyChatBtn').disabled = false;
+        document.getElementById('studentReportBtn').disabled = false;
+        document.getElementById('sessionReportBtn').disabled = false;
 
         btn.innerText = '세팅 완료';
 
@@ -248,7 +262,7 @@
       socket.on('connect_error', (err) => addLog('socket_error', err.message));
 
       // 리스닝할 이벤트들
-      const events = ['student_message', 'ai_message', 'student_analysis_ready', 'student_warning'];
+      const events = ['student_message', 'ai_message', 'student_analysis_ready', 'student_warning', 'final_report_ready', 'session_report_ready'];
       events.forEach(ev => socket.on(ev, data => addLog(ev, data)));
     }
 
@@ -358,7 +372,50 @@
         addLog('system', '채팅 기록 및 분석 데이터가 삭제되었습니다.');
         document.getElementById('chatLog').innerHTML = '<div class="system-msg">기록이 삭제되었습니다. 새로운 대화를 시작하세요.</div>';
       } catch (err) {
-        addLog('error', `삭제 실패: ${err.message}`);
+        addLog('error', '클래스 수정 실패: ' + err.message);
+      }
+    }
+
+    async function insertDummyChat() {
+      if (!tokens) return alert('먼저 세팅해주세요.');
+      try {
+        const res = await fetch(`/dev/dummy-chat/${tokens.dialogId}`, { method: 'POST' });
+        if (!res.ok) throw new Error('API 오류');
+        
+        const result = await res.json();
+        addLog('system', '더미 채팅 데이터 삽입 성공');
+        
+        // 채팅 로그 UI 초기화 및 더미 데이터 표시
+        document.getElementById('chatLog').innerHTML = '<div class="system-msg">더미 데이터가 생성되었습니다.</div>';
+        if (result.data && Array.isArray(result.data)) {
+          result.data.forEach(msg => {
+            addChat(msg.content, msg.sender_type.toLowerCase());
+          });
+        }
+      } catch (err) {
+        addLog('error', err.message);
+      }
+    }
+
+    async function requestStudentReport() {
+      if (!tokens) return alert('먼저 세팅해주세요.');
+      try {
+        const res = await fetch(`/dev/report/student/${tokens.sessionId}/${tokens.teacherId}`, { method: 'POST' });
+        if (!res.ok) throw new Error('API 오류');
+        addLog('system', '학생 개별 리포트 생성 요청됨. AI 서버 콜백을 기다리세요.');
+      } catch (err) {
+        addLog('error', err.message);
+      }
+    }
+
+    async function requestSessionReport() {
+      if (!tokens) return alert('먼저 세팅해주세요.');
+      try {
+        const res = await fetch(`/dev/report/session/${tokens.sessionId}/${tokens.teacherId}`, { method: 'POST' });
+        if (!res.ok) throw new Error('API 오류');
+        addLog('system', '세션 전체 리포트 생성 요청됨. AI 서버 콜백을 기다리세요.');
+      } catch (err) {
+        addLog('error', err.message);
       }
     }
 

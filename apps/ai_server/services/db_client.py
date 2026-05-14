@@ -202,12 +202,12 @@ async def save_student_report(
     def _query():
         try:
             db = _get_db()
-            db.table("student_reports").insert({
+            db.table("student_reports").upsert({
                 "student_id": student_id,
                 "session_id": session_id,
                 "dialog_id": dialog_id,
                 "content": content,
-            }).execute()
+            }, on_conflict="dialog_id").execute()
         except Exception as e:
             print(f"[WARN] save_student_report 실패: {e}")
 

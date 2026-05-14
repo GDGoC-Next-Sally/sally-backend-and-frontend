@@ -63,8 +63,8 @@ export class DevService {
       devClass = await this.prisma.classes.create({
         data: {
           teacher_id: teacherId,
-          subject: '수학',
-          theme: 'Dev Test Class',
+          subject: '영어',
+          theme: '고등 영어 미래가정법 작문',
           invite_code: 'DEV123',
         }
       });
@@ -126,5 +126,42 @@ export class DevService {
       teacherToken: teacherAuth.session?.access_token,
       studentToken: studentAuth.session?.access_token,
     };
+  }
+  async insertDummyChat(dialogId: number) {
+    // 기존 채팅 및 리포트 삭제
+    await this.prisma.student_reports.deleteMany({ where: { dialog_id: dialogId } });
+    await this.prisma.chat_messages.deleteMany({
+      where: { dialog_id: dialogId }
+    });
+
+    const dummyData = [
+      { sender_type: 'AI', content: '안녕하세요! 오늘 배울 내용에 대해 설명해 드릴게요. 혹시 가정법에 대해 들어보신 적 있나요?' },
+      { sender_type: 'STUDENT', content: '아니요 잘 모르겠어요.' },
+      { sender_type: 'AI', content: '괜찮아요! 만약 내가 새라면, 너에게 날아갈 텐데. 이런 문장이 가정법이에요. 이해가 되나요?' },
+      { sender_type: 'STUDENT', content: '아 네 이해했어요.' },
+      { sender_type: 'AI', content: '그럼 방금 배운 문장을 영어로 어떻게 표현할 수 있을까요? 힌트: If I were a bird...' },
+      { sender_type: 'STUDENT', content: 'If I were a bird, I would fly to you?' },
+      { sender_type: 'AI', content: '완벽해요! 아주 잘 하셨습니다.' },
+    ];
+
+    for (const msg of dummyData) {
+      await this.prisma.chat_messages.create({
+        data: {
+          dialog_id: dialogId,
+          sender_type: msg.sender_type as any,
+          content: msg.content,
+        }
+      });
+      // 1초 간격을 줘서 생성 시간이 다르게 들어가도록 함 (정렬을 위해)
+      await new Promise(res => setTimeout(res, 100));
+    }
+    
+    // 다이얼로그 분석 상태 초기화
+    await this.prisma.dialogs.update({
+      where: { id: dialogId },
+      data: { is_analyzed: false }
+    });
+
+    return { message: '더미 채팅 데이터 생성 완료', data: dummyData };
   }
 }
