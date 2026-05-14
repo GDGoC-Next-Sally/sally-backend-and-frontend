@@ -176,6 +176,31 @@
   pointer-events: none;
 }
 
+.inputFilled { color: var(--color-text-primary); }
+
+.fieldOptional {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+}
+
+.timeField {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 90px;
+  flex-shrink: 0;
+}
+
+.timeSep {
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+  padding-top: 10px;
+  flex-shrink: 0;
+}
+
 .select {
   width: 100%;
   padding: 10px 12px;

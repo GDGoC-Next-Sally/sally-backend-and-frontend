@@ -37,9 +37,12 @@ export const CreateSessionModal: React.FC<Props> = ({
   const [step, setStep] = useState<Step>(initialStep);
 
   // Step 1 — 정보 입력
-  const [sessionName, setSessionName] = useState('');
-  const [subject,     setSubject]     = useState('');
-  const [semester,    setSemester]    = useState('2026년 1학기');
+  const [sessionName,    setSessionName]    = useState('');
+  const [subject,        setSubject]        = useState('');
+  const [semester,       setSemester]       = useState('2026년 1학기');
+  const [scheduledDate,  setScheduledDate]  = useState('');
+  const [scheduledStart, setScheduledStart] = useState('');
+  const [scheduledEnd,   setScheduledEnd]   = useState('');
 
   // Step 2 — 단원 선택 (실 API)
   const [publishers,       setPublishers]       = useState<string[]>([]);
@@ -137,6 +140,9 @@ export const CreateSessionModal: React.FC<Props> = ({
       objective,
       session_prompt: aiGuide,
       explanation,
+      ...(scheduledDate  && { scheduled_date:  scheduledDate }),
+      ...(scheduledStart && { scheduled_start: scheduledStart }),
+      ...(scheduledEnd   && { scheduled_end:   scheduledEnd }),
     };
     await onSubmit(body);
     onClose();
@@ -185,9 +191,12 @@ export const CreateSessionModal: React.FC<Props> = ({
 
           {step === 1 && (
             <StepInfoInput
-              sessionName={sessionName} onSessionNameChange={setSessionName}
-              subject={subject}         onSubjectChange={setSubject}
-              semester={semester}       onSemesterChange={setSemester}
+              sessionName={sessionName}       onSessionNameChange={setSessionName}
+              subject={subject}               onSubjectChange={setSubject}
+              semester={semester}             onSemesterChange={setSemester}
+              scheduledDate={scheduledDate}   onScheduledDateChange={setScheduledDate}
+              scheduledStart={scheduledStart} onScheduledStartChange={setScheduledStart}
+              scheduledEnd={scheduledEnd}     onScheduledEndChange={setScheduledEnd}
             />
           )}
           {step === 2 && (
@@ -260,10 +269,16 @@ function StepInfoInput({
   sessionName, onSessionNameChange,
   subject,     onSubjectChange,
   semester,    onSemesterChange,
+  scheduledDate,  onScheduledDateChange,
+  scheduledStart, onScheduledStartChange,
+  scheduledEnd,   onScheduledEndChange,
 }: {
   sessionName: string; onSessionNameChange: (v: string) => void;
   subject: string;     onSubjectChange: (v: string) => void;
   semester: string;    onSemesterChange: (v: string) => void;
+  scheduledDate: string;  onScheduledDateChange: (v: string) => void;
+  scheduledStart: string; onScheduledStartChange: (v: string) => void;
+  scheduledEnd: string;   onScheduledEndChange: (v: string) => void;
 }) {
   return (
     <>
@@ -302,7 +317,39 @@ function StepInfoInput({
           </div>
         </div>
 
-
+        {/* 날짜 + 시작/종료 시간 */}
+        <div className={styles.fieldGroup}>
+          <label className={styles.fieldLabel}>수업 일정 <span className={styles.fieldOptional}>(선택)</span></label>
+          <div className={styles.fieldRow}>
+            <div className={styles.halfField}>
+              <input
+                type="date"
+                className={`${styles.input} ${scheduledDate ? styles.inputFilled : ''}`}
+                value={scheduledDate}
+                onChange={(e) => onScheduledDateChange(e.target.value)}
+              />
+            </div>
+            <div className={styles.timeField}>
+              <input
+                type="time"
+                className={`${styles.input} ${scheduledStart ? styles.inputFilled : ''}`}
+                value={scheduledStart}
+                onChange={(e) => onScheduledStartChange(e.target.value)}
+                placeholder="시작"
+              />
+            </div>
+            <div className={styles.timeSep}>~</div>
+            <div className={styles.timeField}>
+              <input
+                type="time"
+                className={`${styles.input} ${scheduledEnd ? styles.inputFilled : ''}`}
+                value={scheduledEnd}
+                onChange={(e) => onScheduledEndChange(e.target.value)}
+                placeholder="종료"
+              />
+            </div>
+          </div>
+        </div>
 
       </div>
     </>

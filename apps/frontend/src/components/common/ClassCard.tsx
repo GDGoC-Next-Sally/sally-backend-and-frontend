@@ -5,13 +5,33 @@ import { Clock, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
 import { DropdownMenu, type DropdownMenuItem } from './DropdownMenu';
 import styles from './ClassCard.module.css';
 
+type DayOfWeek = 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI' | 'SAT' | 'SUN' | 'FLEXIBLE';
+interface ScheduleEntry { day: DayOfWeek; period?: number }
+
+const DAY_KO: Record<string, string> = {
+  MON: '월', TUE: '화', WED: '수', THU: '목', FRI: '금', SAT: '토', SUN: '일', FLEXIBLE: '유동',
+};
+
+function formatSchedule(schedule: ScheduleEntry[] | string | null | undefined): string | null {
+  if (!schedule) return null;
+  try {
+    const entries: ScheduleEntry[] = typeof schedule === 'string' ? JSON.parse(schedule) : schedule;
+    if (!Array.isArray(entries) || entries.length === 0) return null;
+    return entries
+      .map((e) => (e.day === 'FLEXIBLE' ? '유동' : `${DAY_KO[e.day] ?? e.day}${e.period != null ? ` ${e.period}교시` : ''}`))
+      .join(' · ');
+  } catch {
+    return typeof schedule === 'string' ? schedule : null;
+  }
+}
+
 interface ClassCardProps {
   /** 카드 메인 타이틀 */
   title: string;
   /** 카드 서브타이틀 */
   subtitle?: string;
   /** 수업 시간표 — 있을 때만 표시 */
-  schedule?: string | null;
+  schedule?: ScheduleEntry[] | string | null;
   /** 선택 여부 (교사 뷰) */
   isSelected?: boolean;
   /** 카드 클릭 핸들러 */
@@ -44,6 +64,8 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   menuItems,
   moveBtnCentered = false,
 }) => {
+  const scheduleText = formatSchedule(schedule);
+
   return (
     <div
       className={`${styles.card} ${isSelected ? styles.cardSelected : ''} ${onClick ? styles.cardClickable : ''}`}
@@ -52,10 +74,10 @@ export const ClassCard: React.FC<ClassCardProps> = ({
       {/* 상단 메타 행: schedule + 옵션 메뉴 */}
       <div className={styles.cardMeta}>
         <div className={styles.cardScheduleArea}>
-          {schedule && (
+          {scheduleText && (
             <div className={styles.cardSchedule}>
               <Clock size={14} strokeWidth={2.5} />
-              {schedule}
+              {scheduleText}
             </div>
           )}
         </div>

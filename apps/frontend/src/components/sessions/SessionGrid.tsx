@@ -192,14 +192,13 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
         onClose={() => setIsCreateOpen(false)}
         onSubmit={async (body) => { await onCreateSession(body); onRefresh(); }}
       />
-      {editTarget && (
-        <SessionModal
-          classId={classId}
-          session={editTarget}
-          onClose={() => setEditTarget(null)}
-          onSubmit={async (body) => { if (editTarget) await onUpdateSession(editTarget.id, body); onRefresh(); }}
-        />
-      )}
+      <SessionModal
+        open={!!editTarget}
+        classId={classId}
+        session={editTarget ?? { id: 0, session_name: '', class_id: classId } as Session}
+        onClose={() => setEditTarget(null)}
+        onSubmit={async (body) => { if (editTarget) await onUpdateSession(editTarget.id, body); onRefresh(); }}
+      />
       {deleteTargetId !== null && (
         <ConfirmModal
           title="세션을 삭제하시겠습니까?"
