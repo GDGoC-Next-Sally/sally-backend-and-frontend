@@ -197,3 +197,12 @@
   color: #6b6b6b;
 }
 
+/* ── Mobile (≤ 768px) ────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+}
+

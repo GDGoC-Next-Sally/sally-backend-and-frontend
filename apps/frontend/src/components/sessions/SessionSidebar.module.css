@@ -301,3 +301,52 @@
   font-weight: var(--font-weight-semibold);
   padding: 3px 10px;
 }
+
+/* ── Mobile (≤ 768px) ────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    min-height: auto;
+    height: auto;
+    flex-shrink: 0;
+    border-radius: 0;
+    padding: 10px 14px;
+    gap: 8px;
+    box-shadow: none;
+    border-bottom: 1px solid var(--color-border-light);
+    overflow: hidden;
+  }
+
+  /* 학생 목록만 가로 스크롤 */
+  .list {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex: 0 0 auto;
+    padding-bottom: 4px;
+  }
+
+  .list::-webkit-scrollbar {
+    height: 3px;
+  }
+
+  .item {
+    min-width: 130px;
+    max-width: 160px;
+    flex-shrink: 0;
+  }
+
+  .statsGrid {
+    display: none;
+  }
+
+  .summaryText {
+    -webkit-line-clamp: 1;
+    padding-left: 32px;
+  }
+
+  .unitSection {
+    display: none;
+  }
+}

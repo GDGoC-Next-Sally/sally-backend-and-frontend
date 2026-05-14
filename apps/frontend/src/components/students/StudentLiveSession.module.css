@@ -409,3 +409,115 @@
   border-radius: 4px;
   transition: width 0.3s;
 }
+
+/* ── Mobile (≤ 768px) ────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  /* Full-height single-column layout */
+  .layout {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - 56px);
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .mainArea {
+    flex: 1;
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Guide panel goes below chat — hide on mobile (supplementary info) */
+  .guidePanel {
+    display: none;
+  }
+
+  /* Session header */
+  .sessionHeader {
+    padding: 10px 14px;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .sessionTitle {
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .teacherName {
+    font-size: var(--font-size-sm);
+  }
+
+  .headerRight {
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .elapsed {
+    display: none;
+  }
+
+  .liveChip {
+    font-size: var(--font-size-sm);
+    padding: 4px 8px;
+  }
+
+  .leaveBtn {
+    padding: 6px 12px;
+    font-size: var(--font-size-sm);
+  }
+
+  /* Chat area fills remaining space */
+  .chatArea {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+  }
+
+  .messageList {
+    padding: 14px 12px;
+    gap: 12px;
+  }
+
+  .msgBubbleContent {
+    max-width: 78%;
+  }
+
+  .msgBubble {
+    padding: 9px 12px;
+  }
+
+  /* Quick action buttons */
+  .quickActions {
+    padding: 8px 12px;
+    gap: 6px;
+  }
+
+  .quickBtn {
+    padding: 6px 12px;
+    font-size: var(--font-size-sm);
+  }
+
+  /* Input row */
+  .inputRow {
+    padding: 10px 12px 12px;
+    gap: 6px;
+  }
+
+  /* Wait card */
+  .waitCard {
+    padding: 32px 20px 24px;
+  }
+
+  .joinBtn {
+    padding: 12px 40px;
+    width: 100%;
+  }
+}
