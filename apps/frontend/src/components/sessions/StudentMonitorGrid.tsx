@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { User, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
+import ProfileStudentIcon from '@/components/icons/ProfileStudentIcon';
 import styles from './StudentMonitorGrid.module.css';
 import type { AttendanceStudent } from '@/actions/sessions';
 import type { StudentAnalysis } from './SessionWidget';
@@ -50,7 +51,7 @@ function StudentCard({ student, analysis }: { student: AttendanceStudent; analys
     <div className={`${styles.card} ${needsIntervention ? styles.cardWarning : ''}`}>
       <div className={styles.cardHeader}>
         <div className={styles.avatarWrap}>
-          <User size={18} color="#a9afad" />
+          <ProfileStudentIcon width={32} height={32} />
         </div>
         <div className={styles.nameBlock}>
           <span className={styles.studentName}>{student.name}</span>

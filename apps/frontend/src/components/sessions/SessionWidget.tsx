@@ -27,7 +27,7 @@ export interface StudentAnalysis {
   engagement_level?: string;
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL 
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL 
   || (typeof window !== 'undefined' && window.location.hostname === 'localhost' 
       ? 'http://localhost:3001' 
       : '');
@@ -141,7 +141,7 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
       const { data: { session: authSession } } = await supabase.auth.getSession();
       const token = authSession?.access_token;
 
-      socket = io(BACKEND_URL, { auth: { token }, transports: ['websocket', 'polling'] });
+      socket = io(SOCKET_URL, { auth: { token }, transports: ['websocket', 'polling'] });
       socketRef.current = socket;
 
       socket.on('connect', () => {

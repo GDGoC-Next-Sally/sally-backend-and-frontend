@@ -16,7 +16,7 @@ import ProfileStudentIcon from '@/components/icons/ProfileStudentIcon';
 import ProfileTeacherIcon from '@/components/icons/ProfileTeacherIcon';
 import styles from './StudentLiveSession.module.css';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL 
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL 
   || (typeof window !== 'undefined' && window.location.hostname === 'localhost' 
       ? 'http://localhost:3001' 
       : '');
@@ -114,7 +114,7 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
       const supabase = createClient();
       const { data: { session: authSession } } = await supabase.auth.getSession();
       const token = authSession?.access_token;
-      socket = io(BACKEND_URL, { auth: { token }, transports: ['websocket', 'polling'] });
+      socket = io(SOCKET_URL, { auth: { token }, transports: ['websocket', 'polling'] });
 
       socket.on('connect', () => {
         socket.emit('join_room', { room: `session:${sessionId}` });
@@ -185,7 +185,7 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
       const { data: { session: authSession } } = await supabase.auth.getSession();
       const token = authSession?.access_token;
 
-      const response = await fetch(`${BACKEND_URL}/livechat/greeting`, {
+      const response = await fetch(`${SOCKET_URL}/livechat/greeting`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -266,7 +266,7 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
       const { data: { session: authSession } } = await supabase.auth.getSession();
       const token = authSession?.access_token;
 
-      const response = await fetch(`${BACKEND_URL}/livechat/message`, {
+      const response = await fetch(`${SOCKET_URL}/livechat/message`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

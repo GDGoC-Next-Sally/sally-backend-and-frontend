@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
 import { RefreshCw } from 'lucide-react';
+import ProfileStudentIcon from '@/components/icons/ProfileStudentIcon';
 import styles from './SessionSidebar.module.css';
 import type { AttendanceStudent } from '@/actions/sessions';
 import type { StudentAnalysis } from './SessionWidget';
@@ -108,7 +108,7 @@ export const SessionSidebar: React.FC<Props> = ({
                 <div className={styles.itemHeader}>
                   <div className={styles.studentInfo}>
                     <div className={styles.avatar}>
-                      <Image src="/images/profile_mini.png" alt={student.name} width={32} height={32} />
+                      <ProfileStudentIcon width={32} height={32} />
                     </div>
                     <span className={styles.name}>{student.name}</span>
                   </div>
