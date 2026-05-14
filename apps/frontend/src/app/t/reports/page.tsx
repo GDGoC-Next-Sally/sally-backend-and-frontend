@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { getTeacherClasses, type ClassItem } from '@/actions/classes';
 import { getSessionsByClass, type Session } from '@/actions/sessions';
@@ -119,7 +119,7 @@ function toStudentDetailData(
 
 /* ── 메인 페이지 ────────────────────────────────────────────────────── */
 
-export default function TeacherReportsPage() {
+function TeacherReportsContent() {
   const searchParams = useSearchParams();
   const initParams = useRef({
     classId: searchParams.get('classId') ? Number(searchParams.get('classId')) : null,
@@ -257,5 +257,13 @@ export default function TeacherReportsPage() {
         onSearchChange={setStudentSearch}
       />
     </PageContainer>
+  );
+}
+
+export default function TeacherReportsPage() {
+  return (
+    <Suspense fallback={null}>
+      <TeacherReportsContent />
+    </Suspense>
   );
 }
