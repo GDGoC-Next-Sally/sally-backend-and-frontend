@@ -15,7 +15,8 @@ services:
     env_file:
       - apps/frontend/.env
     environment:
-      - NEXT_PUBLIC_BACKEND_URL=
+      - NODE_ENV=production
+      - NEXT_PUBLIC_BACKEND_URL=http://backend:3001
 
   backend:
     build:
