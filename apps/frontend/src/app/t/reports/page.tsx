@@ -34,10 +34,16 @@ interface RawStudentReport {
 interface RawSessionReport {
   session_id: number;
   content: {
-    top_weak_concepts?: string[];
-    key_questions?: Array<string | { topic?: string; question: string }>;
+    // AI 서버 SessionAggregateReport 필드명
+    class_summary?: string;
+    weak_concepts_top5?: string[];
+    detailed_report?: string;
+    // 구버전 호환
     overall_summary?: string;
+    top_weak_concepts?: string[];
     ai_report?: string;
+    // 공통
+    key_questions?: Array<string | { topic?: string; question: string }>;
   } | null;
 }
 
@@ -61,10 +67,10 @@ function toSummaryReportData(raw: RawSessionReport | null): SummaryReportData | 
   if (!raw?.content) return null;
   const c = raw.content;
   return {
-    overallSummary: c.overall_summary ?? '',
+    overallSummary: c.class_summary ?? c.overall_summary ?? '',
     keyQuestions: (c.key_questions ?? []).map(parseQuestion),
-    topWeakConcepts: c.top_weak_concepts ?? [],
-    aiReport: c.ai_report ?? '',
+    topWeakConcepts: c.weak_concepts_top5 ?? c.top_weak_concepts ?? [],
+    aiReport: c.detailed_report ?? c.ai_report ?? '',
   };
 }
 
