@@ -9,10 +9,14 @@ _KST = timezone(timedelta(hours=9))
 
 
 def _format_time_kst(iso_string: str) -> str:
-    """ISO 8601 문자열을 KST HH:MM 형태로 변환합니다. 파싱 실패 시 빈 문자열 반환."""
+    """ISO 8601 문자열을 KST '오전/오후 H:MM' 형태로 변환합니다. 파싱 실패 시 빈 문자열 반환."""
     try:
         dt = datetime.fromisoformat(iso_string.replace("Z", "+00:00"))
-        return dt.astimezone(_KST).strftime("%H:%M")
+        dt_kst = dt.astimezone(_KST)
+        hour = dt_kst.hour
+        am_pm = "오전" if hour < 12 else "오후"
+        display_hour = hour if hour < 12 else (hour - 12 or 12)
+        return f"{am_pm} {display_hour}:{dt_kst.strftime('%M')}"
     except Exception:
         return ""
 
