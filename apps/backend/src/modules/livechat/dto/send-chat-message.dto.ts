@@ -10,9 +10,4 @@ export class SendChatMessageDto {
   @IsString()
   @IsNotEmpty()
   content: string;
-
-  @ApiProperty({ description: '교사 개입 요청 여부', example: true })
-  @IsOptional()
-  @IsBoolean()
-  need_intervention?: boolean = false;
 }
