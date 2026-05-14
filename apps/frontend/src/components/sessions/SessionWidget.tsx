@@ -533,16 +533,10 @@ const ActiveView: React.FC<ActiveProps> = ({
             <div ref={messagesEndRef} />
           </div>
 
-          {summaryText && !warningText && (
-            <div className={styles.summaryBanner}>
+          {(summaryText || warningText) && (
+            <div className={`${styles.summaryBanner} ${warningText ? styles.summaryBannerWarning : ''}`}>
               <span className={styles.summaryIcon}>✦</span>
-              {summaryText}
-            </div>
-          )}
-          {warningText && (
-            <div className={styles.warningBanner}>
-              <span className={styles.warningArrow}>→</span>
-              {warningText}
+              {warningText ?? summaryText}
             </div>
           )}
 

@@ -269,28 +269,19 @@
 }
 
 .summaryIcon {
-  color: #22CB84;
+  color: var(--color-live);
   font-size: var(--font-size-md);
   flex-shrink: 0;
 }
 
-/* 경고 배너 — 입력창 바로 위 */
-.warningBanner {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background-color: #FFFBEB;
-  border-top: 1px solid #FDE68A;
-  font-size: var(--font-size-sm);
-  color: #92400E;
-  font-weight: var(--font-weight-regular);
+.summaryBannerWarning {
+  background-color: var(--color-danger-bg);
+  border-top-color: var(--color-danger);
+  color: var(--color-danger);
 }
 
-.warningArrow {
-  color: #D97706;
-  font-weight: var(--font-weight-bold);
-  flex-shrink: 0;
+.summaryBannerWarning .summaryIcon {
+  color: var(--color-danger);
 }
 
 /* 메시지 영역 */

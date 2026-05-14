@@ -39,6 +39,8 @@
   --color-border-light:     var(--border);
   --color-red:              var(--red);
   --color-red-bg:           var(--red-bg);
+  --color-danger:           var(--red);
+  --color-danger-bg:        var(--red-bg);
 
   /* Typography — Size primitives */
   --font-size-display: 32px;

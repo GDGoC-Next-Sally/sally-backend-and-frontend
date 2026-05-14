@@ -127,7 +127,8 @@
 }
 
 .itemWarning {
-  border-color: #FB923C !important;
+  border-color: var(--color-danger) !important;
+  background-color: var(--color-danger-bg) !important;
 }
 
 /* ── 학생 카드 헤더 행 ───────────────────────────────────────────────────────── */

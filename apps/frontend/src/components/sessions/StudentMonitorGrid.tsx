@@ -98,13 +98,6 @@ function StudentCard({ student, analysis }: { student: AttendanceStudent; analys
         <div className={styles.noData}>분석 데이터 대기 중...</div>
       )}
 
-      {needsIntervention && (
-        <div className={styles.warningRow}>
-          <AlertTriangle size={12} color="#ef4444" />
-          <span>개입이 필요합니다</span>
-          {analysis?.one_line_summary && <span className={styles.summarySub}>— {analysis.one_line_summary}</span>}
-        </div>
-      )}
     </div>
   );
 }
