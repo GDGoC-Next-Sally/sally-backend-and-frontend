@@ -27,10 +27,15 @@ export class LivechatService {
       throw new UnauthorizedException('권한이 없습니다.');
     }
 
-    return this.prisma.chat_messages.findMany({
+    const messages = await this.prisma.chat_messages.findMany({
       where: { dialog_id: dialogId },
       orderBy: { created_at: 'asc' }
     });
+
+    if (role === 'STUDENT') {
+      return messages.filter(msg => msg.sender_type !== 'TEACHER')
+    }
+    return messages;
   }
 
   // 학생 전용 메시지 전송
