@@ -39,7 +39,19 @@ from ai_server.services.message_formatting import format_labeled_message
 env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-REPORT_MODEL = "meta/llama-3.3-70b-instruct"
+
+def _env_str(name: str, default: str) -> str:
+    value = os.getenv(name)
+    return value.strip() if value and value.strip() else default
+
+
+# ── 모델 설정 (Gemini OpenAI-compatible API) ────────────────────────────────
+GEMINI_BASE_URL = _env_str(
+    "GEMINI_BASE_URL",
+    "https://generativelanguage.googleapis.com/v1beta/openai/",
+)
+GEMINI_MODEL = _env_str("GEMINI_MODEL", "gemini-2.5-flash")
+REPORT_MODEL = _env_str("GEMINI_REPORT_MODEL", GEMINI_MODEL)
 
 # 짧은 세션 기준 추정 토큰 수
 # rough estimate: 약 4글자 = 1토큰
@@ -66,16 +78,16 @@ LANGUAGE_RULE = """언어 및 표기 규칙:
 
 
 # ─────────────────────────────────────────────────────────────
-# OpenAI-compatible NVIDIA client
+# OpenAI-compatible Gemini client
 # ─────────────────────────────────────────────────────────────
 
 def _get_client() -> AsyncOpenAI:
-    api_key = os.getenv("NVIDIA_API_KEY")
+    api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        raise RuntimeError(".env 파일에 NVIDIA_API_KEY가 설정되어 있지 않습니다.")
+        raise RuntimeError(".env 파일에 GEMINI_API_KEY가 설정되어 있지 않습니다.")
 
     return AsyncOpenAI(
-        base_url="https://integrate.api.nvidia.com/v1",
+        base_url=GEMINI_BASE_URL,
         api_key=api_key,
     )
 

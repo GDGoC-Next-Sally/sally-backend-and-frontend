@@ -36,12 +36,14 @@ def _env_str(name: str, default: str) -> str:
     value = os.getenv(name)
     return value.strip() if value and value.strip() else default
 
-# ── 모델 설정 (채팅용 / 분석용 분리) ──────────────────────────────────────────
-NVIDIA_BASE_URL = _env_str("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
-CHAT_MODEL = _env_str("NVIDIA_CHAT_MODEL", "meta/llama-3.3-70b-instruct")
-#ANALYZE_MODEL = "nvidia/llama-3.3-nemotron-super-49b-v1.5"  # 분석용: 추론 능력이 뛰어난 무거운 모델
-ANALYZE_MODEL = _env_str("NVIDIA_ANALYZE_MODEL", "meta/llama-3.3-70b-instruct")
-#ANALYZE_MODEL = "nvidia/llama-3.1-nemotron-nano-8b-v1"     # 8B: 너무 단순하여 분석 정확도 낮음
+# ── 모델 설정 (Gemini OpenAI-compatible API) ────────────────────────────────
+GEMINI_BASE_URL = _env_str(
+    "GEMINI_BASE_URL",
+    "https://generativelanguage.googleapis.com/v1beta/openai/",
+)
+GEMINI_MODEL = _env_str("GEMINI_MODEL", "gemini-2.5-flash")
+CHAT_MODEL = _env_str("GEMINI_CHAT_MODEL", GEMINI_MODEL)
+ANALYZE_MODEL = _env_str("GEMINI_ANALYZE_MODEL", GEMINI_MODEL)
 
 CHAT_HISTORY_MAX_TURNS = _env_int("CHAT_HISTORY_MAX_TURNS", 12)
 CHAT_HISTORY_MAX_CHARS = _env_int("CHAT_HISTORY_MAX_CHARS", 6000)
@@ -64,11 +66,11 @@ CHAT_MEMORY_SIGNAL_KEYWORDS = (
 
 def _get_client() -> AsyncOpenAI:
     """API Key를 런타임에 읽어서 클라이언트를 생성합니다 (lazy init)."""
-    api_key = os.getenv("NVIDIA_API_KEY")
+    api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        raise RuntimeError(".env 파일에 NVIDIA_API_KEY가 설정되어 있지 않습니다.")
+        raise RuntimeError(".env 파일에 GEMINI_API_KEY가 설정되어 있지 않습니다.")
     return AsyncOpenAI(
-        base_url=NVIDIA_BASE_URL,
+        base_url=GEMINI_BASE_URL,
         api_key=api_key,
         timeout=120.0,  # 대형 모델의 긴 TTFT(첫 토큰 대기)를 위해 120초로 설정
     )
@@ -79,8 +81,8 @@ def _select_recent_chat_history(
 ) -> list[ConversationTurn]:
     """
     채팅 응답 생성에는 최근 대화만 사용합니다.
-    고정 system/few-shot prefix는 매 요청 동일하게 유지하고, 변하는 suffix를 제한하면
-    NIM prefix/KV cache가 재사용되기 쉽고 대화가 길어질수록 커지는 prefill 비용도 줄어듭니다.
+    고정 system/few-shot prefix는 매 요청 동일하게 유지하고 변하는 suffix를 제한하여,
+    대화가 길어질수록 커지는 prefill 비용을 줄입니다.
     """
     if not conversation_history:
         return []
@@ -293,8 +295,6 @@ async def stream_chat(
         model=CHAT_MODEL,
         messages=messages,
         temperature=0.6,          # 반복 방지를 위해 온도 약간 상승 (0.4 -> 0.6)
-        presence_penalty=0.2,     # 새로운 주제를 말하도록 유도
-        frequency_penalty=0.4,    # 똑같은 단어/구조 반복 억제
         max_tokens=400,           # 무한 반복 방지용 하드 리밋
         stream=True,
     )
@@ -809,8 +809,6 @@ async def analyze_student(
                 messages=messages,
                 temperature=0,
                 max_tokens=512,
-                presence_penalty=0,
-                frequency_penalty=0,
             )
             break
         except (RateLimitError, APIConnectionError, APITimeoutError) as e:
