@@ -24,7 +24,7 @@ export class SupplementaryService {
         textbooks: { select: { subject: true, publisher: true } },
         users: { select: { id: true, name: true } },
       },
-      orderBy: { created_at: 'desc' },
+      orderBy: [{ unit_number: 'asc' }, { created_at: 'desc' }],
     });
   }
 

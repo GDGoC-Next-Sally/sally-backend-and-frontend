@@ -145,6 +145,7 @@ model textbooks {
 model unit_prompts {
   id          Int        @id @default(autoincrement())
   textbook_id Int?
+  unit_number Int?
   creator_id  String     @db.Uuid
   objective   String
   prompt      String
