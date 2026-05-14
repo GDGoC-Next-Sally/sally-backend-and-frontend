@@ -52,8 +52,15 @@ NVIDIA_BASE_URL = _env_str(
     "NVIDIA_BASE_URL",
     "https://integrate.api.nvidia.com/v1",
 )
-NVIDIA_MODEL = _env_str("NVIDIA_MODEL", "google/gemma-4-31b-it")
-REPORT_MODEL = _env_str("NVIDIA_REPORT_MODEL", NVIDIA_MODEL)
+NVIDIA_CHAT_MODEL = _env_str("NVIDIA_CHAT_MODEL", "google/gemma-4-31b-it")
+NVIDIA_REPORT_SUMMARY_MODEL = _env_str("NVIDIA_REPORT_SUMMARY_MODEL", NVIDIA_CHAT_MODEL)
+NVIDIA_REPORT_FINAL_MODEL = _env_str(
+    "NVIDIA_REPORT_FINAL_MODEL",
+    _env_str("NVIDIA_REPORT_MODEL", "nemotron-3-super-120b-a12b"),
+)
+
+# Backward-compatible alias for modules that only need the final report model.
+REPORT_MODEL = NVIDIA_REPORT_FINAL_MODEL
 
 # 짧은 세션 기준 추정 토큰 수
 # rough estimate: 약 4글자 = 1토큰
@@ -823,10 +830,11 @@ async def _call_llm(
     prompt: str,
     max_tokens: int,
     temperature: float = 0.2,
+    model: Optional[str] = None,
 ) -> str:
     """LLM 호출 공통 helper입니다."""
     response = await client.chat.completions.create(
-        model=REPORT_MODEL,
+        model=model or REPORT_MODEL,
         messages=[{"role": "user", "content": prompt}],
         temperature=temperature,
         max_tokens=max_tokens,
@@ -923,6 +931,7 @@ async def generate_final_report(
                 prompt=prompt,
                 max_tokens=4096,
                 temperature=0.2,
+                model=NVIDIA_REPORT_FINAL_MODEL,
             )
 
         else:
@@ -945,6 +954,7 @@ async def generate_final_report(
                     prompt=summary_prompt,
                     max_tokens=1024,
                     temperature=0.2,
+                    model=NVIDIA_REPORT_SUMMARY_MODEL,
                 )
 
                 summary = summary.strip()
@@ -965,6 +975,7 @@ async def generate_final_report(
                 prompt=synthesis_prompt,
                 max_tokens=4096,
                 temperature=0.2,
+                model=NVIDIA_REPORT_FINAL_MODEL,
             )
 
     except Exception as e:

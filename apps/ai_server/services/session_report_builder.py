@@ -17,7 +17,8 @@ from ai_server.services.message_formatting import clean_speaker_label, format_la
 from ai_server.services.report_builder import (
     CHUNK_MAX_CHARS,
     LANGUAGE_RULE,
-    REPORT_MODEL,
+    NVIDIA_REPORT_FINAL_MODEL,
+    NVIDIA_REPORT_SUMMARY_MODEL,
     _call_llm,
     _contains_foreign_chars,
     _estimate_tokens,
@@ -87,6 +88,7 @@ async def _call_session_llm(
     prompt: str,
     max_tokens: int,
     temperature: float,
+    model: Optional[str] = None,
     session_id: Optional[str] = None,
     stage: str = "session_report",
 ) -> str:
@@ -97,6 +99,7 @@ async def _call_session_llm(
                 prompt=prompt,
                 max_tokens=max_tokens,
                 temperature=temperature,
+                model=model,
             )
         except Exception as error:
             should_retry = (
@@ -850,6 +853,7 @@ async def _repair_and_parse_session_report_json(
         prompt=_build_session_repair_json_prompt(raw_text),
         max_tokens=4096,
         temperature=0.0,
+        model=NVIDIA_REPORT_FINAL_MODEL,
         session_id=session_id,
         stage="json_repair",
     )
@@ -927,6 +931,7 @@ async def _ensure_no_foreign_chars_in_session_report(
             prompt=_build_session_remove_foreign_chars_prompt(report_json),
             max_tokens=4096,
             temperature=0.0,
+            model=NVIDIA_REPORT_FINAL_MODEL,
             session_id=session_id,
             stage="foreign_char_repair",
         )
@@ -1053,6 +1058,7 @@ async def _compress_summaries_for_synthesis(
                 ),
                 max_tokens=1024,
                 temperature=0.2,
+                model=NVIDIA_REPORT_SUMMARY_MODEL,
                 session_id=session_id,
                 stage="rollup_compression",
             )
@@ -1100,6 +1106,7 @@ async def generate_session_report(
                 prompt=prompt,
                 max_tokens=4096,
                 temperature=0.2,
+                model=NVIDIA_REPORT_FINAL_MODEL,
                 session_id=session_id,
                 stage="direct_report",
             )
@@ -1118,6 +1125,7 @@ async def generate_session_report(
                     ),
                     max_tokens=1024,
                     temperature=0.2,
+                    model=NVIDIA_REPORT_SUMMARY_MODEL,
                     session_id=session_id,
                     stage=f"chunk_summary_{i + 1}",
                 )
@@ -1135,6 +1143,7 @@ async def generate_session_report(
                 prompt=_build_session_synthesis_prompt(chunk_summaries),
                 max_tokens=4096,
                 temperature=0.2,
+                model=NVIDIA_REPORT_FINAL_MODEL,
                 session_id=session_id,
                 stage="final_synthesis",
             )

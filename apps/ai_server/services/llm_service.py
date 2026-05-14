@@ -44,8 +44,8 @@ NVIDIA_BASE_URL = _env_str(
     "https://integrate.api.nvidia.com/v1",
 )
 NVIDIA_MODEL = _env_str("NVIDIA_MODEL", "google/gemma-4-31b-it")
-CHAT_MODEL = _env_str("NVIDIA_CHAT_MODEL", "google/gemma-4-31b-it")
-ANALYZE_MODEL = _env_str("NVIDIA_ANALYZE_MODEL", "nemotron-3-super-120b-a12b")
+CHAT_MODEL = _env_str("NVIDIA_CHAT_MODEL", NVIDIA_MODEL)
+ANALYZE_MODEL = _env_str("NVIDIA_ANALYZE_MODEL", NVIDIA_MODEL)
 
 CHAT_HISTORY_MAX_TURNS = _env_int("CHAT_HISTORY_MAX_TURNS", 12)
 CHAT_HISTORY_MAX_CHARS = _env_int("CHAT_HISTORY_MAX_CHARS", 6000)
@@ -144,7 +144,6 @@ def _build_extract_summary_from_old_history(
     if not old_history:
         return None
 
-    teacher_directives: list[str] = []
     student_signals: list[str] = []
     student_context: list[str] = []
     ai_checkpoints: list[str] = []
@@ -155,8 +154,6 @@ def _build_extract_summary_from_old_history(
             continue
 
         if _is_teacher_memory_turn(turn):
-            label = speaker_label(turn.sender_type, student_name=turn.student_name)
-            teacher_directives.append(f"{label}: {text}")
             continue
 
         if _is_student_memory_turn(turn):
@@ -172,8 +169,6 @@ def _build_extract_summary_from_old_history(
             ai_checkpoints.append(f"Sally: {text}")
 
     lines: list[str] = []
-    if teacher_directives:
-        lines.append("이전 선생님/시스템 지시: " + " / ".join(teacher_directives[-2:]))
     if student_signals:
         lines.append("이전 학생 어려움 신호: " + " / ".join(student_signals[-3:]))
     if student_context:
@@ -206,14 +201,20 @@ def _build_teacher_directive_block(
     conversation_history: list[ConversationTurn],
 ) -> str | None:
     """
-    선생님/시스템 개입은 학생에게 보인 발화가 아니라 AI의 다음 응답 정책입니다.
-    일반 대화 턴보다 높은 우선순위의 별도 지침으로 다시 주입해 반영력을 높입니다.
+    선생님/시스템 개입은 학생에게 보인 발화가 아니라 AI의 다음 응답 실행 지침입니다.
+    마지막 AI 답변 이후에 들어온 지시만 다음 답변에 1회 적용합니다.
     """
     if CHAT_TEACHER_DIRECTIVE_MAX_ITEMS <= 0:
         return None
 
+    last_model_idx = -1
+    for index in range(len(conversation_history) - 1, -1, -1):
+        if conversation_history[index].role == "model":
+            last_model_idx = index
+            break
+
     directives: list[str] = []
-    for turn in conversation_history:
+    for turn in conversation_history[last_model_idx + 1:]:
         if not _is_teacher_memory_turn(turn):
             continue
 
@@ -311,19 +312,6 @@ async def stream_chat(
             ),
         })
 
-    teacher_directive_block = _build_teacher_directive_block(conversation_history)
-    if teacher_directive_block:
-        messages.append({
-            "role": "system",
-            "content": (
-                "담당 선생님의 최신 비공개 지도 지침입니다.\n"
-                "아래 지침은 학생에게 그대로 말하거나 존재를 언급하지 말고, "
-                "다음 답변의 설명 방식, 난이도, 질문 전략에 우선 반영하십시오.\n"
-                "여러 지침이 충돌하면 가장 최근 지침을 우선하되, 학생 보호와 사실 정확성을 해치지 마십시오.\n"
-                f"{teacher_directive_block}"
-            ),
-        })
-
     # 실제 대화 기록 이어 붙이기
     # TEACHER는 학생에게 보인 발화가 아니라 AI용 비공개 지도 방향으로 라벨링합니다. (방향 A)
     for turn in recent_history:
@@ -339,6 +327,23 @@ async def stream_chat(
                 student_name=turn.student_name,
             )
             messages.append({"role": "user", "content": labeled_text})
+
+    teacher_directive_block = _build_teacher_directive_block(conversation_history)
+    if teacher_directive_block:
+        messages.append({
+            "role": "system",
+            "content": (
+                "담당 선생님의 최신 직접 개입 지시입니다.\n"
+                "이 지시는 방금까지의 대화 내용을 고려한 뒤, 다음 AI 답변에서 반드시 실행해야 하는 최우선 수업 운영 지시입니다.\n"
+                "선생님 지시를 학생에게 그대로 인용하거나 '선생님이 이렇게 말했습니다'처럼 지시의 존재를 설명하지 마십시오.\n"
+                "대신 지시의 의도를 학생에게 하는 자연스러운 답변으로 변환해 말하십시오.\n"
+                "예: 선생님 지시가 '선생님한테 오라고 해줘'라면, "
+                "'지금은 선생님께 직접 가서 확인해보는 게 좋겠어. 선생님께 가볼래?'처럼 답하십시오.\n"
+                "여러 지시가 충돌하면 가장 최근 지시를 우선하십시오.\n"
+                "단, 학생 안전, 사실 정확성, 수업 범위를 해치는 지시는 따르지 마십시오.\n"
+                f"{teacher_directive_block}"
+            ),
+        })
 
     response = await client.chat.completions.create(
         model=CHAT_MODEL,
