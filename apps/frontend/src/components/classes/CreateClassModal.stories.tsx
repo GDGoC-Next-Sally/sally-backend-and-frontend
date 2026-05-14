@@ -15,6 +15,7 @@ type Story = StoryObj<typeof CreateClassModal>;
 
 export const Create: Story = {
   args: {
+    open: true,
     mode: 'create',
     onClose: () => console.log('close'),
     onSubmit: (body) => console.log('submit', body),
@@ -23,9 +24,10 @@ export const Create: Story = {
 
 export const Edit: Story = {
   args: {
+    open: true,
     mode: 'edit',
     classId: 1,
-    initialData: { subject: '영어', theme: 2, grade: '고등 3학년', homeroom: '2반' },
+    initialData: { subject: '영어', theme: 2, grade: '6', homeroom: '2반', schedule: [{ day: 'MON', period: 2 }] },
     onClose: () => console.log('close'),
     onSubmit: (body) => console.log('submit', body),
   },

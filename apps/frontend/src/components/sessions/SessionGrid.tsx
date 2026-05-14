@@ -148,7 +148,7 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
 
               <div className={styles.sessionInfo}>
                 <div className={styles.sessionTitle}>{session.session_name}</div>
-                <div className={styles.sessionSubject}>{session.explanation ?? ''}</div>
+                <div className={styles.sessionSubject}>{session.objective ?? ''}</div>
               </div>
 
               {session.period != null && (
@@ -186,13 +186,12 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
         })}
       </div>
 
-      {isCreateOpen && (
-        <CreateSessionModal
-          classId={classId}
-          onClose={() => setIsCreateOpen(false)}
-          onSubmit={async (body) => { await onCreateSession(body); onRefresh(); }}
-        />
-      )}
+      <CreateSessionModal
+        open={isCreateOpen}
+        classId={classId}
+        onClose={() => setIsCreateOpen(false)}
+        onSubmit={async (body) => { await onCreateSession(body); onRefresh(); }}
+      />
       {editTarget && (
         <SessionModal
           classId={classId}

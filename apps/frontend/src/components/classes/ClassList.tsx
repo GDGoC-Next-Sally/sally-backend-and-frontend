@@ -102,28 +102,26 @@ export const ClassList: React.FC<ClassListProps> = ({
       </div>
 
       {/* 모달들 */}
-      {isCreateModalOpen && (
-        <CreateClassModal
-          mode="create"
-          onClose={() => setIsCreateModalOpen(false)}
-          onSubmit={(body) => {
-            onCreateClass(body);
-            setIsCreateModalOpen(false);
-          }}
-        />
-      )}
-      {editClass && (
-        <CreateClassModal
-          mode="edit"
-          classId={editClass.id}
-          initialData={{ subject: editClass.subject, theme: 0 }}
-          onClose={() => setEditClass(null)}
-          onSubmit={(body) => {
-            onUpdateClass(editClass.id, body);
-            setEditClass(null);
-          }}
-        />
-      )}
+      <CreateClassModal
+        open={isCreateModalOpen}
+        mode="create"
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={(body) => {
+          onCreateClass(body);
+          setIsCreateModalOpen(false);
+        }}
+      />
+      <CreateClassModal
+        open={editClass !== null}
+        mode="edit"
+        classId={editClass?.id}
+        initialData={editClass ? { subject: editClass.subject, theme: 0 } : undefined}
+        onClose={() => setEditClass(null)}
+        onSubmit={(body) => {
+          if (editClass) onUpdateClass(editClass.id, body);
+          setEditClass(null);
+        }}
+      />
       {codeManageClass && (
         <SessionCodeModal
           onClose={() => setCodeManageClass(null)}

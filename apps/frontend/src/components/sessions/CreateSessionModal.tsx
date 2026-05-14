@@ -1,191 +1,275 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
+import { X, Check, CloudUpload, Loader2 } from 'lucide-react';
 import { type CreateSessionBody } from '@/actions/sessions';
-import { type TextbookTemplate, getPublishers, getTemplates } from '@/lib/data/textbookTemplates';
-import { X, Check, CloudUpload } from 'lucide-react';
+import { getPublishers, getTextbooks, getUnitPrompts } from '@/actions/supplementary';
+import type { Textbook, UnitPrompt } from '@/actions/supplementary';
 import styles from './CreateSessionModal.module.css';
 
 type Step = 1 | 2 | 3;
 
 const AI_GUIDE_OPTIONS = [
-  { value: 'balanced', label: '균형형 (권장)', desc: '학생의 수준과 상황에 맞춰 설명 힌트, 질문을 균형있게 제공합니다.' },
-  { value: 'hint', label: '힌트 중심형', desc: '학생이 스스로 생각할 수 있도록 작은 힌트 위주로 도움을 줍니다.' },
-  { value: 'explain', label: '설명 중심형', desc: '학생이 이해하기 쉽도록 상세한 설명 위주로 안내합니다.' },
+  { value: 'balanced', label: '균형형 (권장)',  desc: '학생의 수준과 상황에 맞춰 설명 힌트, 질문을 균형있게 제공합니다.' },
+  { value: 'hint',     label: '힌트 중심형',    desc: '학생이 스스로 생각할 수 있도록 작은 힌트 위주로 도움을 줍니다.' },
+  { value: 'explain',  label: '설명 중심형',    desc: '학생이 이해하기 쉽도록 상세한 설명 위주로 안내합니다.' },
 ];
 
-const SUBJECTS = ['국어', '영어', '수학', '과학', '사회', '역사', '도덕', '체육', '음악', '미술', '기술', '정보'];
+const SUBJECTS  = ['국어', '영어', '수학', '과학', '사회', '역사', '도덕', '체육', '음악', '미술', '기술', '정보'];
 const SEMESTERS = ['2026년 1학기', '2026년 2학기', '2025년 1학기', '2025년 2학기'];
-const GRADES = ['1학년', '2학년', '3학년'];
-const CLASSES = Array.from({ length: 12 }, (_, i) => `${i + 1}반`);
-const PUBLISHERS = getPublishers();
 
 interface Props {
+  open: boolean;
   classId: number;
   onClose: () => void;
   onSubmit: (body: CreateSessionBody) => void | Promise<void>;
   initialStep?: Step;
 }
 
-export const CreateSessionModal: React.FC<Props> = ({ classId, onClose, onSubmit, initialStep = 1 }) => {
+export const CreateSessionModal: React.FC<Props> = ({
+  open,
+  classId,
+  onClose,
+  onSubmit,
+  initialStep = 1,
+}) => {
   const [step, setStep] = useState<Step>(initialStep);
 
   // Step 1 — 정보 입력
   const [sessionName, setSessionName] = useState('');
-  const [subject, setSubject] = useState('');
-  const [semester, setSemester] = useState('2026년 1학기');
-  const [grade, setGrade] = useState('');
-  const [classNum, setClassNum] = useState('');
-  const [visibility, setVisibility] = useState<'invite' | 'school'>('invite');
+  const [subject,     setSubject]     = useState('');
+  const [semester,    setSemester]    = useState('2026년 1학기');
 
-  // Step 2 — 템플릿 선택
-  const [selectedTemplate, setSelectedTemplate] = useState<TextbookTemplate | null>(null);
-  const [publisher, setPublisher] = useState(PUBLISHERS[0] ?? '');
+  // Step 2 — 단원 선택 (실 API)
+  const [publishers,       setPublishers]       = useState<string[]>([]);
+  const [selectedPublisher, setSelectedPublisher] = useState('');
+  const [textbooks,        setTextbooks]        = useState<Textbook[]>([]);
+  const [selectedTextbook, setSelectedTextbook] = useState<Textbook | null>(null);
+  const [unitPrompts,      setUnitPrompts]      = useState<UnitPrompt[]>([]);
+  const [selectedPrompt,   setSelectedPrompt]   = useState<UnitPrompt | null>(null);
+  const [loadingBooks,     setLoadingBooks]     = useState(false);
+  const [loadingPrompts,   setLoadingPrompts]   = useState(false);
 
   // Step 3 — AI & 보조자료
   const [aiGuide, setAiGuide] = useState('balanced');
-  const [files, setFiles] = useState<File[]>([]);
+  const [files,   setFiles]   = useState<File[]>([]);
 
   const selectedAiGuide = AI_GUIDE_OPTIONS.find((o) => o.value === aiGuide)!;
-
-  // subject/semester/publisher 조합으로 필터링된 템플릿 목록
-  const filteredTemplates = useMemo(
-    () => getTemplates({ publisher, subject: subject || undefined, semester: semester || undefined }),
-    [publisher, subject, semester],
-  );
-
   const isStep1Valid = sessionName.trim().length > 0;
+
+  /* ── Step 2 데이터 로드 ── */
+  useEffect(() => {
+    if (step === 2 && publishers.length === 0) {
+      getPublishers().then((list) => {
+        setPublishers(list);
+        if (list.length > 0) setSelectedPublisher(list[0]);
+      });
+    }
+  }, [step, publishers.length]);
+
+  useEffect(() => {
+    if (!selectedPublisher) return;
+    setLoadingBooks(true);
+    setTextbooks([]);
+    setSelectedTextbook(null);
+    setUnitPrompts([]);
+    setSelectedPrompt(null);
+    getTextbooks({ publisher: selectedPublisher })
+      .then(setTextbooks)
+      .finally(() => setLoadingBooks(false));
+  }, [selectedPublisher]);
+
+  useEffect(() => {
+    if (!selectedTextbook) return;
+    setLoadingPrompts(true);
+    setUnitPrompts([]);
+    setSelectedPrompt(null);
+    getUnitPrompts({ textbookId: selectedTextbook.id })
+      .then(setUnitPrompts)
+      .finally(() => setLoadingPrompts(false));
+  }, [selectedTextbook]);
 
   const handleNext = () => {
     if (step < 3) setStep((step + 1) as Step);
   };
 
+  const handleBack = () => {
+    if (step > 1) setStep((step - 1) as Step);
+  };
+
   const handleSubmit = async () => {
+    let objective: string | undefined = undefined;
+    let explanation: string | undefined = undefined;
+
+    if (selectedPrompt?.prompt) {
+      try {
+        const p = JSON.parse(selectedPrompt.prompt) as {
+          learning_objective_summary?: string;
+          learning_objectives_detailed?: string[];
+          core_concepts?: string[];
+          inquiry_question?: string;
+          attitudes?: string[];
+          subunit_title?: string;
+          domain?: string;
+          page_range?: string;
+        };
+
+        objective = p.learning_objective_summary
+          ?? p.learning_objectives_detailed?.join(' / ')
+          ?? selectedPrompt.objective
+          ?? undefined;
+
+        explanation = JSON.stringify(
+          Object.fromEntries(
+            Object.entries(p).filter(([, v]) => v !== null && v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0))
+          )
+        );
+      } catch {
+        objective   = selectedPrompt.objective   ?? undefined;
+        explanation = selectedPrompt.prompt      ?? undefined;
+      }
+    }
+
     const body: CreateSessionBody = {
       class_id: classId,
       session_name: sessionName.trim(),
-      // 템플릿을 선택했으면 그 값 우선, 없으면 폼 값으로 fallback
-      objective: selectedTemplate?.objective || undefined,
-      explanation: selectedTemplate?.explanation || (subject || undefined),
+      objective,
       session_prompt: aiGuide,
+      explanation,
     };
     await onSubmit(body);
     onClose();
   };
 
-  const stepDone = (s: number) => s < step;
-  const stepActive = (s: number) => s <= step;
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) onClose();
+  };
+
+  const STEP_LABELS = ['정보 입력', '단원 선택', 'AI & 자료'];
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className={styles.header}>
-          <button className={styles.closeBtn} onClick={onClose} type="button" aria-label="닫기">
-            <X size={20} />
-          </button>
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
+      <Dialog.Portal>
+        <Dialog.Overlay className={styles.overlay} />
+        <Dialog.Content className={styles.modal} aria-describedby={undefined}>
 
-          <h2 className={styles.title}>신규 세션 생성하기</h2>
+          <Dialog.Close asChild>
+            <button className={styles.closeBtn} aria-label="닫기"><X size={20} /></button>
+          </Dialog.Close>
 
+          <Dialog.Title className={styles.title}>신규 세션 생성하기</Dialog.Title>
+
+          {/* Step indicator */}
           <div className={styles.stepIndicator}>
             {([1, 2, 3] as const).map((s, i) => {
-              const active = stepActive(s);
-              const labels = ['정보 입력', '템플릿 선택', 'AI&보조자료 업로드'];
+              const done   = s < step;
+              const active = s === step;
               return (
                 <React.Fragment key={s}>
                   {i > 0 && (
-                    <div className={`${styles.stepDivider} ${stepDone(s) || active ? styles.stepDividerActive : styles.stepDividerInactive}`} />
+                    <div className={`${styles.stepDivider} ${done || active ? styles.stepDividerActive : styles.stepDividerInactive}`} />
                   )}
                   <div className={styles.stepItem}>
-                    <div className={`${styles.stepBadge} ${active ? styles.stepBadgeActive : styles.stepBadgeInactive}`}>
-                      {s}
+                    <div className={`${styles.stepBadge} ${done ? styles.stepBadgeDone : active ? styles.stepBadgeActive : styles.stepBadgeInactive}`}>
+                      {done ? <Check size={10} strokeWidth={3} /> : s}
                     </div>
-                    <span className={`${styles.stepLabel} ${active ? styles.stepLabelActive : styles.stepLabelInactive}`}>
-                      {labels[i]}
+                    <span className={`${styles.stepLabel} ${done || active ? styles.stepLabelActive : styles.stepLabelInactive}`}>
+                      {STEP_LABELS[i]}
                     </span>
                   </div>
                 </React.Fragment>
               );
             })}
           </div>
-        </div>
 
-        {/* Content */}
-        <div className={styles.content}>
           {step === 1 && (
             <StepInfoInput
               sessionName={sessionName} onSessionNameChange={setSessionName}
-              subject={subject} onSubjectChange={setSubject}
-              semester={semester} onSemesterChange={setSemester}
-              grade={grade} onGradeChange={setGrade}
-              classNum={classNum} onClassNumChange={setClassNum}
-              visibility={visibility} onVisibilityChange={setVisibility}
+              subject={subject}         onSubjectChange={setSubject}
+              semester={semester}       onSemesterChange={setSemester}
             />
           )}
           {step === 2 && (
-            <StepTemplateSelect
-              templates={filteredTemplates}
-              selectedTemplate={selectedTemplate}
-              onSelectTemplate={setSelectedTemplate}
-              publisher={publisher}
-              onPublisherChange={(p) => { setPublisher(p); setSelectedTemplate(null); }}
+            <StepUnitSelect
+              publishers={publishers}
+              selectedPublisher={selectedPublisher}
+              onPublisherChange={setSelectedPublisher}
+              textbooks={textbooks}
+              selectedTextbook={selectedTextbook}
+              onTextbookChange={setSelectedTextbook}
+              unitPrompts={unitPrompts}
+              selectedPrompt={selectedPrompt}
+              onPromptChange={setSelectedPrompt}
+              loadingBooks={loadingBooks}
+              loadingPrompts={loadingPrompts}
             />
           )}
           {step === 3 && (
             <StepAIUpload
-              aiGuide={aiGuide} onAiGuideChange={setAiGuide}
+              aiGuide={aiGuide}
+              onAiGuideChange={setAiGuide}
               selectedAiGuide={selectedAiGuide}
-              files={files} onFilesChange={setFiles}
+              files={files}
+              onFilesChange={setFiles}
             />
           )}
-        </div>
 
-        {/* Footer */}
-        <div className={styles.footer}>
-          <button className={styles.draftBtn} type="button" onClick={onClose}>
-            임시저장
-          </button>
-          {step < 3 ? (
-            <button
-              className={styles.nextBtn}
-              type="button"
-              onClick={handleNext}
-              disabled={step === 1 && !isStep1Valid}
-            >
-              다음 단계
-            </button>
-          ) : (
-            <button className={styles.nextBtn} type="button" onClick={handleSubmit} disabled={!isStep1Valid}>
-              생성하기
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
+          {/* ── Footer ── */}
+          <div className={styles.footer}>
+            {step > 1 ? (
+              <button className={styles.backBtn} type="button" onClick={handleBack}>
+                이전
+              </button>
+            ) : (
+              <button className={styles.cancelBtn} type="button" onClick={onClose}>
+                취소
+              </button>
+            )}
+            {step < 3 ? (
+              <button
+                className={styles.nextBtn}
+                type="button"
+                onClick={handleNext}
+                disabled={step === 1 && !isStep1Valid}
+              >
+                다음 단계
+              </button>
+            ) : (
+              <button
+                className={styles.nextBtn}
+                type="button"
+                onClick={handleSubmit}
+                disabled={!isStep1Valid}
+              >
+                생성하기
+              </button>
+            )}
+          </div>
+
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 };
 
-/* ── Step 1: 정보 입력 ── */
+/* ═══════════════════════════════════════════════════════════
+   Step 1 : 정보 입력
+═══════════════════════════════════════════════════════════ */
 function StepInfoInput({
   sessionName, onSessionNameChange,
-  subject, onSubjectChange,
-  semester, onSemesterChange,
-  grade, onGradeChange,
-  classNum, onClassNumChange,
-  visibility, onVisibilityChange,
+  subject,     onSubjectChange,
+  semester,    onSemesterChange,
 }: {
   sessionName: string; onSessionNameChange: (v: string) => void;
-  subject: string; onSubjectChange: (v: string) => void;
-  semester: string; onSemesterChange: (v: string) => void;
-  grade: string; onGradeChange: (v: string) => void;
-  classNum: string; onClassNumChange: (v: string) => void;
-  visibility: 'invite' | 'school'; onVisibilityChange: (v: 'invite' | 'school') => void;
+  subject: string;     onSubjectChange: (v: string) => void;
+  semester: string;    onSemesterChange: (v: string) => void;
 }) {
   return (
     <>
       <p className={styles.sectionLabel}>기본 정보</p>
-
       <div className={styles.fieldsContainer}>
+
         {/* 세션 이름 */}
         <div className={styles.fieldGroup}>
           <label className={styles.fieldLabel}>세션 이름</label>
@@ -204,145 +288,147 @@ function StepInfoInput({
         <div className={styles.fieldRow}>
           <div className={styles.halfField}>
             <label className={styles.fieldLabel}>과목</label>
-            <select
-              className={`${styles.select} ${subject ? styles.selected : ''}`}
-              value={subject}
-              onChange={(e) => onSubjectChange(e.target.value)}
-            >
+            <select className={`${styles.select} ${subject ? styles.selected : ''}`} value={subject} onChange={(e) => onSubjectChange(e.target.value)}>
               <option value="">과목 선택</option>
               {SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
           <div className={styles.halfField}>
             <label className={styles.fieldLabel}>학기</label>
-            <select
-              className={`${styles.select} ${semester ? styles.selected : ''}`}
-              value={semester}
-              onChange={(e) => onSemesterChange(e.target.value)}
-            >
+            <select className={`${styles.select} ${semester ? styles.selected : ''}`} value={semester} onChange={(e) => onSemesterChange(e.target.value)}>
               <option value="">학기 선택</option>
               {SEMESTERS.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
         </div>
 
-        {/* 학년 + 반 */}
-        <div className={styles.fieldRow}>
-          <div className={styles.halfField}>
-            <label className={styles.fieldLabel}>학년</label>
-            <select
-              className={`${styles.select} ${grade ? styles.selected : ''}`}
-              value={grade}
-              onChange={(e) => onGradeChange(e.target.value)}
-            >
-              <option value="">학년 선택</option>
-              {GRADES.map((g) => <option key={g} value={g}>{g}</option>)}
-            </select>
-          </div>
-          <div className={styles.halfField}>
-            <label className={styles.fieldLabel}>반</label>
-            <select
-              className={`${styles.select} ${classNum ? styles.selected : ''}`}
-              value={classNum}
-              onChange={(e) => onClassNumChange(e.target.value)}
-            >
-              <option value="">반 선택</option>
-              {CLASSES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
-        </div>
 
-        {/* 공개 범위 */}
-        <div className={styles.visibilityRow}>
-          <span className={styles.visibilityLabel}>공개 범위</span>
-          <div className={styles.radioGroup}>
-            {[
-              { value: 'invite' as const, title: '초대받은 학생만', desc: '초대 링크를 받은 학생만 참여할 수 있습니다.' },
-              { value: 'school' as const, title: '학교 구성원 전체', desc: '학교에 소속된 모든 학생이 참여할 수 있습니다.' },
-            ].map((opt) => (
-              <div key={opt.value} className={styles.radioItem} onClick={() => onVisibilityChange(opt.value)}>
-                <div className={`${styles.radioCircle} ${visibility === opt.value ? styles.radioCircleActive : ''}`} />
-                <div className={styles.radioText}>
-                  <span className={styles.radioTitle}>{opt.title}</span>
-                  <span className={styles.radioDesc}>{opt.desc}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+
       </div>
     </>
   );
 }
 
-/* ── Step 2: 템플릿 선택 ── */
-function StepTemplateSelect({
-  templates,
-  selectedTemplate,
-  onSelectTemplate,
-  publisher,
-  onPublisherChange,
+/* ═══════════════════════════════════════════════════════════
+   Step 2 : 단원 선택 (실 API)
+═══════════════════════════════════════════════════════════ */
+function StepUnitSelect({
+  publishers, selectedPublisher, onPublisherChange,
+  textbooks,  selectedTextbook,  onTextbookChange,
+  unitPrompts, selectedPrompt,   onPromptChange,
+  loadingBooks, loadingPrompts,
 }: {
-  templates: TextbookTemplate[];
-  selectedTemplate: TextbookTemplate | null;
-  onSelectTemplate: (v: TextbookTemplate | null) => void;
-  publisher: string;
+  publishers: string[];
+  selectedPublisher: string;
   onPublisherChange: (v: string) => void;
+  textbooks: Textbook[];
+  selectedTextbook: Textbook | null;
+  onTextbookChange: (v: Textbook | null) => void;
+  unitPrompts: UnitPrompt[];
+  selectedPrompt: UnitPrompt | null;
+  onPromptChange: (v: UnitPrompt | null) => void;
+  loadingBooks: boolean;
+  loadingPrompts: boolean;
 }) {
-  const handleToggle = (item: TextbookTemplate) => {
-    onSelectTemplate(selectedTemplate?.id === item.id ? null : item);
-  };
-
   return (
-    <div className={styles.templateSection}>
-      <div className={styles.templateHeader}>
-        <p className={styles.sectionLabel} style={{ margin: 0 }}>템플릿 선택하기</p>
-        <p className={styles.sectionSubLabel}>템플릿을 선택하고 수업 목적에 맞게 세션을 생성하세요.</p>
+    <div className={styles.unitSection}>
+      <div className={styles.unitSectionHeader}>
+        <p className={styles.sectionLabel} style={{ margin: 0 }}>단원 선택</p>
+        <p className={styles.sectionSubLabel}>교과서를 선택하고 수업 단원을 고르세요. (선택 사항)</p>
       </div>
 
-      <select
-        className={`${styles.select} ${styles.selected}`}
-        value={publisher}
-        onChange={(e) => onPublisherChange(e.target.value)}
-      >
-        {PUBLISHERS.map((p) => <option key={p} value={p}>{p}</option>)}
-      </select>
+      {/* 출판사 선택 */}
+      {publishers.length > 0 ? (
+        <select
+          className={`${styles.select} ${styles.selected}`}
+          value={selectedPublisher}
+          onChange={(e) => onPublisherChange(e.target.value)}
+        >
+          {publishers.map((p) => <option key={p} value={p}>{p}</option>)}
+        </select>
+      ) : (
+        <div className={styles.loadingRow}><Loader2 size={16} className={styles.spinner} /><span>출판사 불러오는 중…</span></div>
+      )}
 
-      <div className={styles.templateListContainer}>
-        {templates.length === 0 ? (
-          <p className={styles.sectionSubLabel} style={{ padding: '16px 0' }}>
-            선택한 조건에 해당하는 템플릿이 없습니다.
-          </p>
-        ) : (
-          templates.map((item) => (
-            <div
-              key={item.id}
-              className={`${styles.templateItem} ${selectedTemplate?.id === item.id ? styles.templateItemSelected : ''}`}
-              onClick={() => handleToggle(item)}
-            >
-              <div className={styles.templateItemContent}>
-                <p className={styles.templateUnit}>{item.unit}</p>
-                <div className={styles.templateLessonRow}>
-                  <span className={styles.templateLesson}>{item.lesson}</span>
-                  <span className={styles.templatePages}>{item.pages}</span>
+      {/* 2열: 교과서 목록 | 단원 목록 */}
+      <div className={styles.unitColumns}>
+
+        {/* 교과서 목록 */}
+        <div className={styles.unitCol}>
+          <p className={styles.colLabel}>교과서</p>
+          <div className={styles.listBox}>
+            {loadingBooks ? (
+              <div className={styles.loadingRow}><Loader2 size={16} className={styles.spinner} /></div>
+            ) : textbooks.length === 0 ? (
+              <p className={styles.emptyMsg}>교과서가 없습니다.</p>
+            ) : (
+              textbooks.map((book) => (
+                <div
+                  key={book.id}
+                  className={`${styles.listItem} ${selectedTextbook?.id === book.id ? styles.listItemSelected : ''}`}
+                  onClick={() => onTextbookChange(selectedTextbook?.id === book.id ? null : book)}
+                >
+                  <span className={styles.listItemTitle}>{book.subject}</span>
+                  <span className={styles.listItemSub}>{book.year_published ?? ''}</span>
+                  {book._count && (
+                    <span className={styles.listItemBadge}>{book._count.unit_prompts}단원</span>
+                  )}
+                  {selectedTextbook?.id === book.id && (
+                    <Check size={14} className={styles.listItemCheck} />
+                  )}
                 </div>
-                <div className={styles.templateObjectiveRow}>
-                  <span className={styles.templateObjectiveTag}>학습목표</span>
-                  <span className={styles.templateObjectiveText}>{item.objective}</span>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* 단원 목록 */}
+        <div className={styles.unitCol}>
+          <p className={styles.colLabel}>단원 / 학습목표</p>
+          <div className={styles.listBox}>
+            {!selectedTextbook ? (
+              <p className={styles.emptyMsg}>교과서를 먼저 선택하세요.</p>
+            ) : loadingPrompts ? (
+              <div className={styles.loadingRow}><Loader2 size={16} className={styles.spinner} /></div>
+            ) : unitPrompts.length === 0 ? (
+              <p className={styles.emptyMsg}>등록된 단원이 없습니다.</p>
+            ) : (
+              unitPrompts.map((up) => (
+                <div
+                  key={up.id}
+                  className={`${styles.promptItem} ${selectedPrompt?.id === up.id ? styles.promptItemSelected : ''}`}
+                  onClick={() => onPromptChange(selectedPrompt?.id === up.id ? null : up)}
+                >
+                  <div className={styles.promptMeta}>
+                    {up.unit_number != null && (
+                      <span className={styles.promptUnit}>{up.unit_number}단원{up.subunit_number != null ? ` · ${up.subunit_number}차시` : ''}</span>
+                    )}
+                    {up.unit_title && <span className={styles.promptTitle}>{up.unit_title}</span>}
+                  </div>
+                  {up.subunit_title && <p className={styles.promptSub}>{up.subunit_title}</p>}
+                  {up.objective && (
+                    <div className={styles.promptObjectiveRow}>
+                      <span className={styles.objectiveTag}>학습목표</span>
+                      <span className={styles.objectiveText}>{up.objective}</span>
+                    </div>
+                  )}
+                  {selectedPrompt?.id === up.id && (
+                    <Check size={14} className={styles.promptCheck} strokeWidth={2.5} />
+                  )}
                 </div>
-              </div>
-              {selectedTemplate?.id === item.id && (
-                <Check size={18} color="#22cb84" strokeWidth={2.5} className={styles.templateCheckIcon} />
-              )}
-            </div>
-          ))
-        )}
+              ))
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );
 }
 
-/* ── Step 3: AI & 보조자료 업로드 ── */
+/* ═══════════════════════════════════════════════════════════
+   Step 3 : AI & 보조자료 업로드
+═══════════════════════════════════════════════════════════ */
 function StepAIUpload({
   aiGuide, onAiGuideChange, selectedAiGuide, files, onFilesChange,
 }: {
@@ -352,14 +438,11 @@ function StepAIUpload({
 }) {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    const dropped = Array.from(e.dataTransfer.files);
-    onFilesChange([...files, ...dropped]);
+    onFilesChange([...files, ...Array.from(e.dataTransfer.files)]);
   };
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      onFilesChange([...files, ...Array.from(e.target.files)]);
-    }
+    if (e.target.files) onFilesChange([...files, ...Array.from(e.target.files)]);
   };
 
   return (
@@ -367,17 +450,11 @@ function StepAIUpload({
       <div className={styles.step3Row}>
         <div className={styles.step3LabelCol}>
           <p className={styles.sectionLabel} style={{ marginBottom: 0 }}>AI 코칭 가이드</p>
-          <p className={styles.sectionSubLabel}>세션이 활성화되는 기간을 설정해주세요.</p>
+          <p className={styles.sectionSubLabel}>AI 응답 방식을 선택하세요.</p>
         </div>
         <div className={styles.step3ContentCol}>
-          <select
-            className={`${styles.select} ${styles.selected}`}
-            value={aiGuide}
-            onChange={(e) => onAiGuideChange(e.target.value)}
-          >
-            {AI_GUIDE_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
+          <select className={`${styles.select} ${styles.selected}`} value={aiGuide} onChange={(e) => onAiGuideChange(e.target.value)}>
+            {AI_GUIDE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
           <div className={styles.aiGuideDesc}>
             <Check size={18} color="#22cb84" style={{ flexShrink: 0, marginTop: 2 }} />
@@ -389,15 +466,11 @@ function StepAIUpload({
       <div className={styles.step3Row}>
         <div className={styles.step3LabelCol}>
           <p className={styles.sectionLabel} style={{ marginBottom: 0 }}>세션 전용 자료</p>
-          <p className={styles.sectionSubLabel}>학생이 다운로드 할 수 있는 보조 자료를 업로드해주세요.</p>
+          <p className={styles.sectionSubLabel}>학생이 다운로드할 수 있는 보조 자료를 업로드해주세요.</p>
         </div>
         <div style={{ flex: 1 }}>
           <label>
-            <div
-              className={styles.uploadArea}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={handleDrop}
-            >
+            <div className={styles.uploadArea} onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
               <CloudUpload size={24} color="#797c7c" />
               <div className={styles.uploadContent}>
                 {files.length > 0 ? (
@@ -407,8 +480,8 @@ function StepAIUpload({
                   </>
                 ) : (
                   <>
-                    <p className={styles.uploadTitle}>파일 업로드 또는 PDF, 이미지 파일 드래그</p>
-                    <p className={styles.uploadSubtitle}>PDF, JPG, PNG 파일 (최대 50MB)</p>
+                    <p className={styles.uploadTitle}>파일 업로드 또는 드래그</p>
+                    <p className={styles.uploadSubtitle}>PDF, JPG, PNG (최대 50MB)</p>
                   </>
                 )}
               </div>
