@@ -1159,23 +1159,37 @@ async def generate_session_report(
     students: list[StudentSessionChat],
     session_id: Optional[str] = None,
 ) -> SessionAggregateReport:
-    conversation_text, included_student_count = _format_session_conversations(students)
+    import traceback
+    
+    # ── 1. 데이터 포맷팅 단계 보호 ──────────────────────────────────────────
+    try:
+        conversation_text, included_student_count = _format_session_conversations(students)
 
-    if included_student_count == 0 or not conversation_text.strip():
+        if included_student_count == 0 or not conversation_text.strip():
+            print(
+                "[WARN] 세션 전체 리포트 생성 근거가 되는 학생 발화가 없습니다. "
+                f"session_id={session_id}"
+            )
+            return _empty_session_report()
+
+        estimated_tokens = _estimate_tokens(conversation_text)
         print(
-            "[WARN] 세션 전체 리포트 생성 근거가 되는 학생 발화가 없습니다. "
-            f"session_id={session_id}"
+            "[INFO] SessionAggregateReport generation start "
+            f"session_id={session_id}, students={included_student_count}, "
+            f"chars={len(conversation_text)}, estimated_tokens={estimated_tokens}"
         )
+    except Exception as e:
+        print(f"[ERROR] 세션 리포트 데이터 포맷팅 중 오류 발생 (session_id={session_id}): {e}")
+        traceback.print_exc()
         return _empty_session_report()
 
-    estimated_tokens = _estimate_tokens(conversation_text)
-    print(
-        "[INFO] SessionAggregateReport generation start "
-        f"session_id={session_id}, students={included_student_count}, "
-        f"chars={len(conversation_text)}, estimated_tokens={estimated_tokens}"
-    )
-
-    client = _get_client()
+    # ── 2. 클라이언트 초기화 단계 보호 (API 키 체크 등) ───────────────────────
+    try:
+        client = _get_client()
+    except Exception as e:
+        print(f"[ERROR] AI 클라이언트 초기화 실패 (NVIDIA_API_KEY 확인 필요): {e}")
+        traceback.print_exc()
+        return _llm_failed_session_report()
 
     try:
         if estimated_tokens <= SESSION_REPORT_TOKEN_THRESHOLD:
