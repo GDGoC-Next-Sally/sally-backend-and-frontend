@@ -362,6 +362,20 @@
   color: #ff6f6f;
 }
 
+.badgeNotAttended {
+  background-color: #F5F4F2;
+  color: #9E9C97;
+}
+
+.sessionRowDisabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.sessionRowDisabled:hover {
+  background-color: transparent;
+}
+
 .menuContainer {
   position: relative;
 }

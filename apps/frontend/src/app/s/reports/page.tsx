@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { getStudentSessionList, getStudentSessionReport, type SessionListItem } from '@/actions/reports';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { StudentReport, type StudentReportContent } from '@/components/reports/StudentReport';
 import { useUser } from '@/utils/useUser';
 
-export default function StudentReportsPage() {
+function StudentReportsContent() {
   const user = useUser();
+  const searchParams = useSearchParams();
   const [sessions, setSessions] = useState<SessionListItem[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
   const [report, setReport] = useState<StudentReportContent | null>(null);
@@ -16,14 +18,21 @@ export default function StudentReportsPage() {
   const [isLoadingReport, setIsLoadingReport] = useState(false);
 
   useEffect(() => {
+    const paramSessionId = searchParams.get('sessionId');
     getStudentSessionList()
       .then(list => {
         setSessions(list);
-        if (list.length > 0) setSelectedSessionId(list[0].sessionId);
+        if (paramSessionId) {
+          const paramId = Number(paramSessionId);
+          const found = list.find(s => s.sessionId === paramId);
+          setSelectedSessionId(found ? paramId : (list.length > 0 ? list[0].sessionId : null));
+        } else if (list.length > 0) {
+          setSelectedSessionId(list[0].sessionId);
+        }
       })
       .catch(() => setSessions([]))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     if (!selectedSessionId) return;
@@ -68,5 +77,13 @@ export default function StudentReportsPage() {
         onSessionChange={setSelectedSessionId}
       />
     </PageContainer>
+  );
+}
+
+export default function StudentReportsPage() {
+  return (
+    <Suspense>
+      <StudentReportsContent />
+    </Suspense>
   );
 }
