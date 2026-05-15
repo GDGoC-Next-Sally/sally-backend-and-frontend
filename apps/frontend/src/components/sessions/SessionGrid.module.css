@@ -459,19 +459,19 @@
 
 .kickBtn {
   background: none;
-  border: 1px solid #E0DED8;
+  border: 1px solid var(--color-red);
   border-radius: 8px;
   padding: 6px 14px;
   font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
-  color: #6B6B6B;
+  color: var(--color-red);
   cursor: pointer;
   transition: background-color 0.1s, border-color 0.1s, color 0.1s;
   white-space: nowrap;
 }
 
 .kickBtn:hover {
-  background-color: #FDF0ED;
-  border-color: #E8593C;
-  color: #E8593C;
+  background-color: var(--color-red-bg);
+  border-color: var(--color-red);
+  color: var(--color-red);
 }
