@@ -613,17 +613,21 @@ export function TeacherReport({
       <div className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>AI 분석 리포트</h1>
         <div className={styles.headerBtns}>
-          {regenerateSuccess && (
-            <span className={styles.regenerateSuccess}>재생성 요청 완료</span>
+          {activeTab === 'summary' && (
+            <>
+              {regenerateSuccess && (
+                <span className={styles.regenerateSuccess}>재생성 요청 완료</span>
+              )}
+              <button
+                className={styles.regenerateBtn}
+                onClick={() => { setRegenerateSuccess(false); setIsRegenerateConfirmOpen(true); }}
+                disabled={!selectedSessionId}
+              >
+                <RefreshCw size={15} strokeWidth={2} />
+                재생성
+              </button>
+            </>
           )}
-          <button
-            className={styles.regenerateBtn}
-            onClick={() => { setRegenerateSuccess(false); setIsRegenerateConfirmOpen(true); }}
-            disabled={!selectedSessionId}
-          >
-            <RefreshCw size={15} strokeWidth={2} />
-            재생성
-          </button>
           <button className={styles.exportBtn} onClick={() => { onExport?.(); setIsExportOpen(true); }}>
             내보내기
             <Download size={16} strokeWidth={2} />
