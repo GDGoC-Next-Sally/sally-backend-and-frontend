@@ -36,6 +36,7 @@ SESSION_REPORT_SYNTHESIS_MAX_CHARS = 12000
 SESSION_REPORT_SUMMARY_BATCH_MAX_CHARS = 9000
 SESSION_REPORT_LLM_MAX_ATTEMPTS = 3
 SESSION_REPORT_MAX_KEY_QUESTIONS = 5
+SESSION_REPORT_DETAIL_TARGET_CHARS = 1600
 
 SEMANTIC_GROUP_PRIORITY = {
     "broad_role_omission": 0,
@@ -298,6 +299,8 @@ def _build_session_report_prompt(conversation_text: str, included_student_count:
 - 출력 전체는 반드시 JSON 형식으로만 작성하고, 코드블록이나 JSON 바깥 설명문은 출력하지 마세요.
 - 단, detailed_report 값은 마크다운 문자열로 작성하세요.
 - JSON에는 class_summary, key_questions, weak_concepts_top5, detailed_report 4개 필드만 포함하세요.
+- 전체 JSON 응답은 반드시 끝까지 닫힌 완전한 JSON 객체여야 합니다. 길어질 것 같으면 detailed_report를 줄이세요.
+- 전체 응답은 3500자 이내로 작성하세요.
 
 {LANGUAGE_RULE}
 
@@ -316,6 +319,7 @@ def _build_session_report_prompt(conversation_text: str, included_student_count:
 
 2. key_questions = 주요 질문 문장들
 - 학생들이 실제로 묻거나 확인한 핵심 질문을 자연스러운 한국어 질문 문장 배열로 요약하세요.
+- 최대 {SESSION_REPORT_MAX_KEY_QUESTIONS}개까지만 작성하세요.
 - 원문을 그대로 길게 복사하지 말고, 같은 의미의 질문은 하나로 합치세요.
 - AI 선생님 설명을 질문처럼 바꾸어 넣지 마세요.
 - 학생이 "헷갈려요", "모르겠어요"처럼 혼란을 진술한 경우에는 "어떻게 구분하나요?", "왜 그런가요?"처럼 실제 확인하고 싶은 질문으로 재작성하세요.
@@ -333,7 +337,8 @@ def _build_session_report_prompt(conversation_text: str, included_student_count:
 
 4. detailed_report = 세션 전체 마크다운 상세 리포트
 - 반드시 마크다운 문자열로 작성하세요. JSON 문자열 안에서 줄바꿈은 \n으로 표현될 수 있습니다.
-- 전체 대화 흐름, 반 전체 강점, 반 전체 취약점, 학생별로 눈에 띄는 강점/취약점, 보완 필요 사항, 다음 지도 제안을 가능한 한 자세히 작성하세요.
+- 전체 대화 흐름, 반 전체 강점, 반 전체 취약점, 학생별로 눈에 띄는 강점/취약점, 보완 필요 사항, 다음 지도 제안을 간결하지만 구체적으로 작성하세요.
+- detailed_report는 {SESSION_REPORT_DETAIL_TARGET_CHARS}자 이내로 작성하세요.
 - 다음 섹션을 포함하세요: "## 전체 수업 흐름", "## 반 전체 강점", "## 반 전체 취약점", "## 학생별 관찰", "## 보완 필요 사항", "## 다음 수업 제안".
 - 학생별 관찰에는 학생 이름 또는 학생 식별 라벨이 있는 경우 이를 사용하고, 없으면 "학생 1", "학생 2"처럼 구분하세요.
 - 학생별 관찰은 학생마다 별도 bullet로 작성하고, 각 bullet 안에 반드시 "근거:", "마지막 상태:", "강점:", "취약점:", "이해 변화:", "보완:"을 구분해 쓰세요.
@@ -438,6 +443,8 @@ def _build_session_synthesis_prompt(chunk_summaries: list[str]) -> str:
 - 출력 전체는 반드시 JSON 형식으로만 작성하고, 코드블록이나 JSON 바깥 설명문은 출력하지 마세요.
 - 단, detailed_report 값은 마크다운 문자열로 작성하세요.
 - JSON에는 class_summary, key_questions, weak_concepts_top5, detailed_report 4개 필드만 포함하세요.
+- 전체 JSON 응답은 반드시 끝까지 닫힌 완전한 JSON 객체여야 합니다. 길어질 것 같으면 detailed_report를 줄이세요.
+- 전체 응답은 3500자 이내로 작성하세요.
 
 {LANGUAGE_RULE}
 
@@ -453,7 +460,7 @@ def _build_session_synthesis_prompt(chunk_summaries: list[str]) -> str:
 - class_summary: 반 전체 상태, 반복 질문, 다음 지도 방향을 1~2문장으로 작성하세요.
 - key_questions: 학생 발화에 근거한 주요 질문을 자연스러운 한국어 질문 문장 배열로 요약하세요. 최대 5개까지 작성하고, 같은 개념의 예문별 질문은 더 일반적인 질문 하나로 합치세요. AI 선생님 설명을 질문처럼 바꾸지 말고, 학생의 혼란 진술만 질문형으로 재작성하세요. 각 항목은 반드시 "?", "요?", "인가요?", "하나요?"처럼 질문형 어미로 끝나야 합니다. 한 번 나온 곁가지 주제나 다음 단원 예고성 질문은 제외하세요. 없으면 ["없음"]으로 작성하세요.
 - weak_concepts_top5: 중요도 순으로 최대 5개의 짧은 명사구를 작성하세요. 여러 학생에게 반복되거나 세션 후반까지 남은 핵심 약점만 포함하고, 한 번 나온 곁가지 주제는 제외하세요. 서로 포함 관계인 취약 개념은 더 넓은 개념 하나로 합치세요. 예를 들어 "뒤 절에서 빠진 성분 확인"은 "관계대명사의 주격과 목적격 구분"과 별도 항목으로 중복 나열하지 마세요. 수업 목표가 관계대명사인데 "관계부사"가 한 번만 언급된 경우처럼 인접 단원의 단발성 언급은 제외하세요. 없으면 ["없음"]으로 작성하세요.
-- detailed_report: 세션 전체 마크다운 상세 리포트입니다. "## 전체 수업 흐름", "## 반 전체 강점", "## 반 전체 취약점", "## 학생별 관찰", "## 보완 필요 사항", "## 다음 수업 제안" 섹션을 포함하고, 학생들의 강점과 취약점, 보완 필요 사항, 다음 지도 전략을 자세히 작성하세요.
+- detailed_report: 세션 전체 마크다운 상세 리포트입니다. "## 전체 수업 흐름", "## 반 전체 강점", "## 반 전체 취약점", "## 학생별 관찰", "## 보완 필요 사항", "## 다음 수업 제안" 섹션을 포함하고, 학생들의 강점과 취약점, 보완 필요 사항, 다음 지도 전략을 {SESSION_REPORT_DETAIL_TARGET_CHARS}자 이내로 간결하게 작성하세요.
 - 학생별 관찰 섹션은 학생마다 bullet을 만들고, 각 bullet에 "근거:", "마지막 상태:", "강점:", "취약점:", "이해 변화:", "보완:"을 포함하세요. 직접 근거가 없는 취약점은 쓰지 말고 "취약점: 현재 남은 취약점은 직접 확인되지 않았습니다."라고 쓰세요.
 
 파트별 요약:
@@ -521,6 +528,9 @@ def _build_session_repair_json_prompt(raw_text: str) -> str:
 - JSON 객체 하나만 출력하세요.
 - 배열 필드가 없거나 판단하기 어려운 경우 ["없음"]으로 두세요.
 - detailed_report가 없으면 전체 수업 흐름, 반 전체 강점/취약점, 학생별 관찰, 보완 필요 사항, 다음 수업 제안을 포함한 마크다운 문자열로 생성하세요.
+- detailed_report는 {SESSION_REPORT_DETAIL_TARGET_CHARS}자 이내로 작성하세요.
+- 원본 텍스트가 중간에 잘려 있더라도 추출 가능한 내용만 바탕으로 완전히 닫힌 JSON 객체를 새로 작성하세요.
+- 원본 JSON 조각이나 오류 메시지를 class_summary 또는 detailed_report 값에 그대로 넣지 마세요.
 - weak_concepts_top5는 최대 5개만 포함하세요.
 - 모든 설명은 현대 한국어의 한글 문장으로 작성하세요.
 - 한자, 일본어, 중국어 표기를 절대 사용하지 마세요.
@@ -561,6 +571,7 @@ def _build_session_remove_unwanted_english_prompt(report_json: str) -> str:
 - who, which, that, whom, whose 같은 영어 문법 표기는 필요할 때만 그대로 유지할 수 있습니다.
 - AI, Sally 같은 고유명사는 그대로 유지할 수 있습니다.
 - relative pronoun, subject, object, weakness, summary, feedback, flow, strength, support처럼 설명문에 섞인 영어는 한글로 번역하세요.
+- senere처럼 수업 내용과 무관한 라틴 문자 외국어도 자연스러운 한국어로 바꾸세요.
 - 한국어 문장 안에 불필요한 영어 설명어가 남지 않게 하세요.
 - 한자, 일본어, 중국어 표기를 절대 사용하지 마세요.
 - 코드블록, JSON 바깥 설명문 없이 JSON 객체만 출력하세요.
@@ -1080,20 +1091,15 @@ def _llm_failed_session_report() -> SessionAggregateReport:
 
 def _fallback_session_parse_error_report(raw_text: str) -> SessionAggregateReport:
     return SessionAggregateReport(
-        class_summary=(
-            raw_text[:300]
-            if raw_text
-            else "세션 전체 리포트 파싱 중 오류가 발생했습니다."
-        ),
+        class_summary="세션 전체 리포트 응답 형식이 올바르지 않아 자동 요약을 완료하지 못했습니다.",
         key_questions=["없음"],
         weak_concepts_top5=["없음"],
         detailed_report=(
             "## 리포트 생성 상태\n"
-            "세션 전체 리포트 JSON 파싱 중 오류가 발생했습니다.\n\n"
-            "## 원본 응답 일부\n"
-            f"{raw_text[:1000] if raw_text else '원본 응답이 없습니다.'}\n\n"
+            "세션 전체 리포트 응답 형식이 올바르지 않아 상세 리포트를 생성하지 못했습니다.\n\n"
             "## 보완 필요 사항\n"
-            "원본 대화 또는 LLM 응답 형식을 확인한 뒤 리포트를 다시 생성하는 것이 좋습니다."
+            "원본 대화는 저장되어 있으므로 리포트를 다시 생성하는 것이 좋습니다. "
+            "반복 발생하면 모델 응답 길이와 JSON 형식 제한을 확인하세요."
         ),
     )
 

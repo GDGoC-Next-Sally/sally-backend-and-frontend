@@ -109,6 +109,7 @@ LANGUAGE_RULE = """언어 및 표기 규칙:
 - 위 표현은 반드시 "학생", "관계대명사", "목적격", "주격", "이해", "문법", "설명", "질문"처럼 한글로 작성하세요.
 - 영어는 학생 발화나 수업 내용에 직접 나온 예문, who/which/that 같은 필수 문법 표기, AI/Sally 같은 고유명사에만 사용하세요.
 - relative pronoun, subject, object, weakness, summary, feedback처럼 한글로 자연스럽게 쓸 수 있는 영어 설명어는 각각 관계대명사, 주어, 목적어, 취약점, 요약, 피드백처럼 번역하세요.
+- senere처럼 수업 내용과 무관한 라틴 문자 외국어도 사용하지 말고 한국어로 바꾸세요.
 - JSON key는 지정된 영어 필드명을 그대로 사용하세요.
 - JSON value의 설명 문장은 한글 중심의 한국어로 작성하세요."""
 
@@ -220,6 +221,7 @@ UNWANTED_REPORT_ENGLISH_WORDS = {
     "role",
     "roles",
     "sentence",
+    "senere",
     "session",
     "skill",
     "skills",
