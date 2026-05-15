@@ -20,7 +20,7 @@ jobs:
           host: ${{ secrets.VM_IP }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          connect_timeout: 60s
+          timeout: 60s
           script_stop: true
           script: |
             echo "🚀 Deployment started..."
