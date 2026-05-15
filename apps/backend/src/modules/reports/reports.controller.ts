@@ -25,7 +25,17 @@ export class ReportsController {
     return { message: '학생 개별 리포트 생성 요청 완료' };
   }
 
-  @Post('session/:sessionId/request-summary')
+  @Post('session/:sessionId/request-student/:studentId')
+  @Roles(UserRole.TEACHER)
+  @ApiOperation({ summary: '(선생님용) 특정 학생 한 명의 리포트 재생성 요청' })
+  async requestOneStudentReport(
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @Param('studentId') studentId: string,
+    @Req() req: any
+  ) {
+    await this.reportsService.requestOneStudentFinalReport(sessionId, studentId, req.user.userId);
+    return { message: `${studentId} 학생의 리포트 생성 요청 완료` };
+  }
   @Roles(UserRole.TEACHER)
   @ApiOperation({ summary: '(선생님용) 특정 세션의 전체 요약 리포트 생성 요청' })
   async requestSessionReport(

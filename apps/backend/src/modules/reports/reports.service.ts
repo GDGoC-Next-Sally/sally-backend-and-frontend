@@ -101,20 +101,32 @@ export class ReportsService {
   }
 
 
-  // 세션 종료 시 AI 서버에 학생별 최종 리포트 생성을 요청합니다.
+  // 세션 종료 시 AI 서버에 학생별 최종 리포트 생성을 요청합니다. (기존 리포트 초기화 후 재생성)
   async requestStudentFinalReports(sessionId: number, teacherId: string): Promise<void> {
     await validateSessionOwner(this.prisma, sessionId, teacherId);
-    const pendingDialogs = await this.prisma.dialogs.findMany({
-      where: { session_id: sessionId, is_analyzed: false },
+
+    // 1. 기존 리포트 삭제 및 분석 상태 리셋
+    await this.prisma.$transaction([
+      this.prisma.student_reports.deleteMany({ where: { session_id: sessionId } }),
+      this.prisma.dialogs.updateMany({
+        where: { session_id: sessionId },
+        data: { is_analyzed: false }
+      })
+    ]);
+
+    // 2. 모든 대상 대화 조회 (이제 모두 is_analyzed가 false임)
+    const dialogs = await this.prisma.dialogs.findMany({
+      where: { session_id: sessionId },
       select: { student_id: true },
     });
 
-    if (pendingDialogs.length === 0) {
-      this.logger.log(`세션 ${sessionId}의 모든 학생 리포트가 이미 완료되었거나 대상이 없습니다.`);
+    if (dialogs.length === 0) {
+      this.logger.log(`세션 ${sessionId}에 생성할 대상이 없습니다.`);
       return;
     }
 
-    pendingDialogs.forEach((dialog) => {
+    // 3. AI 서버에 각각 요청
+    dialogs.forEach((dialog) => {
       axios.post(`${AI_SERVER_URL}/api/end-session`, {
         session_id: sessionId,
         student_id: dialog.student_id,
@@ -123,7 +135,33 @@ export class ReportsService {
       });
     });
 
-    this.logger.log(`세션 ${sessionId}의 학생 ${pendingDialogs.length}명에 대한 리포트 생성을 요청했습니다.`);
+    this.logger.log(`세션 ${sessionId}의 학생 ${dialogs.length}명에 대한 리포트 재생성을 요청했습니다.`);
+  }
+
+  // 특정 학생 한 명에 대한 리포트 재생성 요청
+  async requestOneStudentFinalReport(sessionId: number, studentId: string, teacherId: string): Promise<void> {
+    await validateSessionOwner(this.prisma, sessionId, teacherId);
+
+    // 1. 기존 해당 학생 리포트 삭제 및 분석 상태 리셋
+    await this.prisma.$transaction([
+      this.prisma.student_reports.deleteMany({ 
+        where: { session_id: sessionId, student_id: studentId } 
+      }),
+      this.prisma.dialogs.updateMany({
+        where: { session_id: sessionId, student_id: studentId },
+        data: { is_analyzed: false }
+      })
+    ]);
+
+    // 2. AI 서버에 요청
+    axios.post(`${AI_SERVER_URL}/api/end-session`, {
+      session_id: sessionId,
+      student_id: studentId,
+    }).catch(err => {
+      this.logger.error(`세션 ${sessionId} 학생 ${studentId} 리포트 개별 요청 실패: ${err.message}`);
+    });
+
+    this.logger.log(`세션 ${sessionId} 학생 ${studentId}의 리포트 재생성을 요청했습니다.`);
   }
 
   async handleStudentFinalReportCallback(sessionId: number, studentId: string, report: any) {
@@ -154,6 +192,11 @@ export class ReportsService {
 
   async requestSessionFinalReport(sessionId: number, teacherId: string) {
     await validateSessionOwner(this.prisma, sessionId, teacherId);
+
+    // 기존 세션 리포트 삭제
+    await this.prisma.session_reports.deleteMany({
+      where: { session_id: sessionId }
+    });
 
     const dialogs = await this.prisma.dialogs.findMany({
       where: { session_id: sessionId },
