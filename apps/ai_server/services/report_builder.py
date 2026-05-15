@@ -12,6 +12,7 @@ services/report_builder.py — 최종 수업 리포트 생성 서비스
       6. JSON 파싱 및 FinalReport 검증
       7. 파싱 실패 시 JSON repair 1회 재시도
       8. 한자 포함 시 한글 변환 repair 1회 재시도
+      9. 불필요한 영어 포함 시 한글 변환 repair 1회 재시도
   - 출력: FinalReport
       - key_concepts
       - misconception_summary
@@ -106,9 +107,154 @@ LANGUAGE_RULE = """언어 및 표기 규칙:
 - 중국어식 표현, 일본식 한자어 표기, 한자 혼용 문장을 사용하지 마세요.
 - 예: "學生", "關係代名詞", "目的格", "主格", "理解", "文法", "説明", "質問"처럼 쓰지 마세요.
 - 위 표현은 반드시 "학생", "관계대명사", "목적격", "주격", "이해", "문법", "설명", "질문"처럼 한글로 작성하세요.
-- 영어 예문과 영어 문법 용어 자체는 필요할 때 사용할 수 있지만, 한국어 설명문에는 한자나 일본어, 중국어를 섞지 마세요.
+- 영어는 학생 발화나 수업 내용에 직접 나온 예문, who/which/that 같은 필수 문법 표기, AI/Sally 같은 고유명사에만 사용하세요.
+- relative pronoun, subject, object, weakness, summary, feedback처럼 한글로 자연스럽게 쓸 수 있는 영어 설명어는 각각 관계대명사, 주어, 목적어, 취약점, 요약, 피드백처럼 번역하세요.
 - JSON key는 지정된 영어 필드명을 그대로 사용하세요.
 - JSON value의 설명 문장은 한글 중심의 한국어로 작성하세요."""
+
+
+LATIN_WORD_PATTERN = re.compile(r"[A-Za-z][A-Za-z0-9'_-]*")
+ENGLISH_EXAMPLE_SPAN_PATTERN = re.compile(
+    r"\b(?:[A-Za-z][A-Za-z0-9'_-]*[\s,.!?;:'\"()]+){2,}[A-Za-z][A-Za-z0-9'_-]*\b"
+)
+ENGLISH_EXAMPLE_MARKERS = {"who", "which", "that", "whom", "whose", "where", "when"}
+UNWANTED_REPORT_ENGLISH_WORDS = {
+    "abilities",
+    "ability",
+    "action",
+    "actions",
+    "activities",
+    "activity",
+    "analyses",
+    "analysis",
+    "application",
+    "applications",
+    "assessment",
+    "assessments",
+    "answer",
+    "answers",
+    "antecedent",
+    "behavior",
+    "behaviors",
+    "class",
+    "clause",
+    "concept",
+    "concepts",
+    "conclusion",
+    "conclusions",
+    "content",
+    "contents",
+    "context",
+    "contexts",
+    "confused",
+    "confusion",
+    "course",
+    "criteria",
+    "criterion",
+    "current",
+    "detail",
+    "detailed",
+    "discussion",
+    "discussions",
+    "engagement",
+    "error",
+    "errors",
+    "evaluation",
+    "evaluations",
+    "example",
+    "examples",
+    "evidence",
+    "explanation",
+    "explanations",
+    "expression",
+    "expressions",
+    "feedback",
+    "final",
+    "flow",
+    "goal",
+    "goals",
+    "grammar",
+    "guidance",
+    "guide",
+    "hint",
+    "hints",
+    "improved",
+    "improvement",
+    "issue",
+    "issues",
+    "item",
+    "items",
+    "key",
+    "learn",
+    "learning",
+    "lesson",
+    "lessons",
+    "logic",
+    "main",
+    "misconception",
+    "misconceptions",
+    "need",
+    "needs",
+    "object",
+    "objective",
+    "objectives",
+    "observation",
+    "observations",
+    "pattern",
+    "patterns",
+    "point",
+    "points",
+    "practice",
+    "progress",
+    "pronoun",
+    "question",
+    "questions",
+    "relative",
+    "report",
+    "response",
+    "responses",
+    "result",
+    "results",
+    "review",
+    "reviews",
+    "role",
+    "roles",
+    "sentence",
+    "session",
+    "skill",
+    "skills",
+    "solution",
+    "solutions",
+    "status",
+    "step",
+    "steps",
+    "strategy",
+    "strategies",
+    "strength",
+    "strengths",
+    "student",
+    "students",
+    "subject",
+    "summary",
+    "support",
+    "task",
+    "tasks",
+    "teacher",
+    "teachers",
+    "test",
+    "tests",
+    "topic",
+    "topics",
+    "type",
+    "types",
+    "understand",
+    "understanding",
+    "understood",
+    "unit",
+    "units",
+    "weakness",
+    "weaknesses",
+}
 
 
 # ─────────────────────────────────────────────────────────────
@@ -553,7 +699,7 @@ def _build_repair_json_prompt(raw_text: str) -> str:
 - 모든 설명은 현대 한국어의 한글 문장으로 작성하세요.
 - 한자, 일본어, 중국어 표기를 절대 사용하지 마세요.
 - 예: "學生", "關係代名詞", "目的格", "主格", "理解", "文法"처럼 쓰지 말고 "학생", "관계대명사", "목적격", "주격", "이해", "문법"처럼 작성하세요.
-- 영어 예문과 영어 문법 용어 자체는 유지할 수 있지만, 한국어 설명문에는 한자나 일본어, 중국어를 섞지 마세요.
+- 학생 발화나 수업 내용에 직접 나온 영어 예문과 who/which/that 같은 필수 문법 표기만 유지하고, 설명문에 섞인 영어 단어는 한글로 번역하세요.
 
 변환할 텍스트:
 {raw_text}
@@ -569,7 +715,29 @@ def _build_remove_foreign_chars_prompt(report_json: str) -> str:
 - JSON value의 의미를 바꾸지 마세요.
 - 한자, 일본어, 중국어 표기를 절대 사용하지 마세요.
 - 예: "學生", "關係代名詞", "目的格", "主格", "理解", "文法" 등은 각각 "학생", "관계대명사", "목적격", "주격", "이해", "문법"으로 바꾸세요.
-- 영어 예문과 영어 문법 용어 자체는 유지해도 됩니다.
+- 학생 발화나 수업 내용에 직접 나온 영어 예문과 who/which/that 같은 필수 문법 표기만 유지하고, 설명문에 섞인 영어 단어는 한글로 번역하세요.
+- 코드블록, JSON 바깥 설명문 없이 JSON 객체만 출력하세요.
+- detailed_report 값 안의 마크다운은 유지하세요.
+- JSON에는 key_concepts, misconception_summary, session_summary, detailed_report 4개 필드만 포함하세요.
+
+입력 JSON:
+{report_json}
+"""
+
+
+def _build_remove_unwanted_english_prompt(report_json: str) -> str:
+    """FinalReport JSON 값에 섞인 불필요한 영어를 한글 표현으로 바꾸는 프롬프트를 생성합니다."""
+    return f"""아래 JSON의 구조와 의미는 유지하되, JSON 값에 포함된 불필요한 영어 단어와 영어 문구를 자연스러운 한국어 표현으로 바꾸세요.
+
+규칙:
+- JSON key는 그대로 유지하세요.
+- JSON value의 의미를 바꾸지 마세요.
+- 학생 발화나 수업 내용에 직접 나온 영어 예문은 그대로 유지할 수 있습니다.
+- who, which, that, whom, whose 같은 영어 문법 표기는 필요할 때만 그대로 유지할 수 있습니다.
+- AI, Sally 같은 고유명사는 그대로 유지할 수 있습니다.
+- relative pronoun, subject, object, weakness, summary, feedback, flow, strength, support처럼 설명문에 섞인 영어는 한글로 번역하세요.
+- 한국어 문장 안에 불필요한 영어 설명어가 남지 않게 하세요.
+- 한자, 일본어, 중국어 표기를 절대 사용하지 마세요.
 - 코드블록, JSON 바깥 설명문 없이 JSON 객체만 출력하세요.
 - detailed_report 값 안의 마크다운은 유지하세요.
 - JSON에는 key_concepts, misconception_summary, session_summary, detailed_report 4개 필드만 포함하세요.
@@ -791,6 +959,44 @@ def _contains_foreign_chars(text: str) -> bool:
     return bool(FOREIGN_CHAR_PATTERN.search(text))
 
 
+def _iter_text_values(value: Any):
+    if isinstance(value, str):
+        yield value
+        return
+
+    if isinstance(value, list):
+        for item in value:
+            yield from _iter_text_values(item)
+        return
+
+    if isinstance(value, dict):
+        for item in value.values():
+            yield from _iter_text_values(item)
+
+
+def _contains_unwanted_english(text: str) -> bool:
+    """리포트 값에 자주 섞이는 영어 설명어가 포함되어 있는지 확인합니다."""
+    def scrub_example_span(match: re.Match[str]) -> str:
+        tokens = {token.lower() for token in LATIN_WORD_PATTERN.findall(match.group(0))}
+        if tokens & ENGLISH_EXAMPLE_MARKERS:
+            return " "
+        return match.group(0)
+
+    text_without_examples = ENGLISH_EXAMPLE_SPAN_PATTERN.sub(scrub_example_span, text)
+
+    for match in LATIN_WORD_PATTERN.finditer(text_without_examples):
+        token = match.group(0).strip("_-").lower()
+        if token in UNWANTED_REPORT_ENGLISH_WORDS:
+            return True
+    return False
+
+
+def _report_contains_unwanted_english(report: FinalReport) -> bool:
+    """FinalReport 값에 불필요한 영어가 포함되어 있는지 확인합니다. JSON key는 검사하지 않습니다."""
+    report_dict = report.model_dump() if hasattr(report, "model_dump") else report.dict()
+    return any(_contains_unwanted_english(text) for text in _iter_text_values(report_dict))
+
+
 def _report_contains_foreign_chars(report: FinalReport) -> bool:
     """FinalReport 전체에 한자/일본어/중국어 표기가 포함되어 있는지 확인합니다."""
     report_dict = report.model_dump() if hasattr(report, "model_dump") else report.dict()
@@ -850,6 +1056,61 @@ async def _ensure_no_foreign_chars_in_report(
     except Exception as repair_error:
         print(
             "[ERROR] 한자/일본어/중국어 제거 repair 실패. 원본 report 반환 "
+            f"session_id={session_id}, student_id={student_id}, error={repair_error}"
+        )
+        return report
+
+
+async def _remove_unwanted_english_and_parse_report_json(
+    client: AsyncOpenAI,
+    report: FinalReport,
+) -> FinalReport:
+    """FinalReport 값에 섞인 불필요한 영어를 한글 표현으로 변환합니다."""
+    report_dict = report.model_dump() if hasattr(report, "model_dump") else report.dict()
+    report_json = json.dumps(report_dict, ensure_ascii=False)
+
+    response = await client.chat.completions.create(
+        model=REPORT_MODEL,
+        messages=[{"role": "user", "content": _build_remove_unwanted_english_prompt(report_json)}],
+        temperature=0.0,
+        max_tokens=4096,
+    )
+
+    cleaned_text = response.choices[0].message.content or ""
+    cleaned_data = _normalize_final_report_data(_parse_report_json(cleaned_text))
+    return FinalReport(**cleaned_data)
+
+
+async def _ensure_no_unwanted_english_in_report(
+    client: AsyncOpenAI,
+    report: FinalReport,
+    session_id: Optional[str] = None,
+    student_id: Optional[str] = None,
+) -> FinalReport:
+    """FinalReport 값에 불필요한 영어가 포함되어 있으면 한글 변환 repair를 1회 시도합니다."""
+    if not _report_contains_unwanted_english(report):
+        return report
+
+    print(
+        "[WARN] 리포트에 불필요한 영어 표현 포함 감지. 한글 변환 repair 재시도 "
+        f"session_id={session_id}, student_id={student_id}"
+    )
+
+    try:
+        cleaned_report = await _remove_unwanted_english_and_parse_report_json(client, report)
+
+        if _report_contains_unwanted_english(cleaned_report):
+            print(
+                "[ERROR] 영어 표현 제거 repair 후에도 불필요한 영어 포함 감지. 원본 report 반환 "
+                f"session_id={session_id}, student_id={student_id}"
+            )
+            return report
+
+        return cleaned_report
+
+    except Exception as repair_error:
+        print(
+            "[ERROR] 영어 표현 제거 repair 실패. 원본 report 반환 "
             f"session_id={session_id}, student_id={student_id}, error={repair_error}"
         )
         return report
@@ -981,7 +1242,8 @@ async def generate_final_report(
       5. JSON 파싱 → FinalReport 검증
       6. 파싱 실패 시 repair 1회 재시도
       7. 한자 포함 시 한글 변환 repair 1회 재시도
-      8. 최종 실패 시 fallback FinalReport 반환
+      8. 불필요한 영어 포함 시 한글 변환 repair 1회 재시도
+      9. 최종 실패 시 fallback FinalReport 반환
     """
 
     # ── realtime_summaries: 프롬프트 보조 컨텍스트로 활용 ────────────────────
@@ -1115,6 +1377,12 @@ async def generate_final_report(
             session_id=session_id,
             student_id=student_id,
         )
+        report = await _ensure_no_unwanted_english_in_report(
+            client=client,
+            report=report,
+            session_id=session_id,
+            student_id=student_id,
+        )
         return report
 
     except (json.JSONDecodeError, ValueError, TypeError) as e:
@@ -1129,6 +1397,12 @@ async def generate_final_report(
             report_data = report.model_dump() if hasattr(report, "model_dump") else report.dict()
             report = FinalReport(**_apply_realtime_topic_fallback(report_data, realtime_topic_candidates))
             report = await _ensure_no_foreign_chars_in_report(
+                client=client,
+                report=report,
+                session_id=session_id,
+                student_id=student_id,
+            )
+            report = await _ensure_no_unwanted_english_in_report(
                 client=client,
                 report=report,
                 session_id=session_id,

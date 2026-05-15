@@ -21,8 +21,10 @@ from ai_server.services.report_builder import (
     NVIDIA_REPORT_SUMMARY_MODEL,
     _call_llm,
     _contains_foreign_chars,
+    _contains_unwanted_english,
     _estimate_tokens,
     _get_client,
+    _iter_text_values,
     _parse_report_json,
     normalize_chat_messages,
 )
@@ -522,6 +524,7 @@ def _build_session_repair_json_prompt(raw_text: str) -> str:
 - weak_concepts_top5는 최대 5개만 포함하세요.
 - 모든 설명은 현대 한국어의 한글 문장으로 작성하세요.
 - 한자, 일본어, 중국어 표기를 절대 사용하지 마세요.
+- 학생 발화나 수업 내용에 직접 나온 영어 예문과 who/which/that 같은 필수 문법 표기만 유지하고, 설명문에 섞인 영어 단어는 한글로 번역하세요.
 - "주격", "목적격", "목적어", "관계대명사", "선행사", "생략" 같은 한국어 문법 용어는 이미 올바른 한글 표현이므로 그대로 유지하세요.
 - "주격 관계대명사"를 "주체 관계대명사"로, "목적격 관계대명사"를 "목적 관계대명사"로 바꾸지 마세요.
 
@@ -539,8 +542,32 @@ def _build_session_remove_foreign_chars_prompt(report_json: str) -> str:
 - detailed_report 값 안의 마크다운은 유지하세요.
 - JSON에는 class_summary, key_questions, weak_concepts_top5, detailed_report 4개 필드만 포함하세요.
 - weak_concepts_top5는 최대 5개만 포함하세요.
+- 학생 발화나 수업 내용에 직접 나온 영어 예문과 who/which/that 같은 필수 문법 표기만 유지하고, 설명문에 섞인 영어 단어는 한글로 번역하세요.
 - "주격", "목적격", "목적어", "관계대명사", "선행사", "생략" 같은 한국어 문법 용어는 이미 올바른 한글 표현이므로 그대로 유지하세요.
 - "주격 관계대명사"를 "주체 관계대명사"로, "목적격 관계대명사"를 "목적 관계대명사"로 바꾸지 마세요.
+
+입력 JSON:
+{report_json}
+"""
+
+
+def _build_session_remove_unwanted_english_prompt(report_json: str) -> str:
+    return f"""아래 JSON의 구조와 의미는 유지하되, JSON 값에 포함된 불필요한 영어 단어와 영어 문구를 자연스러운 한국어 표현으로 바꾸세요.
+
+규칙:
+- JSON key는 그대로 유지하세요.
+- JSON value의 의미를 바꾸지 마세요.
+- 학생 발화나 수업 내용에 직접 나온 영어 예문은 그대로 유지할 수 있습니다.
+- who, which, that, whom, whose 같은 영어 문법 표기는 필요할 때만 그대로 유지할 수 있습니다.
+- AI, Sally 같은 고유명사는 그대로 유지할 수 있습니다.
+- relative pronoun, subject, object, weakness, summary, feedback, flow, strength, support처럼 설명문에 섞인 영어는 한글로 번역하세요.
+- 한국어 문장 안에 불필요한 영어 설명어가 남지 않게 하세요.
+- 한자, 일본어, 중국어 표기를 절대 사용하지 마세요.
+- 코드블록, JSON 바깥 설명문 없이 JSON 객체만 출력하세요.
+- detailed_report 값 안의 마크다운은 유지하세요.
+- JSON에는 class_summary, key_questions, weak_concepts_top5, detailed_report 4개 필드만 포함하세요.
+- weak_concepts_top5는 최대 5개만 포함하세요.
+- "주격", "목적격", "목적어", "관계대명사", "선행사", "생략" 같은 한국어 문법 용어는 이미 올바른 한글 표현이므로 그대로 유지하세요.
 
 입력 JSON:
 {report_json}
@@ -865,6 +892,13 @@ def _session_report_contains_foreign_chars(report: SessionAggregateReport) -> bo
     return _contains_foreign_chars(report_json)
 
 
+def _session_report_contains_unwanted_english(report: SessionAggregateReport) -> bool:
+    return any(
+        _contains_unwanted_english(text)
+        for text in _iter_text_values(_report_to_dict(report))
+    )
+
+
 KNOWN_FOREIGN_FRAGMENT_REPLACEMENTS = {
     "との": "와의",
     "の": "의",
@@ -960,6 +994,48 @@ async def _ensure_no_foreign_chars_in_session_report(
 
         print(
             "[ERROR] 세션 전체 리포트 한글 변환 repair 실패. 원본 report 반환 "
+            f"session_id={session_id}, error={repair_error}"
+        )
+        return report
+
+
+async def _ensure_no_unwanted_english_in_session_report(
+    client: AsyncOpenAI,
+    report: SessionAggregateReport,
+    session_id: Optional[str] = None,
+) -> SessionAggregateReport:
+    if not _session_report_contains_unwanted_english(report):
+        return report
+
+    print(
+        "[WARN] 세션 전체 리포트에 불필요한 영어 표현 포함 감지. 한글 변환 repair 재시도 "
+        f"session_id={session_id}"
+    )
+
+    try:
+        report_json = json.dumps(_report_to_dict(report), ensure_ascii=False)
+        cleaned_text = await _call_session_llm(
+            client=client,
+            prompt=_build_session_remove_unwanted_english_prompt(report_json),
+            max_tokens=4096,
+            temperature=0.0,
+            model=NVIDIA_REPORT_FINAL_MODEL,
+            session_id=session_id,
+            stage="english_repair",
+        )
+        cleaned_report = _parse_session_report_json(cleaned_text)
+
+        if _session_report_contains_unwanted_english(cleaned_report):
+            print(
+                "[ERROR] 영어 표현 제거 repair 후에도 불필요한 영어 포함 감지. 원본 session report 반환 "
+                f"session_id={session_id}"
+            )
+            return report
+
+        return cleaned_report
+    except Exception as repair_error:
+        print(
+            "[ERROR] 세션 전체 리포트 영어 표현 제거 repair 실패. 원본 report 반환 "
             f"session_id={session_id}, error={repair_error}"
         )
         return report
@@ -1153,7 +1229,12 @@ async def generate_session_report(
 
     try:
         report = _parse_session_report_json(raw_text)
-        return await _ensure_no_foreign_chars_in_session_report(
+        report = await _ensure_no_foreign_chars_in_session_report(
+            client=client,
+            report=report,
+            session_id=session_id,
+        )
+        return await _ensure_no_unwanted_english_in_session_report(
             client=client,
             report=report,
             session_id=session_id,
@@ -1170,7 +1251,12 @@ async def generate_session_report(
                 raw_text,
                 session_id=session_id,
             )
-            return await _ensure_no_foreign_chars_in_session_report(
+            report = await _ensure_no_foreign_chars_in_session_report(
+                client=client,
+                report=report,
+                session_id=session_id,
+            )
+            return await _ensure_no_unwanted_english_in_session_report(
                 client=client,
                 report=report,
                 session_id=session_id,
