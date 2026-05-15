@@ -632,6 +632,8 @@ async def analyze_student(
             "안 할",
             "안할",
             "하기 싫",
+            "귀찮",
+            "짜증",
             "못 하겠",
             "못하겠",
             "그만",
@@ -643,6 +645,7 @@ async def analyze_student(
             "수업 안",
             "안 하고 싶",
             "안하고 싶",
+            "안 하고싶",
             "안 할래",
             "안할래",
             "나갈래",
@@ -669,6 +672,40 @@ async def analyze_student(
             "재밌는 얘기",
         )
         return _has_signal_match(text, refusal_keywords + offtask_keywords)
+
+    def _is_strong_refusal_or_quit_student_turn(turn: ConversationTurn) -> bool:
+        if not _is_student_turn(turn):
+            return False
+
+        text = turn.text.strip().lower()
+        if not text:
+            return False
+
+        strong_refusal_keywords = (
+            "싫어",
+            "하기 싫",
+            "안 할",
+            "안할",
+            "안 할래",
+            "안할래",
+            "안 하고 싶",
+            "안하고 싶",
+            "그만",
+            "그만할래",
+            "그만하고 싶",
+            "포기",
+            "못 하겠",
+            "못하겠",
+            "못 듣겠",
+            "수업 싫",
+            "수업 안",
+            "나갈래",
+            "집에 갈",
+            "집 가고 싶",
+            "때려칠",
+            "짜증나서 못",
+        )
+        return _has_signal_match(text, strong_refusal_keywords)
 
     def _is_self_blame_or_helpless_student_turn(turn: ConversationTurn) -> bool:
         if not _is_student_turn(turn):
@@ -782,14 +819,21 @@ async def analyze_student(
         misconception_patterns = (
             ("다시 써야", ("it", "him", "her", "대명사")),
             ("또 써야", ("it", "him", "her", "대명사")),
+            ("써야", ("it", "him", "her", "대명사")),
+            ("써야 맞", ("it", "him", "her", "대명사")),
             ("써야 뜻이", ("it", "him", "her", "대명사")),
             ("쓰면 뜻", ("it", "him", "her", "대명사")),
             ("더 분명", ("it", "him", "her", "대명사")),
             ("있어야", ("it", "him", "her", "대명사")),
+            ("필요", ("it", "him", "her", "대명사")),
             ("넣고 싶", ("it", "him", "her", "대명사")),
+            ("넣어야", ("it", "him", "her", "대명사")),
+            ("넣어야 맞", ("it", "him", "her", "대명사")),
             ("넣게", ("it", "him", "her", "대명사")),
             ("써도 돼", ("it", "him", "her", "대명사")),
             ("써도 되", ("it", "him", "her", "대명사")),
+            ("문장이 완성", ("it", "him", "her", "대명사")),
+            ("문장 완성", ("it", "him", "her", "대명사")),
             ("목적어가 두 번", ("맞", "괜찮", "가능")),
         )
         return any(
@@ -832,6 +876,11 @@ async def analyze_student(
     )
     last_student_is_self_blame_or_helpless = (
         _is_self_blame_or_helpless_student_turn(last_student_turn)
+        if last_student_turn
+        else False
+    )
+    last_student_is_strong_refusal_or_quit = (
+        _is_strong_refusal_or_quit_student_turn(last_student_turn)
         if last_student_turn
         else False
     )
@@ -1064,6 +1113,13 @@ async def analyze_student(
             if data.get("student_emotion") in {None, "중립", "집중", "흥미", "자신감"}:
                 data["student_emotion"] = "지루함"
             data["one_line_summary"] = "수업 외 주제로 반복 이탈함"
+            data["need_intervention"] = True
+        elif last_student_is_strong_refusal_or_quit:
+            data["understanding_score"] = None
+            data["current_topic"] = "학습 참여 거부"
+            if data.get("student_emotion") in {None, "중립", "집중", "흥미", "자신감", "혼란"}:
+                data["student_emotion"] = "좌절"
+            data["one_line_summary"] = "학습 포기 또는 수업 거부를 표현함"
             data["need_intervention"] = True
         elif last_student_is_self_blame_or_helpless:
             if data.get("student_emotion") in {None, "중립", "집중", "흥미", "자신감", "혼란"}:

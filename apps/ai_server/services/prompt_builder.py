@@ -299,8 +299,11 @@ def build_realtime_analysis_system_prompt(profile: Optional[StudentProfile] = No
 - 마지막 발화가 정답 시도, 풀이, 확인 질문이면 emotion은 "집중" 또는 "자신감"입니다.
 - 마지막 발화가 "모르겠어요", "헷갈려요", "어려워요"이면 emotion="혼란"입니다.
 - 마지막 발화가 강한 자책/포기/무력감이면 emotion="좌절", need_intervention=true입니다.
+- 마지막 발화가 수업 거부나 학습 중단 의사를 직접 표현하면 한 번이어도 need_intervention=true입니다.
 - 이전에 좌절했어도 마지막 발화가 문제를 풀거나 정답을 설명하면 emotion을 회복 상태로 갱신하고 need_intervention=false로 둡니다.
 - 같은 개념에서 최근 학생 발화 2회 이상 막히면 need_intervention=true입니다.
+- 명확한 오개념이나 핵심 규칙 반대 이해가 최근 학생 발화 2회 이상 반복되면 need_intervention=true입니다.
+- 마지막 발화가 자신감 있어 보여도 내용이 반복 오개념이면 emotion="혼란", need_intervention=true입니다.
 - 무반응/의미 약한 단답이 최근 2회 이상 반복되면 score=null, emotion="무반응", need_intervention=true입니다.
 - 단일 오개념, 단순 질문, 예시 요청, 확인 질문은 need_intervention=false입니다.
 
@@ -318,6 +321,15 @@ def build_realtime_analysis_system_prompt(profile: Optional[StudentProfile] = No
   "student_emotion": "혼란",
   "one_line_summary": "대명사 중복 규칙을 혼동함",
   "need_intervention": false
+}}
+
+최근 학생 발화: it을 넣어야 문장이 완성돼요. / bought 뒤에 it을 써야 맞는 문장 아닌가요?
+{{
+  "understanding_score": 3,
+  "current_topic": "대명사 중복 금지",
+  "student_emotion": "혼란",
+  "one_line_summary": "같은 오개념을 반복함",
+  "need_intervention": true
 }}
 
 학생: helped 앞에 주어가 없으니까 who가 주격인가요?

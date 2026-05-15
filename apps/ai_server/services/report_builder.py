@@ -80,6 +80,21 @@ CHARS_PER_TOKEN = 4
 # 긴 세션 chunk 분할 기준
 CHUNK_MAX_CHARS = 8000
 
+MISSING_CONCEPT_VALUES = {
+    "",
+    "없음",
+    "해당없음",
+    "해당 없음",
+    "판단 불가",
+    "학생 발화 없음",
+    "분석 불가",
+    "응답 없음",
+    "수업 외 대화",
+    "학습 참여 거부",
+    "학습 무력감",
+    "개념학습",
+}
+
 
 # ─────────────────────────────────────────────────────────────
 # 공통 언어 규칙
@@ -316,6 +331,10 @@ def _build_report_prompt(conversation_text: str, realtime_context: str = "") -> 
 1. key_concepts = 주요/취약 개념
 - 반드시 객체로 작성하세요. 배열이나 문자열로 작성하지 마세요.
 - main_concepts에는 세션에서 다룬 주요 학습 주제를 짧은 명사구 배열로 작성하세요.
+- main_concepts는 학생이 최종적으로 완전히 이해했는지와 별개로, 세션에서 실제로 다룬 학습 주제를 나타냅니다.
+- 보조 컨텍스트에 "주요 학습 주제 후보"가 있으면 main_concepts의 우선 후보로 사용하세요.
+- 대화 또는 보조 컨텍스트에서 주제가 확인되면 main_concepts를 ["없음"]으로 작성하지 마세요.
+- 학생 이름, 계정명, 감정, 태도, "응답 없음", "수업 외 대화"는 main_concepts에 넣지 마세요.
 - weak_concepts에는 세션 종료 시점에도 추가 지도가 필요한 취약 개념을 짧은 명사구 배열로 작성하세요.
 - 초반에 어려워했더라도 이후 이해한 근거가 있으면 취약 개념으로 분류하지 마세요.
 - 주요 학습 주제나 취약 개념이 명확하지 않은 하위 필드는 ["없음"]으로 작성하세요.
@@ -398,6 +417,8 @@ def _build_chunk_summary_prompt(
 - chunk_index: 현재 chunk 번호입니다.
 - total_chunks: 전체 chunk 개수입니다.
 - main_topics: 이 chunk에서 실제로 다룬 주요 학습 개념과 취약 개념 후보를 짧은 명사구 배열로 작성하세요. 확인되지 않으면 []로 작성하세요.
+- main_topics에는 학생이 정답을 말한 개념뿐 아니라 AI 질문, 문제, 설명에서 반복적으로 다룬 학습 주제도 포함하세요.
+- 학생 이름, 계정명, 감정, 태도, "응답 없음", "수업 외 대화"는 main_topics에 넣지 마세요.
 - student_confusions: 이 chunk에서 학생이 헷갈려 한 부분을 구체적인 문장 배열로 작성하세요. 확인되지 않으면 []로 작성하세요.
 - misconceptions: 이 chunk에서 학생 발화에 드러난 잘못된 이해나 오개념 후보를 문장 배열로 작성하세요. 같은 chunk 안에서 이후 해결된 경우에는 resolved_confusions에도 반드시 기록하세요. 확인되지 않으면 []로 작성하세요.
 - weak_steps: 문제 풀이, 개념 적용, 설명 이해 과정에서 학생이 막힌 단계를 문장 배열로 작성하세요. 확인되지 않으면 []로 작성하세요.
@@ -476,6 +497,10 @@ def _build_synthesis_prompt(chunk_summaries: list[str], realtime_context: str = 
 1. key_concepts = 주요/취약 개념
 - 반드시 객체로 작성하세요. 배열이나 문자열로 작성하지 마세요.
 - main_concepts에는 세션에서 다룬 주요 학습 주제를 짧은 명사구 배열로 작성하세요.
+- main_concepts는 학생이 최종적으로 완전히 이해했는지와 별개로, 세션에서 실제로 다룬 학습 주제를 나타냅니다.
+- 보조 컨텍스트에 "주요 학습 주제 후보"가 있으면 main_concepts의 우선 후보로 사용하세요.
+- 파트별 요약 또는 보조 컨텍스트에서 주제가 확인되면 main_concepts를 ["없음"]으로 작성하지 마세요.
+- 학생 이름, 계정명, 감정, 태도, "응답 없음", "수업 외 대화"는 main_concepts에 넣지 마세요.
 - weak_concepts에는 세션 종료 시점에도 추가 지도가 필요한 취약 개념을 짧은 명사구 배열로 작성하세요.
 - 초반 또는 중간에 어려워했더라도 후반부에서 이해한 근거가 있으면 취약 개념으로 분류하지 마세요.
 - 주요 학습 주제나 취약 개념이 명확하지 않은 하위 필드는 ["없음"]으로 작성하세요.
@@ -626,6 +651,86 @@ def _default_key_concepts() -> dict[str, list[str]]:
         "main_concepts": ["없음"],
         "weak_concepts": ["없음"],
     }
+
+
+def _clean_concept_value(value: Any) -> str:
+    return re.sub(r"\s+", " ", str(value or "")).strip()
+
+
+def _is_missing_concept_value(value: Any) -> bool:
+    cleaned = _clean_concept_value(value)
+    return not cleaned or cleaned in MISSING_CONCEPT_VALUES
+
+
+def _dedupe_preserve_order(items: list[str]) -> list[str]:
+    seen: set[str] = set()
+    deduped: list[str] = []
+    for item in items:
+        cleaned = _clean_concept_value(item)
+        key = cleaned.lower()
+        if not cleaned or key in seen:
+            continue
+        seen.add(key)
+        deduped.append(cleaned)
+    return deduped
+
+
+def _extract_realtime_topic_candidates(
+    realtime_summaries: Optional[list[dict]],
+    max_items: int = 5,
+) -> list[str]:
+    if not realtime_summaries:
+        return []
+
+    topic_stats: dict[str, dict[str, Any]] = {}
+    for index, summary in enumerate(realtime_summaries):
+        if not isinstance(summary, dict):
+            continue
+
+        topic = _clean_concept_value(summary.get("current_topic"))
+        if _is_missing_concept_value(topic):
+            continue
+        if len(topic) > 30:
+            continue
+
+        key = topic.lower()
+        if key not in topic_stats:
+            topic_stats[key] = {
+                "topic": topic,
+                "count": 0,
+                "first_index": index,
+                "last_index": index,
+            }
+        topic_stats[key]["count"] += 1
+        topic_stats[key]["last_index"] = index
+
+    ranked = sorted(
+        topic_stats.values(),
+        key=lambda item: (-item["count"], -item["last_index"], item["first_index"]),
+    )
+    return _dedupe_preserve_order([str(item["topic"]) for item in ranked])[:max_items]
+
+
+def _main_concepts_missing(main_concepts: Any) -> bool:
+    if not isinstance(main_concepts, list) or not main_concepts:
+        return True
+    return all(_is_missing_concept_value(item) for item in main_concepts)
+
+
+def _apply_realtime_topic_fallback(
+    data: dict[str, Any],
+    realtime_topic_candidates: list[str],
+) -> dict[str, Any]:
+    if not realtime_topic_candidates:
+        return data
+
+    normalized = dict(data)
+    key_concepts = _normalize_key_concepts(normalized.get("key_concepts"))
+    if _main_concepts_missing(key_concepts.get("main_concepts")):
+        key_concepts["main_concepts"] = realtime_topic_candidates[:3]
+
+    normalized["key_concepts"] = key_concepts
+    return normalized
 
 
 def _normalize_key_concepts(value: Any) -> dict[str, list[str]]:
@@ -881,6 +986,7 @@ async def generate_final_report(
 
     # ── realtime_summaries: 프롬프트 보조 컨텍스트로 활용 ────────────────────
     realtime_context = ""
+    realtime_topic_candidates = _extract_realtime_topic_candidates(realtime_summaries)
     if realtime_summaries:
         # 이해도 변화, 반복 혼란, 감정 변화, 개입 필요 여부를 요약하여 프롬프트에 주입합니다.
         scores = [
@@ -892,6 +998,8 @@ async def generate_final_report(
         emotions = [s.get("student_emotion") for s in realtime_summaries if s.get("student_emotion")]
 
         lines = []
+        if realtime_topic_candidates:
+            lines.append(f"주요 학습 주제 후보(current_topic 기반): {', '.join(realtime_topic_candidates)}")
         if scores:
             lines.append(f"이해도 변화: {' → '.join(str(s) for s in scores)}")
         if emotions:
@@ -903,6 +1011,7 @@ async def generate_final_report(
             realtime_context = (
                 "\n\n[실시간 분석 요약]\n"
                 + "\n".join(f"- {l}" for l in lines)
+                + "\n- main_concepts가 비어 있거나 ['없음']이 되려는 경우, 위 주요 학습 주제 후보를 우선 사용하세요."
             )
 
     # ── Step 0: 메시지 정규화 ───────────────────────────────────────────────
@@ -998,6 +1107,7 @@ async def generate_final_report(
     # ── Step 5~8: JSON 파싱, repair retry, 한자 제거, fallback ─────────────
     try:
         data = _normalize_final_report_data(_parse_report_json(raw_text))
+        data = _apply_realtime_topic_fallback(data, realtime_topic_candidates)
         report = FinalReport(**data)
         report = await _ensure_no_foreign_chars_in_report(
             client=client,
@@ -1016,6 +1126,8 @@ async def generate_final_report(
 
         try:
             report = await _repair_and_parse_report_json(client, raw_text)
+            report_data = report.model_dump() if hasattr(report, "model_dump") else report.dict()
+            report = FinalReport(**_apply_realtime_topic_fallback(report_data, realtime_topic_candidates))
             report = await _ensure_no_foreign_chars_in_report(
                 client=client,
                 report=report,
