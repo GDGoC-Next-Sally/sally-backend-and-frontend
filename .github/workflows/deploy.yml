@@ -32,7 +32,7 @@ jobs:
             
             echo "📦 Building and restarting containers..."
             # Docker 컨테이너 재빌드 및 재시작
-            docker-compose up -d --build
+            docker compose up -d --build
             
             echo "🧹 Cleaning up unused Docker resources..."
             docker image prune -f
