@@ -106,7 +106,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return { event: 'joined', room: data.room };
   }
 
-  
+
   // 특정 Room을 나감 (범용)
   @SubscribeMessage('leave_room')
   handleLeaveRoom(
@@ -147,7 +147,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`Sent event ${event} to room ${room}`);
   }
 
-  
+
   // 특정 유저(userId)에게만 1:1 이벤트 전송
   sendToUser(userId: string, event: string, payload: any) {
     const socket = this.userSocketMap.get(userId);

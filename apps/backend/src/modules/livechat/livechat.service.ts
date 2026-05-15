@@ -156,17 +156,23 @@ export class LivechatService {
    * AI 서버에 분석 요청을 보내고 즉시 반환합니다 (Fire and Forget).
    * AI 서버는 session_id와 student_id를 기반으로 내부적으로 dialog를 찾아 처리합니다.
    */
-  private requestAiAnalysis(history: any[], profile: any, sessionId: number, studentId: string, aiResponse: string) {
+  private requestAiAnalysis(history: any[], profile: any, sessionId: number, studentId: string, aiResponse: string, retryCount = 0) {
+    const MAX_RETRIES = 3;
     const updatedHistory = [...history, { role: 'model', text: aiResponse, sender_type: 'AI' }];
 
-    // AI 서버 규격에 맞춰 전송 (dialog_id, callback_url 대신 session_id, student_id 사용)
     axios.post(`${AI_SERVER_URL}/api/analyze`, {
       conversation_history: updatedHistory,
       student_profile: profile,
       session_id: sessionId,
       student_id: studentId
     }, { timeout: 60000 }).catch(err => {
-      console.error('AI Analysis request failed:', err.message);
+      if (retryCount < MAX_RETRIES) {
+        const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s...
+        console.warn(`AI Analysis failed (${err.message}). Retrying in ${delay}ms... (${retryCount + 1}/${MAX_RETRIES})`);
+        setTimeout(() => this.requestAiAnalysis(history, profile, sessionId, studentId, aiResponse, retryCount + 1), delay);
+      } else {
+        console.error('AI Analysis request failed after max retries:', err.message);
+      }
     });
   }
 

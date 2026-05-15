@@ -44,6 +44,7 @@ export class CreateClassDto {
   homeroom?: string;
 
   @ApiProperty({ description: '클래스 설명', example: '2024년 1학기 정보 수업입니다.' })
+  @IsOptional()
   @IsString()
   explanation: string;
 
