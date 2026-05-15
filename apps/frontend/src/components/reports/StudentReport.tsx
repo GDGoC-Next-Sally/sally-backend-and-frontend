@@ -5,6 +5,7 @@ import { Download, BookOpen, Lightbulb, Smile, MessageSquare, FileSearch } from 
 import type { SessionListItem } from '@/actions/reports';
 import { ReportExportModal } from './ReportExportModal';
 import { ChatModal } from './ChatModal';
+import { MarkdownReport } from './MarkdownReport';
 import styles from './StudentReport.module.css';
 
 /* ── 타입 ────────────────────────────────────────────────────────────────── */
@@ -225,9 +226,7 @@ export function StudentReport({
             <h3 className={styles.cardTitle}>AI 리포트</h3>
             {detailedReport ? (
               <>
-                <p className={`${styles.reportText} ${reportExpanded ? '' : styles.clampText}`}>
-                  {detailedReport}
-                </p>
+                <MarkdownReport content={detailedReport} clamped={!reportExpanded} />
                 <button className={styles.viewMoreBtn} onClick={() => setReportExpanded(v => !v)}>
                   {reportExpanded ? '접기' : '자세히 보기'}
                 </button>
