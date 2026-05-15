@@ -1,0 +1,40 @@
+name: Deploy to GCP VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to VM via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_IP }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          connect_timeout: 60s
+          script_stop: true
+          script: |
+            echo "🚀 Deployment started..."
+            
+            cd ~/sally-ai-coach
+            
+            echo "📥 Pulling latest code..."
+            git pull origin main
+            
+            echo "📦 Building and restarting containers..."
+            # Docker 컨테이너 재빌드 및 재시작
+            docker-compose up -d --build
+            
+            echo "🧹 Cleaning up unused Docker resources..."
+            docker image prune -f
+            
+            echo "✅ Deployment finished successfully!"
