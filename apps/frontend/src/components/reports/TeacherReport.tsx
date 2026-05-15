@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Download, Search, ChevronLeft, BookOpen, Lightbulb, Smile, MessageSquare, FileSearch } from 'lucide-react';
 import styles from './TeacherReport.module.css';
 import { ReportExportModal } from './ReportExportModal';
+import { MarkdownReport } from './MarkdownReport';
 
 /* ─────────────────────────────────────────── Types ── */
 
@@ -293,9 +294,7 @@ function SummaryView({
         </div>
         {summaryReport?.aiReport ? (
           <>
-            <p className={`${styles.bodyText} ${expanded ? '' : styles.clampText}`}>
-              {summaryReport.aiReport}
-            </p>
+            <MarkdownReport content={summaryReport.aiReport} clamped={!expanded} />
             <button className={styles.viewMoreBtn} onClick={() => setExpanded(v => !v)}>
               {expanded ? '접기' : '자세히 보기'}
             </button>
@@ -521,9 +520,7 @@ function StudentDetailView({
         </div>
         {student.aiReport ? (
           <>
-            <p className={`${styles.reportText} ${reportExpanded ? '' : styles.clampText}`}>
-              {student.aiReport}
-            </p>
+            <MarkdownReport content={student.aiReport} clamped={!reportExpanded} />
             <button
               className={styles.viewMoreBtn}
               onClick={() => setReportExpanded(v => !v)}
