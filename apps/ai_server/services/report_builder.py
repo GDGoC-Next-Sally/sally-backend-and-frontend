@@ -47,16 +47,26 @@ def _env_str(name: str, default: str) -> str:
     return value.strip().strip('"').strip("'")
 
 
+def _normalize_nvidia_model_id(model: str) -> str:
+    if model == "nemotron-3-super-120b-a12b":
+        return "nvidia/nemotron-3-super-120b-a12b"
+    return model
+
+
 # ── 모델 설정 (NVIDIA NIM OpenAI-compatible API) ────────────────────────────
 NVIDIA_BASE_URL = _env_str(
     "NVIDIA_BASE_URL",
     "https://integrate.api.nvidia.com/v1",
 )
 NVIDIA_CHAT_MODEL = _env_str("NVIDIA_CHAT_MODEL", "google/gemma-4-31b-it")
-NVIDIA_REPORT_SUMMARY_MODEL = _env_str("NVIDIA_REPORT_SUMMARY_MODEL", NVIDIA_CHAT_MODEL)
-NVIDIA_REPORT_FINAL_MODEL = _env_str(
-    "NVIDIA_REPORT_FINAL_MODEL",
-    _env_str("NVIDIA_REPORT_MODEL", "nemotron-3-super-120b-a12b"),
+NVIDIA_REPORT_SUMMARY_MODEL = _normalize_nvidia_model_id(
+    _env_str("NVIDIA_REPORT_SUMMARY_MODEL", NVIDIA_CHAT_MODEL)
+)
+NVIDIA_REPORT_FINAL_MODEL = _normalize_nvidia_model_id(
+    _env_str(
+        "NVIDIA_REPORT_FINAL_MODEL",
+        _env_str("NVIDIA_REPORT_MODEL", "nvidia/nemotron-3-super-120b-a12b"),
+    )
 )
 
 # Backward-compatible alias for modules that only need the final report model.
