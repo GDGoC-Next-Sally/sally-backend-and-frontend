@@ -31,7 +31,7 @@ export default function SignupPage() {
     if (error) {
       alert('회원가입 실패: ' + error.message);
     } else {
-      router.push('/');
+      router.push('/login');
     }
   };
 
