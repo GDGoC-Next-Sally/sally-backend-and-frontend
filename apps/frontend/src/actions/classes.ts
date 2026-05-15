@@ -77,8 +77,11 @@ export async function getClassStudents(classId: number): Promise<ClassStudent[]>
   return serverFetch(`/classes/${classId}/students`);
 }
 
-export async function kickStudent(studentId: string): Promise<void> {
-  return serverFetch(`/classes/teacher/${studentId}/kick`, { method: 'POST' });
+export async function kickStudent(classId: number, studentId: string): Promise<void> {
+  return serverFetch(`/classes/teacher/${classId}/kick`, {
+    method: 'POST',
+    body: JSON.stringify({ student_id: studentId }),
+  });
 }
 
 // ── Student ───────────────────────────────────────────────────────────────────

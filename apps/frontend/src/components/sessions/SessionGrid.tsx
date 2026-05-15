@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { type Session } from '@/actions/sessions';
 import { type ClassItem, type ClassStudent, getClassStudents, kickStudent } from '@/actions/classes';
 import { User, MoreHorizontal, ChevronLeft, Mail, Calendar } from 'lucide-react';
+import ProfileStudentIcon from '@/components/icons/ProfileStudentIcon';
 import { SessionModal } from './SessionModal';
 import { CreateSessionModal } from './CreateSessionModal';
 import { ConfirmModal } from '../common/ConfirmModal';
@@ -89,7 +90,7 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
   const handleKickConfirm = async () => {
     if (!kickTargetId) return;
     try {
-      await kickStudent(kickTargetId);
+      await kickStudent(classId, kickTargetId);
       setStudents((prev) => prev.filter((s) => s.id !== kickTargetId));
     } catch {
       alert('강퇴에 실패했습니다.');
@@ -266,7 +267,7 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
           {!studentsLoading && students.map((student) => (
             <div key={student.id} className={styles.studentRow}>
               <div className={styles.studentAvatar}>
-                <Image src="/images/profile_color.png" alt="프로필" width={36} height={36} />
+                <ProfileStudentIcon width={36} height={36} />
               </div>
               <div className={styles.studentInfo}>
                 <div className={styles.studentName}>{student.name}</div>
