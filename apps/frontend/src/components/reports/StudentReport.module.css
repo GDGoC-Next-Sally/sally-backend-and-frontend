@@ -20,7 +20,7 @@
 }
 
 .pageTitle {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-h1);
   font-weight: var(--font-weight-bold);
   color: #151E1E;
   margin: 0;
@@ -41,7 +41,7 @@
   border: 1.5px solid #C0C8C5;
   border-radius: 12px;
   background: white;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-regular);
   color: #626664;
   cursor: pointer;
@@ -63,7 +63,7 @@
   color: white;
   border: none;
   border-radius: 12px;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-bold);
   cursor: pointer;
   transition: background 0.15s;
@@ -86,7 +86,7 @@
   border: 1.5px solid #C0C8C5;
   border-radius: 8px;
   padding: 0 36px 0 18px;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #626664;
   background-color: white;
@@ -135,13 +135,13 @@
 }
 
 .profileName {
-  font-size: 20px;
+  font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
   color: #151E1E;
 }
 
 .profileClass {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #626664;
   margin-top: 4px;
@@ -161,7 +161,7 @@
 }
 
 .statLabel {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #626664;
   white-space: nowrap;
@@ -174,14 +174,14 @@
 }
 
 .statNum {
-  font-size: 24px;
+  font-size: var(--font-size-h1);
   font-weight: var(--font-weight-bold);
   color: #151E1E;
   line-height: 1;
 }
 
 .statUnit {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-bold);
 }
 
@@ -209,14 +209,14 @@
 }
 
 .cardTitle {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
   color: #151E1E;
   margin: 0 0 12px;
 }
 
 .cardValue {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #626664;
   margin: 0;
@@ -232,7 +232,7 @@
 }
 
 .durationBadge {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: #626664;
 }
@@ -254,7 +254,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #626664;
   margin-bottom: 8px;
@@ -262,12 +262,12 @@
 
 .aiStar {
   color: #22CB84;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   flex-shrink: 0;
 }
 
 .aiText {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-regular);
   color: #797C7C;
   line-height: 1.6;
@@ -294,7 +294,7 @@
   border-radius: 8px;
   background: #E0F5EB;
   color: #22CB84;
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
   display: flex;
   align-items: center;
@@ -303,7 +303,7 @@
 }
 
 .misconceptionText {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #626664;
 }
@@ -311,7 +311,7 @@
 /* ── AI 리포트 ────────────────────────────────────────────────────────────── */
 
 .reportText {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-regular);
   color: #626664;
   line-height: 1.7;
@@ -334,7 +334,7 @@
   background: none;
   border: 1.5px solid #C0C8C5;
   border-radius: 8px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-regular);
   color: #626664;
   cursor: pointer;
@@ -349,7 +349,7 @@
 /* ── 빈 상태 ──────────────────────────────────────────────────────────────── */
 
 .empty {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   color: #626664;
   padding: 12px 0;
   margin: 0;
@@ -361,7 +361,7 @@
   padding: 60px 24px;
   text-align: center;
   color: #626664;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
 }
 
 /* ── 스켈레톤 ─────────────────────────────────────────────────────────────── */
@@ -389,14 +389,14 @@
 }
 
 .reportGenTitle {
-  font-size: 24px;
-  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
   color: #151E1E;
   margin: 0;
 }
 
 .reportGenSub {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-regular);
   color: #626664;
   margin: 0;

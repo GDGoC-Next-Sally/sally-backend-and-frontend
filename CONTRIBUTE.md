@@ -71,7 +71,6 @@ sally-backend-and-frontend/
 │   │       │   ├── layout/
 │   │       │   └── icons/
 │   │       ├── lib/                # API 유틸 (api.ts)
-│   │       └── store/              # Zustand 스토어 (authStore.ts)
 │   ├── backend/            # NestJS 11
 │   │   ├── src/
 │   │   │   ├── modules/
@@ -110,7 +109,6 @@ IA 모듈 ID와 디렉토리를 1:1 매핑하지 않습니다. 의미 단위(`cl
 | React | `19.2.4` | UI |
 | Tailwind CSS | `^4` | 스타일링 |
 | Supabase JS | `^2.105.0` | 인증 클라이언트 |
-| Zustand | 설치 완료 | 전역 상태 관리 (`store/authStore.ts`) |
 | TypeScript | `^5` | 언어 |
 | ESLint | `^9` | 린트 |
 

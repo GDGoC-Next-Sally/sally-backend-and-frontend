@@ -34,34 +34,35 @@
   margin-bottom: 8px;
 }
 
+/* H3 — 카드 헤더 (Figma: 16px ExtraBold) */
 .cardTitle {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-extrabold);
   color: var(--color-text-primary);
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .cardSubtitle {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: #797c7c;
 }
 
 .cardDate {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: #c2c2c2;
   margin-top: 2px;
 }
 
 .noticeDate {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #c2c2c2;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .moreLink {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: #797c7c;
   text-decoration: none;
@@ -89,7 +90,7 @@
 }
 
 .progressUnit {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
 }
@@ -102,13 +103,13 @@
 }
 
 .progressLabel {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: #797c7c;
 }
 
 .progressDelta {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: #49d098;
 }
@@ -144,14 +145,14 @@
 }
 
 .sectionTitle {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   line-height: 1.4;
 }
 
 .sectionSubtitle {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: #797c7c;
   margin-top: 2px;
@@ -165,7 +166,7 @@
   border: 1px solid var(--color-border);
   border-radius: 8px;
   background: white;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   cursor: pointer;
@@ -212,14 +213,14 @@
 }
 
 .feedbackCategory {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   color: #3eb476;
   line-height: 1.5;
 }
 
 .feedbackTitle {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   line-height: 1.5;
@@ -227,14 +228,14 @@
 }
 
 .feedbackDesc {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   color: #a9afad;
   line-height: 1.5;
   margin: 0;
 }
 
 .listTitle {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin-bottom: 16px;
@@ -279,14 +280,14 @@
 }
 
 .quickLinkTitle {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   line-height: 1.5;
 }
 
 .quickLinkSub {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: #797c7c;
   line-height: 1.5;
 }
@@ -320,7 +321,7 @@
 }
 
 .classDate {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-done);
 }
 
@@ -366,7 +367,7 @@
   align-items: center;
   padding: 2px 8px;
   border-radius: var(--radius-live-badge);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-bold);
   line-height: 1.5;
   white-space: nowrap;
@@ -389,7 +390,7 @@
 }
 
 .statusLabel {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: rgba(52, 52, 52, 0.7);
   white-space: nowrap;
@@ -401,7 +402,7 @@
 
 /* ??? ?대옒?ㅻ챸 ????????????????????????????????????????????? */
 .className {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-h1);
   font-weight: var(--font-weight-bold);
   color: #000;
   line-height: 1.5;
@@ -427,7 +428,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   color: rgba(52, 52, 52, 0.7);
 }
@@ -447,7 +448,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   color: #3eb476;
   cursor: pointer;
@@ -467,7 +468,7 @@
   background-color: var(--color-bg);
   border-radius: 8px;
   padding: 16px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
 }
 
@@ -494,13 +495,13 @@
 }
 
 .emptyTitle {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
 }
 
 .emptySubtitle {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
   margin-bottom: 12px;
 }
@@ -515,7 +516,7 @@
   color: var(--color-text-secondary);
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   text-decoration: none;
@@ -566,18 +567,18 @@
 }
 
 .recentTitle {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
 }
 
 .recentTeacher {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
 }
 
 .recentBadge {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   padding: 3px 8px;
   border-radius: 4px;
@@ -603,7 +604,7 @@
   width: 100%;
   background: none;
   border: none;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
   cursor: pointer;
   padding: 10px 0 0;
@@ -673,7 +674,7 @@
   }
 
   .noSessionText {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-caption);
     color: var(--color-text-secondary);
   }
 }

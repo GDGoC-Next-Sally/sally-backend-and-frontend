@@ -327,7 +327,7 @@ export const StudentLiveSession: React.FC<Props> = ({ classId, sessionId }) => {
   if (phase === 'loading') {
     return (
       <div className={styles.container}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', color: '#6B6B6B', fontSize: 14 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', color: '#6B6B6B', fontSize: 'var(--font-size-body)' }}>
           로딩 중...
         </div>
       </div>

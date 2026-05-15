@@ -15,7 +15,7 @@
 }
 
 .pageTitle {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-h1);
   font-weight: var(--font-weight-bold);
   color: #1A1A1A;
   margin: 0;
@@ -30,7 +30,7 @@
   border: none;
   border-radius: 8px;
   padding: 10px 18px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: background 0.15s;
@@ -52,7 +52,7 @@
   background: none;
   border: none;
   padding: 10px 20px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: #9CA3AF;
   cursor: pointer;
@@ -90,7 +90,7 @@
   border: 1.5px solid #E5E7EB;
   border-radius: 8px;
   padding: 10px 36px 10px 14px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-regular);
   color: #374151;
   background-color: white;
@@ -115,12 +115,12 @@
   padding: 48px;
   text-align: center;
   color: #9CA3AF;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .emptyInner {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #9CA3AF;
   padding: 16px 0;
   text-align: center;
@@ -147,7 +147,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   color: #1A1A1A;
   margin-bottom: 12px;
@@ -155,12 +155,12 @@
 
 .aiArrow {
   color: #22CB84;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-bold);
 }
 
 .aiSummaryText {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: #374151;
   line-height: 1.8;
   margin: 0;
@@ -192,7 +192,7 @@
 }
 
 .sectionTitle {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-bold);
   color: #1A1A1A;
 }
@@ -200,7 +200,7 @@
 .questionCount {
   background: #22CB84;
   color: white;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-bold);
   padding: 2px 8px;
   border-radius: var(--radius-pill);
@@ -225,7 +225,7 @@
 .questionTopic {
   background: #E5E7EB;
   color: #374151;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   padding: 3px 10px;
   border-radius: var(--radius-pill);
@@ -234,7 +234,7 @@
 }
 
 .questionText {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: #374151;
   line-height: 1.5;
 }
@@ -268,7 +268,7 @@
   border-radius: 50%;
   background: #E5E7EB;
   color: #6B7280;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-bold);
   display: flex;
   align-items: center;
@@ -282,7 +282,7 @@
 }
 
 .weakLabel {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: #374151;
 }
 
@@ -296,14 +296,14 @@
 }
 
 .aiReportTitle {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-bold);
   color: #1A1A1A;
   margin-bottom: 12px;
 }
 
 .aiReportText {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: #374151;
   line-height: 1.8;
   margin: 0 0 14px;
@@ -326,7 +326,7 @@
   border: 1.5px solid #E5E7EB;
   border-radius: 8px;
   padding: 8px 20px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: #374151;
   cursor: pointer;
@@ -360,7 +360,7 @@
 .searchInput {
   border: none;
   outline: none;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: #374151;
   width: 100%;
   background: transparent;
@@ -390,7 +390,7 @@
 
 .studentTable thead th {
   padding: 14px 16px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: #9CA3AF;
   text-align: left;
@@ -430,7 +430,7 @@
 }
 
 .tableStudentName {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   color: #1A1A1A;
 }
@@ -441,7 +441,7 @@
 }
 
 .tableCell {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #374151;
 }
 
@@ -450,7 +450,7 @@
 }
 
 .tableCount {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: #374151;
 }
@@ -461,7 +461,7 @@
   gap: 4px;
   background: #FEF3C7;
   color: #B45309;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   padding: 3px 10px;
   border-radius: var(--radius-pill);
@@ -472,7 +472,7 @@
   align-items: center;
   background: #D1FAE5;
   color: #065F46;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   padding: 3px 10px;
   border-radius: var(--radius-pill);
@@ -483,7 +483,7 @@
 }
 
 .tableSummaryText {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #6B7280;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -496,7 +496,7 @@
   text-align: center;
   padding: 48px !important;
   color: #9CA3AF;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
 }
 
 .detailBtn {
@@ -504,7 +504,7 @@
   border: 1.5px solid #E5E7EB;
   border-radius: 8px;
   padding: 7px 14px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: #6B7280;
   cursor: pointer;
@@ -531,7 +531,7 @@
   gap: 6px;
   background: none;
   border: none;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: #6B7280;
   cursor: pointer;
@@ -569,13 +569,13 @@
 }
 
 .studentDetailName {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
   color: #1A1A1A;
 }
 
 .studentDetailClass {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #9CA3AF;
   margin-top: 2px;
 }
@@ -590,14 +590,14 @@
 }
 
 .detailStatLabel {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #9CA3AF;
   font-weight: var(--font-weight-regular);
   margin-bottom: 6px;
 }
 
 .detailStatValue {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-h1);
   font-weight: var(--font-weight-bold);
   color: #22CB84;
   line-height: 1;
@@ -606,7 +606,7 @@
 .questionTopicWeak {
   background: #FEF3C7;
   color: #B45309;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   padding: 3px 10px;
   border-radius: var(--radius-pill);

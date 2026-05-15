@@ -178,7 +178,7 @@ export const SessionWidget: React.FC<SessionWidgetProps> = ({
           const existing = prev.get(data.student_id);
           return new Map(prev).set(data.student_id, {
             ...analysis,
-            need_intervention: existing?.need_intervention || analysis.need_intervention,
+            need_intervention: analysis.need_intervention,
           });
         });
       });

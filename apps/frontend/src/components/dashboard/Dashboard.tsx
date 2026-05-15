@@ -288,7 +288,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ classes, todayClass, recen
 
           <div className={styles.recentCard}>
             <div className={styles.recentHeader}>
-              <h2 className={styles.sectionTitle} style={{ fontSize: '16px' }}>최근 방문한 세션</h2>
+              <h2 className={styles.sectionTitle} style={{ fontSize: 'var(--font-size-h3)' }}>최근 방문한 세션</h2>
             </div>
             <div className={styles.recentList}>
               {recentSessions.length > 0 ? recentSessions.map((item) => {

@@ -17,7 +17,7 @@
   background: none;
   border: none;
   color: #797c7c;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   padding: 0;
@@ -40,7 +40,7 @@
 }
 
 .classTitle {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-h1);
   font-weight: var(--font-weight-bold);
   color: #212529;
   margin: 0;
@@ -75,7 +75,7 @@
 }
 
 .teacherName {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: #797c7c;
   white-space: nowrap;
@@ -93,7 +93,7 @@
   background: none;
   border: none;
   padding: 10px 20px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-regular);
   color: #868e96;
   cursor: pointer;
@@ -140,27 +140,27 @@
 .liveBadge {
   background-color: #40c057;
   color: white;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-bold);
   padding: 2px 6px;
   border-radius: var(--radius-live-badge);
 }
 
 .liveStatusText {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-bold);
   color: #212529;
 }
 
 .liveTitle {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-h1);
   font-weight: var(--font-weight-bold);
   color: #212529;
   margin-bottom: 8px;
 }
 
 .liveObjective {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #868e96;
 }
 
@@ -175,7 +175,7 @@
   border: none;
   border-radius: 8px;
   padding: 12px 28px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   cursor: pointer;
 }
@@ -187,7 +187,7 @@
   border: 1px solid #dee2e6;
   border-radius: 8px;
   padding: 12px 28px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   color: #495057;
   cursor: pointer;
@@ -202,13 +202,13 @@
 }
 
 .sectionTitle {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-bold);
   color: #212529;
 }
 
 .viewAll {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #868e96;
   cursor: pointer;
 }
@@ -227,7 +227,7 @@
   border: 1px solid #E0DED8;
   border-radius: 8px;
   padding: 8px 20px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   color: #22CB84;
   cursor: pointer;
@@ -262,13 +262,13 @@
 }
 
 .searchIcon { color: #adb5bd; margin-right: 8px; }
-.searchInput { border: none; outline: none; width: 100%; font-size: var(--font-size-md); }
+.searchInput { border: none; outline: none; width: 100%; font-size: var(--font-size-body); }
 
 .sortSelect {
   padding: 8px 14px;
   border: 1px solid #dee2e6;
   border-radius: 8px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   cursor: pointer;
   background-color: white;
 }
@@ -306,14 +306,14 @@
 .sessionInfo { flex: 1; min-width: 0; }
 
 .sessionTitle {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-bold);
   color: #212529;
   margin-bottom: 2px;
 }
 
 .sessionSubject {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: #797c7c;
 }
@@ -322,14 +322,14 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #626664;
   white-space: nowrap;
 }
 
 .sessionTime {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #626664;
   white-space: nowrap;
@@ -340,7 +340,7 @@
 .badge {
   padding: 8px 16px;
   border-radius: var(--radius-pill);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   white-space: nowrap;
   min-width: 90px;
@@ -395,7 +395,7 @@
   color: #495057;
 }
 
-.emptyText { padding: 48px 0; text-align: center; color: #adb5bd; font-size: var(--font-size-md); }
+.emptyText { padding: 48px 0; text-align: center; color: #adb5bd; font-size: var(--font-size-body); }
 
 /* ── Mobile (≤ 768px) ────────────────────────────────────────────────────────── */
 
@@ -415,7 +415,7 @@
   }
 
   .liveTitle {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-h3);
   }
 
   .liveActions {
@@ -445,11 +445,11 @@
   }
 
   .sessionTitle {
-    font-size: var(--font-size-md);
+    font-size: var(--font-size-body);
   }
 
   .sessionSubject {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-caption);
   }
 
   /* period 정보 숨김 */
@@ -458,12 +458,12 @@
   }
 
   .sessionTime {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-caption);
     min-width: 52px;
   }
 
   .badge {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-caption);
     padding: 5px 10px;
     min-width: 60px;
   }

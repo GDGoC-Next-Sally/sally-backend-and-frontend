@@ -34,7 +34,7 @@
 
 .title {
   text-align: center;
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
   color: #1A1A1A;
   margin: 0 0 8px;
@@ -42,7 +42,7 @@
 
 .subtitle {
   text-align: center;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #6B6B6B;
   line-height: 1.6;
   margin: 0 0 28px;
@@ -54,7 +54,7 @@
 
 .label {
   display: block;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: #343a40;
   margin-bottom: 10px;
@@ -73,7 +73,7 @@
   border: 1.5px solid #E0DED8;
   border-radius: 8px;
   text-align: center;
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
   color: #1A1A1A;
   outline: none;
@@ -87,7 +87,7 @@
 }
 
 .validMsg {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-live);
   font-weight: var(--font-weight-semibold);
   margin: 8px 0 0;
@@ -106,13 +106,13 @@
 }
 
 .classInfoName {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: #1A1A1A;
 }
 
 .classInfoTeacher {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #6B6B6B;
 }
 
@@ -128,7 +128,7 @@
   flex: 1;
   padding: 13px;
   border-radius: 8px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.15s;
@@ -161,7 +161,7 @@
   background: #FFF1F0;
   border: 1px solid #FFCCC7;
   border-radius: 8px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-regular);
   color: #CF1322;
 }

@@ -11,7 +11,7 @@ AI를 활용한 실시간 코칭 및 학습 관리 플랫폼, **Sally AI Coach**
 (프론트엔드와 백엔드는 Node.js 생태계를 공유하며, AI 서버는 Python FastAPI로 독립적으로 동작합니다.)
 
 ### 💻 Technology Stack
-- **Frontend**: Next.js (App Router), Tailwind CSS v4, Zustand, Supabase Auth
+- **Frontend**: Next.js (App Router), Tailwind CSS v4, Supabase Auth
 - **Backend (API)**: NestJS, Prisma ORM, Socket.io (실시간 알림), SSE (AI 답변 스트리밍), Supabase (PostgreSQL, Storage)
 - **AI Server**: Python FastAPI, NVIDIA NIM API (Gemma-4-31B), Supabase SDK, Pydantic
 - **Infra/Database**: Supabase (PostgreSQL, Auth, Storage)

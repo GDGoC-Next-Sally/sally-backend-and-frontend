@@ -40,7 +40,7 @@
   background: none;
   border: none;
   color: var(--color-text-secondary);
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-h2);
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 6px;
@@ -51,13 +51,13 @@
 }
 
 .sessionName {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
 }
 
 .sessionDesc {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
   margin-top: 2px;
 }
@@ -71,7 +71,7 @@
 .statusBadge {
   background-color: var(--color-border-light);
   color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   padding: 5px 12px;
   border-radius: var(--radius-pill);
@@ -86,7 +86,7 @@
   background-color: var(--color-surface);
   border: 1.5px solid var(--color-border);
   color: var(--color-text-secondary);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   padding: 8px 20px;
   border-radius: 8px;
@@ -115,14 +115,14 @@
 }
 
 .waitTitle {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-h1);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0 0 12px;
 }
 
 .waitDesc {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: var(--color-text-secondary);
   text-align: center;
   line-height: 1.7;
@@ -134,7 +134,7 @@
   color: var(--color-surface);
   border: none;
   border-radius: var(--radius-button);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-bold);
   padding: 14px 60px;
   cursor: pointer;
@@ -168,21 +168,21 @@
 }
 
 .infoLabel {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #9ca3af;
   font-weight: var(--font-weight-regular);
   margin-bottom: 2px;
 }
 
 .infoValue {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
   color: #212529;
 }
 
 /* TopBar 타이머 텍스트 */
 .timerText {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #6b7280;
   font-weight: var(--font-weight-regular);
   white-space: nowrap;
@@ -213,7 +213,7 @@
 .chatBackBtn {
   background: none;
   border: none;
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-h1);
   color: var(--color-text-secondary);
   cursor: pointer;
   padding: 0 6px;
@@ -241,7 +241,7 @@
 }
 
 .chatTitle {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0;
@@ -251,7 +251,7 @@
 }
 
 .chatSub {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
 }
 
@@ -264,13 +264,13 @@
   background-color: #f5f6f8;
   border-top: 1px solid #eeeff2;
   border-radius: 8px 8px 0 0;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: #797c7c;
 }
 
 .summaryIcon {
   color: var(--color-live);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   flex-shrink: 0;
 }
 
@@ -299,7 +299,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: var(--color-text-secondary);
   min-height: 120px;
 }
@@ -328,7 +328,7 @@
 }
 
 .senderLabel {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
   padding: 0 4px;
 }
@@ -336,7 +336,7 @@
 .bubble {
   padding: 12px 16px;
   border-radius: 12px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-word;
@@ -360,7 +360,7 @@
 }
 
 .msgTime {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
   padding: 0 4px;
 }
@@ -383,7 +383,7 @@
   border: 1.5px solid var(--color-border);
   border-radius: 8px;
   padding: 10px 14px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: var(--color-text-primary);
   background-color: var(--color-bg);
   outline: none;
@@ -422,7 +422,7 @@
   border: none;
   border-radius: 8px;
   padding: 10px 20px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   white-space: nowrap;
@@ -454,7 +454,7 @@
   background: none;
   border: none;
   padding: 5px 14px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
   border-radius: 6px;
@@ -551,7 +551,7 @@
   }
 
   .chatTitle {
-    font-size: var(--font-size-md);
+    font-size: var(--font-size-body);
   }
 
   /* Tab group drops to second row */
@@ -577,7 +577,7 @@
 
   .summaryBanner {
     padding: 8px 14px;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-caption);
   }
 
   .interventionBar {
