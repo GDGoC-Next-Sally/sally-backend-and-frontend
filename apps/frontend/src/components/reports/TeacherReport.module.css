@@ -72,6 +72,141 @@
   background: #1BAF6E;
 }
 
+.headerBtns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .headerBtns {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .headerBtns .exportBtn,
+  .regenerateBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.regenerateBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 20px;
+  background: #F5F4F0;
+  color: #1A1A1A;
+  border: none;
+  border-radius: 8px;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.regenerateBtn:hover:not(:disabled) {
+  background: #ECEAE4;
+}
+
+.regenerateBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.regenerateSuccess {
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  color: #22C55E;
+}
+
+/* ── 재생성 확인 모달 ──────────────────────────────────────────────────── */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 24px;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalTitle {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-bold);
+  color: #1A1A1A;
+  margin: 0;
+}
+
+.modalDesc {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+  color: #6B6B6B;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.modalCancelBtn {
+  height: 40px;
+  padding: 0 20px;
+  background: #F5F4F0;
+  color: #1A1A1A;
+  border: none;
+  border-radius: 8px;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.modalCancelBtn:hover {
+  background: #ECEAE4;
+}
+
+.modalConfirmBtn {
+  height: 40px;
+  padding: 0 20px;
+  background: var(--color-live);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.modalConfirmBtn:hover:not(:disabled) {
+  background: var(--color-live-hover);
+}
+
+.modalConfirmBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* ── 탭 ───────────────────────────────────────────────────────────────────── */
 
 .tabs {

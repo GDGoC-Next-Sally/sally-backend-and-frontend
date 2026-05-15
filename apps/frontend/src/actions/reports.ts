@@ -30,3 +30,7 @@ export async function getSessionSummaryReport(sessionId: number | string): Promi
 export async function getClassReport(classId: number | string): Promise<unknown> {
   return serverFetch(`/reports/class/${classId}/summary`);
 }
+
+export async function requestSessionSummary(sessionId: number | string): Promise<void> {
+  await serverFetch(`/reports/session/${sessionId}/request-summary`, { method: 'POST' });
+}

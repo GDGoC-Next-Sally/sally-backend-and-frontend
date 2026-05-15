@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Download, Search, ChevronLeft, BookOpen, Lightbulb, Smile, MessageSquare, FileSearch } from 'lucide-react';
+import { Download, Search, ChevronLeft, BookOpen, Lightbulb, Smile, MessageSquare, FileSearch, RefreshCw } from 'lucide-react';
 import styles from './TeacherReport.module.css';
 import { ReportExportModal } from './ReportExportModal';
 import { MarkdownReport } from './MarkdownReport';
@@ -85,6 +85,7 @@ export interface TeacherReportProps {
   onStudentBack: () => void;
   onSearchChange: (value: string) => void;
   onExport?: () => void;
+  onRequestSummary?: () => Promise<void>;
 }
 
 /* ──────────────────────────────────── Helpers ── */
@@ -556,21 +557,78 @@ export function TeacherReport({
   onStudentBack,
   onSearchChange,
   onExport,
+  onRequestSummary,
 }: TeacherReportProps) {
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [isRegenerateConfirmOpen, setIsRegenerateConfirmOpen] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [regenerateSuccess, setRegenerateSuccess] = useState(false);
+
+  const handleRegenerateConfirm = async () => {
+    if (!onRequestSummary) return;
+    setIsRegenerating(true);
+    try {
+      await onRequestSummary();
+      setRegenerateSuccess(true);
+    } finally {
+      setIsRegenerating(false);
+      setIsRegenerateConfirmOpen(false);
+    }
+  };
 
   return (
     <div className={styles.whiteBg}>
     <div className={styles.page}>
       {isExportOpen && <ReportExportModal onClose={() => setIsExportOpen(false)} />}
 
+      {/* 재생성 확인 모달 */}
+      {isRegenerateConfirmOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsRegenerateConfirmOpen(false)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <h2 className={styles.modalTitle}>리포트 재생성</h2>
+            <p className={styles.modalDesc}>
+              AI가 이 세션의 전체 요약 리포트를 다시 생성합니다.<br />
+              완료까지 잠시 시간이 걸릴 수 있습니다.
+            </p>
+            <div className={styles.modalActions}>
+              <button
+                className={styles.modalCancelBtn}
+                onClick={() => setIsRegenerateConfirmOpen(false)}
+              >
+                취소
+              </button>
+              <button
+                className={styles.modalConfirmBtn}
+                onClick={handleRegenerateConfirm}
+                disabled={isRegenerating}
+              >
+                {isRegenerating ? '요청 중...' : '재생성'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 헤더 */}
       <div className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>AI 분석 리포트</h1>
-        <button className={styles.exportBtn} onClick={() => { onExport?.(); setIsExportOpen(true); }}>
-          내보내기
-          <Download size={16} strokeWidth={2} />
-        </button>
+        <div className={styles.headerBtns}>
+          {regenerateSuccess && (
+            <span className={styles.regenerateSuccess}>재생성 요청 완료</span>
+          )}
+          <button
+            className={styles.regenerateBtn}
+            onClick={() => { setRegenerateSuccess(false); setIsRegenerateConfirmOpen(true); }}
+            disabled={!selectedSessionId}
+          >
+            <RefreshCw size={15} strokeWidth={2} />
+            재생성
+          </button>
+          <button className={styles.exportBtn} onClick={() => { onExport?.(); setIsExportOpen(true); }}>
+            내보내기
+            <Download size={16} strokeWidth={2} />
+          </button>
+        </div>
       </div>
 
       {/* 개별 학생 상세 뷰 */}
