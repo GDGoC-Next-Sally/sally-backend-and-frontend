@@ -44,7 +44,7 @@
 
 /* t-section: 22px / 700 */
 .pageTitle {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-h1);
   font-weight: var(--font-weight-bold);
   color: #151E1E;
   margin: 0;
@@ -61,7 +61,7 @@
   color: #FFFFFF;
   border: none;
   border-radius: 8px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: background 0.15s;
@@ -84,7 +84,7 @@
   background: none;
   border: none;
   padding: 10px 20px;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #626664;
   cursor: pointer;
@@ -132,7 +132,7 @@
   border: 1.5px solid #DBDDED;
   border-radius: 8px;
   padding: 0 36px 0 12px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-regular);
   color: #151E1E;
   background-color: #FFFFFF;
@@ -191,7 +191,7 @@
 .searchInput {
   border: none;
   outline: none;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: #151E1E;
   width: 100%;
   background: transparent;
@@ -248,7 +248,7 @@
 }
 
 .sectionTitle {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
   color: #151E1E;
 }
@@ -271,7 +271,7 @@
 }
 
 .learningTopicText {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #626664;
 }
@@ -282,7 +282,7 @@
 .countBadge {
   background: #22CB84;
   color: #FFFFFF;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-bold);
   padding: 2px 8px;
   border-radius: 9999px;
@@ -296,7 +296,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #626664;
   margin-bottom: 8px;
@@ -304,7 +304,7 @@
 
 .aiStar {
   color: #22CB84;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   line-height: 1;
   flex-shrink: 0;
 }
@@ -312,7 +312,7 @@
 /* ── 텍스트 ───────────────────────────────────────────────────────────────── */
 
 .bodyText {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-regular);
   color: #797C7C;
   line-height: 1.6;
@@ -320,7 +320,7 @@
 }
 
 .reportText {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-regular);
   color: #626664;
   line-height: 1.7;
@@ -335,7 +335,7 @@
 }
 
 .empty {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-regular);
   color: #626664;
   padding: 12px 0;
@@ -357,7 +357,7 @@
   background: none;
   border: 1.5px solid #DBDDED;
   border-radius: 8px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: #626664;
   cursor: pointer;
@@ -390,7 +390,7 @@
 .questionTopic {
   background: #FFFFFF;
   color: #151E1E;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   padding: 3px 8px;
   border-radius: 4px;
@@ -401,7 +401,7 @@
 
 /* t-body: 14px / 400 */
 .questionText {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-regular);
   color: #151E1E;
   line-height: 1.5;
@@ -427,7 +427,7 @@
   border-radius: 8px;
   background: #E0F5EB;
   color: #22CB84;
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
   display: flex;
   align-items: center;
@@ -441,7 +441,7 @@
 }
 
 .weakLabel {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #626664;
 }
@@ -467,7 +467,7 @@
 /* t-caption-strong: 12px / 600 */
 .table thead th {
   padding: 14px 20px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: #626664;
   text-align: left;
@@ -509,14 +509,14 @@
 
 /* t-body-strong: 14px / 700 */
 .studentName {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   color: #151E1E;
 }
 
 /* t-body-strong */
 .metricCell {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: #151E1E;
 }
@@ -525,7 +525,7 @@
 .emotionBadge {
   display: inline-flex;
   align-items: center;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   padding: 4px 8px;
   border-radius: 4px;
@@ -541,7 +541,7 @@
   background: none;
   border: 1.5px solid #DBDDED;
   border-radius: 8px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: #626664;
   cursor: pointer;
@@ -558,7 +558,7 @@
   text-align: center;
   padding: 48px !important;
   color: #626664;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
 }
 
 /* ── 뒤로가기 버튼 ────────────────────────────────────────────────────────── */
@@ -569,7 +569,7 @@
   gap: 4px;
   background: none;
   border: none;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: #626664;
   cursor: pointer;
@@ -604,13 +604,13 @@
 }
 
 .detailName {
-  font-size: 20px;
+  font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
   color: #151E1E;
 }
 
 .detailClass {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #626664;
   margin-top: 4px;
@@ -630,7 +630,7 @@
 }
 
 .statLabel {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #626664;
   white-space: nowrap;
@@ -643,7 +643,7 @@
 }
 
 .statNum {
-  font-size: 24px;
+  font-size: var(--font-size-h1);
   font-weight: var(--font-weight-bold);
   color: #151E1E;
   line-height: 1;
@@ -710,7 +710,7 @@
 /* t-caption-strong: 12px / 600 */
 .tpLabel {
   display: block;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: #626664;
   margin-bottom: 4px;
@@ -719,7 +719,7 @@
 /* t-caption: 12px / 400 */
 .tpDesc {
   display: block;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-regular);
   color: #151E1E;
   line-height: 1.5;
@@ -753,14 +753,14 @@
   top: 136px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-regular);
   color: #626664;
   white-space: nowrap;
 }
 
 .timelineDuration {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-regular);
   color: #626664;
   margin: 8px 0 0;
@@ -797,14 +797,14 @@
 }
 
 .reportGenTitle {
-  font-size: 24px;
-  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
   color: #151E1E;
   margin: 0;
 }
 
 .reportGenSub {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-regular);
   color: #626664;
   margin: 0;

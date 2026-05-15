@@ -14,7 +14,7 @@
   background: none;
   border: none;
   color: #797c7c;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   padding: 0;
@@ -38,7 +38,7 @@
 }
 
 .classTitle {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-h1);
   font-weight: var(--font-weight-bold);
   color: #212529;
   margin: 0;
@@ -74,7 +74,7 @@
 }
 
 .teacherName {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: #797c7c;
   white-space: nowrap;
@@ -109,7 +109,7 @@
   border: none;
   outline: none;
   width: 100%;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   color: #343a40;
 }
 
@@ -121,7 +121,7 @@
   padding: 0 14px;
   border: 1px solid #c0c8c5;
   border-radius: 8px;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   color: #a9afad;
   background-color: white;
   cursor: pointer;
@@ -170,14 +170,14 @@
 }
 
 .sessionTitle {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-bold);
   color: #212529;
   margin-bottom: 2px;
 }
 
 .sessionSubject {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: #797c7c;
 }
@@ -187,7 +187,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #626664;
   white-space: nowrap;
@@ -195,7 +195,7 @@
 
 /* Time */
 .sessionTime {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #626664;
   white-space: nowrap;
@@ -207,7 +207,7 @@
 .badge {
   padding: 8px 16px;
   border-radius: var(--radius-pill);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   white-space: nowrap;
   min-width: 90px;
@@ -269,7 +269,7 @@
   padding: 10px 24px;
   background: none;
   border: none;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-bold);
   color: #626664;
   cursor: pointer;
@@ -297,7 +297,7 @@
   border: none;
   color: #adb5bd;
   cursor: pointer;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   padding: 4px 8px;
 }
 
@@ -310,7 +310,7 @@
   border: none;
   color: #212529;
   cursor: pointer;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   width: 28px;
   height: 28px;
   display: flex;
@@ -336,7 +336,7 @@
   border-radius: 8px;
   padding: 0 16px;
   height: 40px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   white-space: nowrap;
@@ -349,7 +349,7 @@
 .empty {
   padding: 48px 0;
   text-align: center;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: #adb5bd;
 }
 
@@ -368,7 +368,7 @@
   background: none;
   border: none;
   padding: 10px 16px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: #6B6B6B;
   cursor: pointer;
@@ -389,7 +389,7 @@
 .tabCount {
   background-color: var(--color-live-light);
   color: var(--color-live);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   padding: 1px 7px;
   border-radius: 9999px;
@@ -439,7 +439,7 @@
 }
 
 .studentName {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #1A1A1A;
   margin-bottom: 3px;
@@ -449,7 +449,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #6B6B6B;
 }
 
@@ -462,7 +462,7 @@
   border: 1px solid #E0DED8;
   border-radius: 8px;
   padding: 6px 14px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: #6B6B6B;
   cursor: pointer;

@@ -12,7 +12,7 @@
   color: var(--color-surface);
   border: none;
   border-radius: var(--radius-button);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   cursor: pointer;
   white-space: nowrap;
@@ -32,7 +32,7 @@
   color: var(--color-text-placeholder);
   border: none;
   border-radius: var(--radius-button);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   white-space: nowrap;
   cursor: not-allowed;

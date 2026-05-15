@@ -28,45 +28,78 @@ originSessionId: 3b4a5895-6136-4bad-a72d-eb76e87faf24
 
 ## Typography Scale
 
+폰트: **Pretendard Variable** (주, 본문 전체) / **Cafe24 Ssurround** (로고 전용)
+
 ### Size Primitives (CSS 변수)
-| Token | Size | 대응 폐기값 |
-|-------|------|-----------|
-| `--font-size-display` | 32px | 32px, 24px (수치강조) |
-| `--font-size-2xl` | 22px | 22px, 20px, 24px (제목류) |
-| `--font-size-xl` | 18px | 18px, 15px (카드 상단) |
-| `--font-size-lg` | 16px | 16px |
-| `--font-size-md` | 14px | 14px, 13px |
-| `--font-size-sm` | 12px | 12px, 11px, 10px |
+| Token | Size | 사용처 |
+|-------|------|--------|
+| `--font-size-display` | 32px | Stat — 통계 숫자, 대형 수치 |
+| `--font-size-h1` | 24px | H1 — 클래스명, 페이지/모달 제목 |
+| `--font-size-h2` | 20px | H2 — 섹션 제목 |
+| `--font-size-h3` | 16px | H3 — 카드 헤더 |
+| `--font-size-body` | 14px | Body — 기본 본문 |
+| `--font-size-caption` | 12px | Caption, Badge |
+| `--font-size-caption-sm` | 10px | 소형 Caption (세부 설명 등) |
 
 ### Weight Primitives (CSS 변수)
-| Token | Value | 대응 폐기값 |
-|-------|-------|-----------|
-| `--font-weight-regular` | 400 | 400, 500 |
-| `--font-weight-semibold` | 600 | 600 |
-| `--font-weight-bold` | 700 | 700, 800 |
+| Token | Value | 용도 |
+|-------|-------|------|
+| `--font-weight-regular` | 400 | 거의 사용 안 함 (기본 weight는 Medium) |
+| `--font-weight-medium` | 500 | Body, Caption 기본 |
+| `--font-weight-semibold` | 600 | Body 중강조 |
+| `--font-weight-bold` | 700 | 제목, 강조, Badge |
+| `--font-weight-extrabold` | 800 | 카드 헤더(H3) 전용 |
+
+### Font Family 변수
+| Token | Value | 용도 |
+|-------|-------|------|
+| `--font-family-base` | Pretendard Variable | 본문 전체 |
+| `--font-family-logo` | Cafe24Ssurround → Pretendard fallback | 로고 전용 |
 
 ### Semantic Roles (글로벌 CSS 클래스)
-CSS Module에서 `composes: t-section from global;` 으로 사용.
+CSS Module에서 `composes: t-h1 from global;` 또는 className에 직접 추가하여 사용.
 
-| Class | Size | Weight | Line-height | 사용처 |
-|-------|------|--------|-------------|--------|
-| `.t-display` | 32px | 700 | 1.2 | 통계 숫자, 대형 수치 강조 |
-| `.t-section` | 22px | 700 | 1.4 | 모달 제목, 섹션 헤더, 인증 페이지 제목 |
-| `.t-card` | 18px | 600 | 1.4 | 카드 제목, 그룹 헤더 |
-| `.t-label` | 16px | 600 | 1.5 | 폼 레이블, 소제목, 탭 항목 |
-| `.t-body` | 14px | 400 | 1.6 | 기본 본문 (body default) |
-| `.t-body-strong` | 14px | 700 | 1.6 | 강조 본문, 중요 항목명 |
-| `.t-caption` | 12px | 400 | 1.5 | 보조 텍스트, 날짜, 메타 정보 |
-| `.t-caption-strong` | 12px | 600 | 1.5 | 배지 레이블, 상태 텍스트, 작은 레이블 |
+| Class | Size | Weight | Line-height | 사용처 (Figma 매핑) |
+|-------|------|--------|-------------|---------------------|
+| `.t-stat` | 32px | 700 | 1.2 | Stat — 통계 숫자, 대형 수치 (예: `78%`) |
+| `.t-h1` | 24px | 700 | 1.3 | H1 — 클래스명, 페이지/모달 제목 (예: `3학년 2반`) |
+| `.t-h2` | 20px | 700 | 1.4 | H2 — 섹션 제목 (예: `오늘의 클래스`) |
+| `.t-h3` | 16px | **800** | 1.4 | H3 — 카드 헤더 (예: `공지사항`) |
+| `.t-body-bold` | 14px | 700 | 1.6 | Body Bold — 강조 본문 (예: `클래스 평균 참여도`) |
+| `.t-body-semibold` | 14px | 600 | 1.6 | Body SemiBold — 항목 제목 (예: `3월 학습 리포트 업데이트 안내`) |
+| `.t-body` | 14px | **500** | 1.6 | Body Medium — 기본 본문 (예: `새로운 분석 항목이 추가되었어요.`) |
+| `.t-caption` | 12px | 500 | 1.5 | Caption — 날짜, 메타 정보 (예: `2026.03.04`) |
+| `.t-badge` | 12px | 700 | 1.4 | Badge — 상태 배지 (예: `관심필요`) |
+| `.t-caption-sm` | 10px | 500 | 1.4 | 소형 Caption — 세부 설명 |
+| `.t-logo` | (가변) | (가변) | (가변) | Cafe24 Ssurround font-family만 적용 |
 
-**폐기 규칙:**
-- `font-size: 13px` → `var(--font-size-md)` (14px)
-- `font-size: 15px` → 컨텍스트에 따라 `--font-size-md` 또는 `--font-size-lg`
-- `font-size: 11px`, `10px` → `var(--font-size-sm)` (12px)
-- `font-size: 20px`, `24px` → `var(--font-size-2xl)` (22px) 또는 `--font-size-display`
-- `font-weight: 500` → `var(--font-weight-regular)` (400)
-- `font-weight: 800` → `var(--font-weight-bold)` (700)
-- rem 단위 → px 통일 (0.85rem→12px, 0.875rem→14px, 0.95rem→14px, 1.1rem→16px, 1.2rem→18px, 1.5rem→22px)
+### 사용 가이드
+- **시맨틱 클래스 우선**: 의미가 명확한 곳(제목/본문/캡션/배지)은 `.t-*` 클래스 사용
+- **CSS 변수 직접 사용**: 컨텍스트가 모호하거나 부분적 오버라이드 필요시 `var(--font-size-*)` 사용
+- **본문 기본값**: `body`에 `font-weight: var(--font-weight-medium)` 적용됨 → 일반 텍스트는 별도 weight 지정 불필요
+
+### 폐기 규칙 (마이그레이션)
+- `font-size: 11px`, `10px` → `var(--font-size-caption-sm)` (10px) 또는 `--font-size-caption` (12px) — 컨텍스트 판단
+- `font-size: 13px`, `15px` → `var(--font-size-body)` (14px)
+- `font-size: 18px` → `var(--font-size-h3)` (16px) 또는 `--font-size-h2` (20px) — 컨텍스트 판단
+- `font-size: 22px` → `var(--font-size-h1)` (24px) 또는 `--font-size-h2` (20px) — 컨텍스트 판단
+- `font-size: 28px` → `var(--font-size-display)` (32px) 또는 `--font-size-h1` (24px) — 컨텍스트 판단
+- rem 단위 → px 통일 (0.625rem→10px, 0.75rem→12px, 0.875rem→14px, 1rem→16px, 1.25rem→20px, 1.5rem→24px, 2rem→32px)
+
+### 레거시 별칭 (호환용 — 신규 코드는 사용 금지)
+| Legacy Token / Class | 매핑 | 비고 |
+|----------------------|------|------|
+| `--font-size-2xl` | `--font-size-h2` (20px) | 기존 22px → 20px로 정합 |
+| `--font-size-xl` | `--font-size-h3` (16px) | 기존 18px → 16px로 정합 |
+| `--font-size-lg` | `--font-size-h3` (16px) | 동일 |
+| `--font-size-md` | `--font-size-body` (14px) | 동일 |
+| `--font-size-sm` | `--font-size-caption` (12px) | 동일 |
+| `.t-display` | `.t-stat` | 시맨틱 이름 변경 |
+| `.t-section` | `.t-h1` | 시맨틱 이름 변경 (22→24px) |
+| `.t-card` | `.t-h2` | 시맨틱 이름 변경 (18→20px, weight 600→700) |
+| `.t-label` | `.t-h3` | 시맨틱 이름 변경 (weight 600→800) |
+| `.t-body-strong` | `.t-body-bold` | 시맨틱 이름 변경 |
+| `.t-caption-strong` | `.t-badge` | 시맨틱 이름 변경 (weight 600→700) |
 
 ## Spacing Scale (8pt Grid)
 4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64, 80px
