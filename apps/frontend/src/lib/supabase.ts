@@ -17,6 +17,9 @@ export const signupWithEmail = async (
       },
     },
   });
+  if (!error) {
+    await supabase.auth.signOut();
+  }
   return { data, error };
 };
 

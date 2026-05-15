@@ -21,9 +21,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSignin, onSignup }) => {
   const [isSignup, setIsSignup] = useState(false);
   const [signupRole, setSignupRole] = useState<Tab>('student');
   const [loading, setLoading] = useState(false);
-  const [modal, setModal] = useState<{ title: string; description?: string } | null>(null);
+  const [modal, setModal] = useState<{ title: string; description?: string; onConfirm?: () => void } | null>(null);
 
-  const closeModal = () => setModal(null);
+  const closeModal = () => { modal?.onConfirm ? modal.onConfirm() : setModal(null); };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +37,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSignin, onSignup }) => {
           return;
         }
         await onSignup(email, password, nickname, signupRole.toUpperCase());
-        router.push('/');
+        setModal({
+          title: '회원가입이 완료되었습니다.',
+          description: '로그인해주세요.',
+          onConfirm: () => { window.location.href = '/login'; },
+        });
       } else {
         await onSignin(email, password, activeTab);
       }

@@ -13,6 +13,29 @@ import { ApiBearerAuth, ApiOperation, ApiTags, ApiQuery } from '@nestjs/swagger'
 @Controller('reports')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
+  
+  @Post('session/:sessionId/request-student')
+  @Roles(UserRole.TEACHER)
+  @ApiOperation({ summary: '(선생님용) 특정 세션의 모든 학생 리포트 생성 요청' })
+  async requestStudentReports(
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @Req() req: any
+  ) {
+    await this.reportsService.requestStudentFinalReports(sessionId, req.user.userId);
+    return { message: '학생 개별 리포트 생성 요청 완료' };
+  }
+
+  @Post('session/:sessionId/request-summary')
+  @Roles(UserRole.TEACHER)
+  @ApiOperation({ summary: '(선생님용) 특정 세션의 전체 요약 리포트 생성 요청' })
+  async requestSessionReport(
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @Req() req: any
+  ) {
+    await this.reportsService.requestSessionFinalReport(sessionId, req.user.userId);
+    return { message: '세션 전체 리포트 생성 요청 완료' };
+  }
+
 
   @Get('session/:sessionId/students')
   @Roles(UserRole.TEACHER)
