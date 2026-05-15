@@ -86,6 +86,7 @@ export interface TeacherReportProps {
   onSearchChange: (value: string) => void;
   onExport?: () => void;
   onRequestSummary?: () => Promise<void>;
+  onRequestStudentReport?: (studentId: string) => Promise<void>;
 }
 
 /* ──────────────────────────────────── Helpers ── */
@@ -558,6 +559,7 @@ export function TeacherReport({
   onSearchChange,
   onExport,
   onRequestSummary,
+  onRequestStudentReport,
 }: TeacherReportProps) {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isRegenerateConfirmOpen, setIsRegenerateConfirmOpen] = useState(false);
@@ -565,10 +567,13 @@ export function TeacherReport({
   const [regenerateSuccess, setRegenerateSuccess] = useState(false);
 
   const handleRegenerateConfirm = async () => {
-    if (!onRequestSummary) return;
+    const action = selectedStudent
+      ? onRequestStudentReport ? () => onRequestStudentReport(selectedStudent.studentId) : null
+      : onRequestSummary ?? null;
+    if (!action) return;
     setIsRegenerating(true);
     try {
-      await onRequestSummary();
+      await action();
       setRegenerateSuccess(true);
     } finally {
       setIsRegenerating(false);
@@ -587,8 +592,10 @@ export function TeacherReport({
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <h2 className={styles.modalTitle}>리포트 재생성</h2>
             <p className={styles.modalDesc}>
-              AI가 이 세션의 전체 요약 리포트를 다시 생성합니다.<br />
-              완료까지 잠시 시간이 걸릴 수 있습니다.
+              {selectedStudent
+                ? <>AI가 {selectedStudent.name} 학생의 리포트를 다시 생성합니다.<br />완료까지 잠시 시간이 걸릴 수 있습니다.</>
+                : <>AI가 이 세션의 전체 요약 리포트를 다시 생성합니다.<br />완료까지 잠시 시간이 걸릴 수 있습니다.</>
+              }
             </p>
             <div className={styles.modalActions}>
               <button
@@ -613,7 +620,7 @@ export function TeacherReport({
       <div className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>AI 분석 리포트</h1>
         <div className={styles.headerBtns}>
-          {activeTab === 'summary' && (
+          {(selectedStudent || activeTab === 'summary') && (
             <>
               {regenerateSuccess && (
                 <span className={styles.regenerateSuccess}>재생성 요청 완료</span>

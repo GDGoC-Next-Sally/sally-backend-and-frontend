@@ -696,6 +696,14 @@
   font-size: var(--font-size-body);
 }
 
+/* ── 학생 상세 상단 행 ──────────────────────────────────────────────────── */
+
+.detailTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 /* ── 뒤로가기 버튼 ────────────────────────────────────────────────────────── */
 
 .backBtn {

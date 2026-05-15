@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { getTeacherClasses, type ClassItem } from '@/actions/classes';
 import { getSessionsByClass, type Session } from '@/actions/sessions';
-import { getSessionStudentReports, getSessionSummaryReport, requestSessionSummary } from '@/actions/reports';
+import { getSessionStudentReports, getSessionSummaryReport, requestSessionSummary, requestStudentReport } from '@/actions/reports';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { TeacherReport } from '@/components/reports/TeacherReport';
 import type {
@@ -256,6 +256,7 @@ function TeacherReportsContent() {
         onStudentBack={() => setSelectedRaw(null)}
         onSearchChange={setStudentSearch}
         onRequestSummary={selectedSessionId ? () => requestSessionSummary(selectedSessionId) : undefined}
+        onRequestStudentReport={selectedSessionId ? (studentId) => requestStudentReport(selectedSessionId, studentId) : undefined}
       />
     </PageContainer>
   );

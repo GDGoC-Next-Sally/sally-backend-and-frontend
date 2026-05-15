@@ -34,3 +34,7 @@ export async function getClassReport(classId: number | string): Promise<unknown>
 export async function requestSessionSummary(sessionId: number | string): Promise<void> {
   await serverFetch(`/reports/session/${sessionId}/request-summary`, { method: 'POST' });
 }
+
+export async function requestStudentReport(sessionId: number | string, studentId: string): Promise<void> {
+  await serverFetch(`/reports/session/${sessionId}/request-student/${studentId}`, { method: 'POST' });
+}
