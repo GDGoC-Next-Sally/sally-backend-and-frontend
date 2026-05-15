@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { type Session } from '@/actions/sessions';
-import { Users, Search, User, MoreHorizontal, ChevronLeft } from 'lucide-react';
+import { Search, User, MoreHorizontal, ChevronLeft } from 'lucide-react';
 import { DropdownMenu } from '../common/DropdownMenu';
-import { ChatModal } from '../reports/ChatModal';
-import { getStudentSessionReport } from '@/actions/reports';
+import { getStudentSessionList } from '@/actions/reports';
 import { computeSessionStatus, type ComputedStatus } from '@/utils/sessionStatus';
 import styles from './StudentSessionList.module.css';
 
@@ -39,20 +38,17 @@ function formatDate(dateStr?: string | null) {
 function formatRelativeTime(dateStr?: string | null): string {
   if (!dateStr) return '';
   const d = new Date(dateStr);
-  const now = new Date();
-  const diff = now.getTime() - d.getTime();
-  if (diff < 0) {
-    const futureDays = Math.floor(-diff / (1000 * 60 * 60 * 24));
-    const futureHours = Math.floor(-diff / (1000 * 60 * 60));
-    if (futureDays > 0) return `${futureDays}일 후`;
-    if (futureHours > 0) return `${futureHours}시간 후`;
-    return '곧';
-  }
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  if (hours < 1) return '방금 전';
-  if (hours < 24) return `${hours}시간 전`;
-  return `${days}일 전`;
+  if (isNaN(d.getTime())) return '';
+  const diff = Date.now() - d.getTime();
+  const abs = Math.abs(diff);
+  const minutes = Math.floor(abs / (1000 * 60));
+  const hours = Math.floor(abs / (1000 * 60 * 60));
+  const days = Math.floor(abs / (1000 * 60 * 60 * 24));
+  const suffix = diff < 0 ? '후' : '전';
+  if (minutes < 1) return diff < 0 ? '곧' : '방금 전';
+  if (minutes < 60) return `${minutes}분 ${suffix}`;
+  if (hours < 24) return `${hours}시간 ${suffix}`;
+  return `${days}일 ${suffix}`;
 }
 
 interface Props {
@@ -78,8 +74,13 @@ export const StudentSessionList: React.FC<Props> = ({
     return 'overview';
   });
   const [search, setSearch] = useState('');
-  const [chatModal, setChatModal] = useState<{ dialogId: number; sessionName: string } | null>(null);
-  const [reviewLoading, setReviewLoading] = useState<number | null>(null);
+  const [attendedSessionIds, setAttendedSessionIds] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    getStudentSessionList(classId)
+      .then(list => setAttendedSessionIds(new Set(list.map(s => s.sessionId))))
+      .catch(() => setAttendedSessionIds(new Set()));
+  }, [classId]);
 
   const handleJoin = async (sessionId: number) => {
     setJoining(sessionId);
@@ -91,21 +92,8 @@ export const StudentSessionList: React.FC<Props> = ({
     }
   };
 
-  const handleReview = async (sessionId: number, sessionName: string) => {
-    setReviewLoading(sessionId);
-    try {
-      const raw = await getStudentSessionReport(sessionId) as { dialog_id?: number } | null;
-      const dialogId = raw?.dialog_id ?? null;
-      if (dialogId) {
-        setChatModal({ dialogId, sessionName });
-      } else {
-        alert('채팅 기록을 찾을 수 없습니다.');
-      }
-    } catch {
-      alert('채팅 기록을 불러오는 데 실패했습니다.');
-    } finally {
-      setReviewLoading(null);
-    }
+  const handleGoToReport = (sessionId: number) => {
+    router.push(`/s/reports?sessionId=${sessionId}`);
   };
 
   const activeSession = sessions.find((s) => computeSessionStatus(s) === 'live');
@@ -116,6 +104,7 @@ export const StudentSessionList: React.FC<Props> = ({
       const bTime = new Date(b.finished_at || b.scheduled_date || 0).getTime();
       return bTime - aTime;
     });
+  const attendedFinishedSessions = finishedSessions.filter(s => attendedSessionIds.has(s.id));
 
   const classSubject = classInfo?.subject ?? '수업';
   const classTag = classInfo?.users?.name ? `${classInfo.users.name} 선생님` : '';
@@ -137,7 +126,6 @@ export const StudentSessionList: React.FC<Props> = ({
     });
 
   return (
-    <>
     <div className={styles.container}>
       <div className={styles.inner}>
         <button className={styles.backBtn} onClick={() => router.push('/s/classes')}>
@@ -215,10 +203,10 @@ export const StudentSessionList: React.FC<Props> = ({
                 <span className={styles.viewAll} onClick={() => setTab('sessions')}>전체보기</span>
               </div>
               <div className={styles.pastList}>
-                {finishedSessions.length === 0 ? (
-                  <p className={styles.emptyText}>지난 세션이 없습니다.</p>
+                {attendedFinishedSessions.length === 0 ? (
+                  <p className={styles.emptyText}>참여한 지난 세션이 없습니다.</p>
                 ) : (
-                  finishedSessions.map((s) => (
+                  attendedFinishedSessions.map((s) => (
                     <div key={s.id} className={styles.pastRow}>
                       <div className={styles.sessionIcon}>
                         <Image src="/images/sessionicon.png" alt="세션" width={30} height={30} />
@@ -234,14 +222,13 @@ export const StudentSessionList: React.FC<Props> = ({
                         </div>
                       )}
                       <div className={styles.sessionTime}>
-                        {formatRelativeTime(s.finished_at ?? s.scheduled_date)}
+                        {formatRelativeTime(s.finished_at)}
                       </div>
                       <button
                         className={styles.reviewBtn}
-                        onClick={(e) => { e.stopPropagation(); handleReview(s.id, s.session_name); }}
-                        disabled={reviewLoading === s.id}
+                        onClick={(e) => { e.stopPropagation(); handleGoToReport(s.id); }}
                       >
-                        {reviewLoading === s.id ? '불러오는 중...' : '복습하기'}
+                        복습하기
                       </button>
                     </div>
                   ))
@@ -279,11 +266,24 @@ export const StudentSessionList: React.FC<Props> = ({
                 filteredSessions.map((session) => {
                   const computed = computeSessionStatus(session);
                   const cfg = STATUS_CONFIG[computed];
+                  const isFinished = computed === 'finished';
+                  const attended = attendedSessionIds.has(session.id);
+                  const notAttended = isFinished && !attended;
+
+                  const handleRowClick = () => {
+                    if (notAttended) return;
+                    if (isFinished) {
+                      handleGoToReport(session.id);
+                    } else {
+                      router.push(`/s/classes/${classId}/sessions/${session.id}`);
+                    }
+                  };
+
                   return (
                     <div
                       key={session.id}
-                      className={styles.sessionRow}
-                      onClick={() => router.push(`/s/classes/${classId}/sessions/${session.id}`)}
+                      className={`${styles.sessionRow} ${notAttended ? styles.sessionRowDisabled : ''}`}
+                      onClick={handleRowClick}
                     >
                       <div className={styles.sessionIcon}>
                         <Image src="/images/sessionicon.png" alt="세션" width={30} height={30} />
@@ -301,27 +301,41 @@ export const StudentSessionList: React.FC<Props> = ({
                       )}
 
                       <div className={styles.sessionTime}>
-                        {formatRelativeTime(session.scheduled_date ?? session.scheduled_start)}
+                        {formatRelativeTime(
+                          isFinished
+                            ? session.finished_at
+                            : session.scheduled_start
+                        )}
                       </div>
 
-                      <span className={`${styles.badge} ${styles[cfg.badgeClass]}`}>
-                        {cfg.label}
-                      </span>
+                      {notAttended ? (
+                        <span className={`${styles.badge} ${styles.badgeNotAttended}`}>
+                          미참여
+                        </span>
+                      ) : (
+                        <span className={`${styles.badge} ${styles[cfg.badgeClass]}`}>
+                          {cfg.label}
+                        </span>
+                      )}
 
                       <div
                         className={styles.menuContainer}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <DropdownMenu
-                          trigger={
-                            <button className={styles.moreBtn}>
-                              <MoreHorizontal size={20} color="#626664" />
-                            </button>
-                          }
-                          items={[
-                            { label: '상세보기', onClick: () => router.push(`/s/classes/${classId}/sessions/${session.id}`) },
-                          ]}
-                        />
+                        {!notAttended && (
+                          <DropdownMenu
+                            trigger={
+                              <button className={styles.moreBtn}>
+                                <MoreHorizontal size={20} color="#626664" />
+                              </button>
+                            }
+                            items={[
+                              isFinished
+                                ? { label: '리포트 보기', onClick: () => handleGoToReport(session.id) }
+                                : { label: '상세보기', onClick: () => router.push(`/s/classes/${classId}/sessions/${session.id}`) },
+                            ]}
+                          />
+                        )}
                       </div>
                     </div>
                   );
@@ -338,15 +352,5 @@ export const StudentSessionList: React.FC<Props> = ({
         )}
       </div>
     </div>
-
-    {chatModal && (
-      <ChatModal
-        dialogId={chatModal.dialogId}
-        sessionTitle={chatModal.sessionName}
-        teacherName={classInfo?.users?.name ?? ''}
-        onClose={() => setChatModal(null)}
-      />
-    )}
-    </>
   );
 };

@@ -10,8 +10,9 @@ export interface SessionListItem {
   subject: string;
 }
 
-export async function getStudentSessionList(): Promise<SessionListItem[]> {
-  return serverFetch('/reports/student/sessions');
+export async function getStudentSessionList(classId?: number | string): Promise<SessionListItem[]> {
+  const url = classId ? `/reports/student/sessions?classId=${classId}` : '/reports/student/sessions';
+  return serverFetch(url);
 }
 
 export async function getStudentSessionReport(sessionId: number | string): Promise<unknown> {
