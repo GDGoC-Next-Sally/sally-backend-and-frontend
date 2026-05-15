@@ -47,14 +47,14 @@
 }
 
 .title {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-h1);
   font-weight: var(--font-weight-bold);
   color: #262b29;
   margin: 0;
 }
 
 .subtitle {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #a9afad;
   margin: 0;
@@ -93,14 +93,14 @@
 }
 
 .optionLabel {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   color: #1a1a1a;
   white-space: nowrap;
 }
 
 .optionSub {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #626664;
 }
 
@@ -113,13 +113,13 @@
 }
 
 .progressLabel {
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
   color: #1a1a1a;
 }
 
 .progressSub {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #a9afad;
 }
@@ -154,7 +154,7 @@
   background: none;
   border: 1.5px solid #dbdded;
   border-radius: 8px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   color: #515554;
   cursor: pointer;
@@ -170,7 +170,7 @@
   background: #22cb84;
   border: none;
   border-radius: 8px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   color: #ffffff;
   cursor: pointer;

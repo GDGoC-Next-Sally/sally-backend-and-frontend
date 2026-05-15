@@ -56,7 +56,7 @@
 
 .title {
   text-align: center;
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0 0 24px 0;
@@ -68,7 +68,7 @@
 
 .label {
   display: block;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
   margin-bottom: 7px;
@@ -81,7 +81,7 @@
   border: 1px solid var(--color-border);
   background-color: var(--color-bg);
   border-radius: 8px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: var(--color-text-primary);
   outline: none;
   transition: border-color 0.2s, background-color 0.2s;
@@ -134,7 +134,7 @@
   background-color: white;
   border: 1.5px solid var(--color-border);
   border-radius: 8px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.15s;
@@ -173,7 +173,7 @@
   border: 1px solid var(--color-border);
   background-color: var(--color-bg);
   border-radius: 8px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: var(--color-text-primary);
   outline: none;
   cursor: pointer;
@@ -197,7 +197,7 @@
   border: 1px solid var(--color-border);
   background-color: var(--color-bg);
   border-radius: 8px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: var(--color-text-primary);
   outline: none;
   text-align: center;
@@ -209,7 +209,7 @@
 }
 
 .periodUnit {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
 }
 
@@ -240,7 +240,7 @@
   background: none;
   border: 1.5px dashed var(--color-border);
   border-radius: 8px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
   cursor: pointer;
   width: fit-content;
@@ -255,7 +255,7 @@
 
 /* Error message */
 .errorMsg {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-primary);
   margin-bottom: 8px;
   text-align: center;
@@ -273,7 +273,7 @@
   flex: 1;
   padding: 13px;
   border-radius: 8px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
 }

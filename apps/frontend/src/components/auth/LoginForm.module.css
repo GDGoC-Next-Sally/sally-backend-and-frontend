@@ -28,7 +28,7 @@
   padding: 16px 0;
   text-align: center;
   font-weight: var(--font-weight-semibold);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   cursor: pointer;
   transition: all 0.2s;
   border: none;
@@ -66,7 +66,7 @@
 
 .title {
   text-align: center;
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-h1);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin-bottom: 32px;
@@ -79,7 +79,7 @@
 
 .label {
   display: block;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin-bottom: 8px;
@@ -91,7 +91,7 @@
   padding: 12px 16px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-button);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: var(--color-text-primary);
   background-color: var(--color-surface);
   transition: border-color 0.2s;
@@ -112,7 +112,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 32px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
 }
 
@@ -155,7 +155,7 @@
   color: var(--color-surface);
   border: none;
   border-radius: var(--radius-button);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   cursor: pointer;
   transition: all 0.2s;

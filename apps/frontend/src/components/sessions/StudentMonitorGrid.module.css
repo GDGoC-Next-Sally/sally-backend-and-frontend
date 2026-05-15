@@ -13,7 +13,7 @@
 }
 
 .topBarLabel {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #6b6b6b;
 }
 
@@ -26,7 +26,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: var(--color-danger);
   background-color: var(--color-danger-bg);
@@ -94,7 +94,7 @@
 }
 
 .studentName {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: #1a1a1a;
   line-height: 1.4;
@@ -104,7 +104,7 @@
 }
 
 .topic {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #a9afad;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -138,13 +138,13 @@
 }
 
 .statLabel {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #a9afad;
   font-weight: var(--font-weight-regular);
 }
 
 .statValue {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: #1a1a1a;
   display: flex;
@@ -153,7 +153,7 @@
 }
 
 .emotionEmoji {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   line-height: 1;
 }
 
@@ -182,7 +182,7 @@
 /* ── No data / empty ───────────────────────────────────── */
 
 .noData {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #a9afad;
   text-align: center;
   padding: 8px 0 4px;
@@ -193,7 +193,7 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: #6b6b6b;
 }
 

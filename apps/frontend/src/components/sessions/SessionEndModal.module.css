@@ -39,7 +39,7 @@
 
 .title {
   text-align: center;
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
   color: #1a1a1a;
   margin: 0 0 20px;
@@ -60,7 +60,7 @@
 }
 
 .sessionTitle {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-semibold);
   color: #1a1a1a;
   line-height: 1.5;
@@ -71,7 +71,7 @@
   color: #ff7979;
   padding: 2px 8px;
   border-radius: 4px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-bold);
   flex-shrink: 0;
 }
@@ -79,7 +79,7 @@
 .metaRow {
   display: flex;
   gap: 16px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #6b6b6b;
   margin-bottom: 24px;
 }
@@ -107,13 +107,13 @@
 }
 
 .statTitle {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: #1a1a1a;
 }
 
 .statSub {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #6b6b6b;
   text-align: center;
 }
@@ -135,13 +135,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-bold);
   color: #1a1a1a;
 }
 
 .donutSmall {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-regular);
   margin-left: 1px;
 }
@@ -153,13 +153,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-h1);
   font-weight: var(--font-weight-bold);
   color: #1a1a1a;
 }
 
 .textStatSmall {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-regular);
   margin-left: 2px;
 }
@@ -176,7 +176,7 @@
   flex: 1;
   height: 44px;
   border-radius: 8px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   border: none;

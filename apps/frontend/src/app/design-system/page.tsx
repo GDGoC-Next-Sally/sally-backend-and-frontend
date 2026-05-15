@@ -59,14 +59,16 @@ export default function DesignSystemPage() {
 
           <div className={styles.typeTable}>
             <TypeRow label="Logo" size="30px" weight="700" sample="Sally" font="Cafe24 Ssurround" color="#22CB84" />
-            <TypeRow label="Hero" size="24px" weight="700" sample="3학년 2반" />
-            <TypeRow label="Section Title" size="20px" weight="700" sample="주간 AI 인사이트 요약" />
-            <TypeRow label="Card Title" size="16px" weight="800" sample="공지사항" />
-            <TypeRow label="Body Bold" size="14px" weight="700" sample="클래스 평균 참여도" />
-            <TypeRow label="Body SemiBold" size="14px" weight="600" sample="3월 학습 리포트 업데이트 안내" />
-            <TypeRow label="Body Medium" size="14px" weight="500" sample="새로운 분석 항목이 추가되었어요." color="#797C7C" />
-            <TypeRow label="Caption SemiBold" size="12px" weight="600" sample="더보기" color="#797C7C" />
-            <TypeRow label="Caption Medium" size="12px" weight="500" sample="2026.03.04" color="#C2C2C2" />
+            <TypeRow label="Stat (.t-stat)" size="32px" weight="700" sample="78%" />
+            <TypeRow label="H1 — 클래스명 (.t-h1)" size="24px" weight="700" sample="3학년 2반" />
+            <TypeRow label="H2 — 섹션 제목 (.t-h2)" size="20px" weight="700" sample="오늘의 클래스" />
+            <TypeRow label="H3 — 카드 헤더 (.t-h3)" size="16px" weight="800" sample="공지사항" />
+            <TypeRow label="Body Bold (.t-body-bold)" size="14px" weight="700" sample="클래스 평균 참여도" />
+            <TypeRow label="Body SemiBold (.t-body-semibold)" size="14px" weight="600" sample="3월 학습 리포트 업데이트 안내" />
+            <TypeRow label="Body Medium (.t-body)" size="14px" weight="500" sample="새로운 분석 항목이 추가되었어요." color="#797C7C" />
+            <TypeRow label="Caption (.t-caption)" size="12px" weight="500" sample="2026.03.04" color="#C2C2C2" />
+            <TypeRow label="Badge (.t-badge)" size="12px" weight="700" sample="관심필요" color="#E8593C" />
+            <TypeRow label="Caption Small (.t-caption-sm)" size="10px" weight="500" sample="세부 설명" color="#797C7C" />
           </div>
         </section>
 

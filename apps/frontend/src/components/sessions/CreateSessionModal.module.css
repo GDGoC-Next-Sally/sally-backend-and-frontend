@@ -56,7 +56,7 @@
 /* ── Title ──────────────────────────────────────────────────────────────── */
 .title {
   text-align: center;
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-h2);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0 0 16px 0;
@@ -84,7 +84,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-bold);
   flex-shrink: 0;
 }
@@ -93,7 +93,7 @@
 .stepBadgeDone     { background-color: var(--color-live); color: #ffffff; }
 .stepBadgeInactive { background-color: var(--color-border); color: var(--color-text-secondary); }
 
-.stepLabel         { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); }
+.stepLabel         { font-size: var(--font-size-caption); font-weight: var(--font-weight-semibold); }
 .stepLabelActive   { color: var(--color-live); }
 .stepLabelInactive { color: var(--color-text-secondary); }
 
@@ -103,14 +103,14 @@
 
 /* ── Section labels ─────────────────────────────────────────────────────── */
 .sectionLabel {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-h3);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0 0 6px;
 }
 
 .sectionSubLabel {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
   margin: 4px 0 0;
 }
@@ -142,7 +142,7 @@
 
 .fieldLabel {
   display: block;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
 }
@@ -155,7 +155,7 @@
   border: 1px solid var(--color-border);
   border-radius: 8px;
   background-color: var(--color-bg);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: var(--color-text-primary);
   outline: none;
   box-sizing: border-box;
@@ -171,7 +171,7 @@
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
   pointer-events: none;
 }
@@ -179,7 +179,7 @@
 .inputFilled { color: var(--color-text-primary); }
 
 .fieldOptional {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-regular);
   color: var(--color-text-secondary);
 }
@@ -195,7 +195,7 @@
 .timeSep {
   display: flex;
   align-items: center;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: var(--color-text-secondary);
   padding-top: 10px;
   flex-shrink: 0;
@@ -207,7 +207,7 @@
   border: 1px solid var(--color-border);
   border-radius: 8px;
   background-color: var(--color-bg);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: var(--color-text-secondary);
   outline: none;
   box-sizing: border-box;
@@ -244,7 +244,7 @@
 }
 
 .colLabel {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
   margin: 0;
@@ -282,16 +282,16 @@
 .listItemSelected    { background-color: var(--color-live-light); border-color: var(--color-live); }
 
 .listItemTitle {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
   flex: 1;
 }
 
-.listItemSub   { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+.listItemSub   { font-size: var(--font-size-caption); color: var(--color-text-secondary); }
 
 .listItemBadge {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-live);
   background-color: var(--color-live-light);
   border-radius: 4px;
@@ -318,9 +318,9 @@
 .promptItemSelected { background-color: var(--color-live-light); border-color: var(--color-live); }
 
 .promptMeta  { display: flex; align-items: center; gap: 6px; }
-.promptUnit  { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--color-text-secondary); }
-.promptTitle { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--color-text-primary); }
-.promptSub   { font-size: var(--font-size-sm); color: var(--color-text-secondary); margin: 0; line-height: 1.4; }
+.promptUnit  { font-size: var(--font-size-caption); font-weight: var(--font-weight-semibold); color: var(--color-text-secondary); }
+.promptTitle { font-size: var(--font-size-caption); font-weight: var(--font-weight-semibold); color: var(--color-text-primary); }
+.promptSub   { font-size: var(--font-size-caption); color: var(--color-text-secondary); margin: 0; line-height: 1.4; }
 
 .promptObjectiveRow {
   display: flex;
@@ -330,7 +330,7 @@
 }
 
 .objectiveTag {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   color: var(--color-live);
   background-color: var(--color-live-light);
@@ -341,7 +341,7 @@
 }
 
 .objectiveText {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
   line-height: 1.4;
 }
@@ -359,7 +359,7 @@
   justify-content: center;
   gap: 6px;
   padding: 16px 0;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
   width: 100%;
 }
@@ -372,7 +372,7 @@
 }
 
 .emptyMsg {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: var(--color-text-secondary);
   text-align: center;
   padding: 16px 8px;
@@ -413,7 +413,7 @@
 }
 
 .aiGuideDescText {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: var(--color-text-secondary);
   line-height: 1.6;
   margin: 0;
@@ -435,8 +435,8 @@
 .uploadArea:hover { border-color: var(--color-live); background-color: var(--color-live-light); }
 
 .uploadContent  { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.uploadTitle    { font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); color: var(--color-text-secondary); text-align: center; margin: 0; }
-.uploadSubtitle { font-size: var(--font-size-sm); color: var(--color-text-secondary); text-align: center; margin: 0; }
+.uploadTitle    { font-size: var(--font-size-body); font-weight: var(--font-weight-semibold); color: var(--color-text-secondary); text-align: center; margin: 0; }
+.uploadSubtitle { font-size: var(--font-size-caption); color: var(--color-text-secondary); text-align: center; margin: 0; }
 
 /* ── Footer ─────────────────────────────────────────────────────────────── */
 .footer {
@@ -451,7 +451,7 @@
   flex: 1;
   padding: 13px;
   border-radius: 8px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
 }

@@ -29,7 +29,7 @@
 .backBtn {
   background: none;
   border: none;
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-h1);
   color: #6B6B6B;
   cursor: pointer;
   padding: 0 4px;
@@ -42,13 +42,13 @@
 .headerInfo { flex: 1; min-width: 0; }
 
 .sessionTitle {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   color: #1A1A1A;
 }
 
 .teacherName {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #6B6B6B;
   margin-top: 2px;
 }
@@ -63,7 +63,7 @@
 .waitingChip {
   background: var(--color-bg);
   color: #6B6B6B;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   padding: 5px 12px;
   border-radius: var(--radius-pill);
@@ -78,14 +78,14 @@
 .liveChip {
   background: var(--color-live);
   color: white;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-semibold);
   padding: 5px 10px;
   border-radius: var(--radius-live-badge);
 }
 
 .elapsed {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #6B6B6B;
 }
 
@@ -94,7 +94,7 @@
   border: 1px solid #E0DED8;
   border-radius: 8px;
   padding: 7px 16px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #6B6B6B;
   cursor: pointer;
 }
@@ -111,26 +111,26 @@
 
 .waitMeta {
   align-self: flex-start;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #6B6B6B;
   margin-bottom: 32px;
 }
 
-.waitTime { font-size: var(--font-size-sm); color: #6B6B6B; }
+.waitTime { font-size: var(--font-size-caption); color: #6B6B6B; }
 
 .waitIllustration {
   margin-bottom: 24px;
 }
 
 .waitTitle {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-h1);
   font-weight: var(--font-weight-bold);
   color: #1A1A1A;
   margin: 0 0 8px;
 }
 
 .waitSubtitle {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: #6B6B6B;
   text-align: center;
   line-height: 1.6;
@@ -143,7 +143,7 @@
   border: none;
   border-radius: var(--radius-button);
   padding: 14px 48px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   margin-bottom: 32px;
@@ -175,12 +175,12 @@
 .waitStat:last-child { border-right: none; }
 
 .statLabel {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #6B6B6B;
 }
 
 .statValue {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   color: #1A1A1A;
 }
@@ -227,7 +227,7 @@
 }
 
 .senderLabel {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #6B6B6B;
   padding: 0 4px;
 }
@@ -236,14 +236,14 @@
   border-radius: 12px;
   border: 1px solid #E0DED8;
   padding: 10px 14px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 .typingDot {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #aaa;
   letter-spacing: 2px;
 }
@@ -260,7 +260,7 @@
 }
 
 .msgTime {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #6B6B6B;
   white-space: nowrap;
   padding-bottom: 4px;
@@ -268,7 +268,7 @@
 
 .systemMsg {
   text-align: center;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #6B6B6B;
   padding: 4px 0;
 }
@@ -286,7 +286,7 @@
   border: 1px solid #E0DED8;
   border-radius: var(--radius-pill);
   padding: 7px 14px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #1A1A1A;
   cursor: pointer;
   white-space: nowrap;
@@ -309,7 +309,7 @@
   padding: 10px 16px;
   border: 1px solid #E0DED8;
   border-radius: 8px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   color: #1A1A1A;
   outline: none;
   background: white;
@@ -335,7 +335,7 @@
   border: none;
   border-radius: 8px;
   padding: 10px 18px;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   white-space: nowrap;
@@ -357,7 +357,7 @@
 }
 
 .guideTitle {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-body);
   font-weight: var(--font-weight-bold);
   color: #1A1A1A;
 }
@@ -369,7 +369,7 @@
 }
 
 .guideSectionTitle {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-bold);
   color: var(--color-live);
   display: flex;
@@ -378,7 +378,7 @@
 }
 
 .guideSectionText {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   color: #6B6B6B;
   line-height: 1.6;
   margin: 0;
@@ -391,7 +391,7 @@
 }
 
 .progressPct {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-caption);
   font-weight: var(--font-weight-bold);
   color: var(--color-live);
 }
@@ -445,14 +445,14 @@
   }
 
   .sessionTitle {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-caption);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .teacherName {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-caption);
   }
 
   .headerRight {
@@ -465,13 +465,13 @@
   }
 
   .liveChip {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-caption);
     padding: 4px 8px;
   }
 
   .leaveBtn {
     padding: 6px 12px;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-caption);
   }
 
   /* Chat area fills remaining space */
@@ -502,7 +502,7 @@
 
   .quickBtn {
     padding: 6px 12px;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-caption);
   }
 
   /* Input row */
